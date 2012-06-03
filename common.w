@@ -422,7 +422,7 @@ check the value of that variable after calling the procedure.
 
 If we've just changed from the |file[include_depth]| to the |change_file|, or if
 the |file[include_depth]| has changed, we tell \.{GOTANGLE} to print this
-information in the \CEE/ file by means of the |print_where| flag.
+information in the \GO/ file by means of the |print_where| flag.
 
 @<Common constants@>=
 max_sections = 2000 /* number of identifiers, strings, section names;
@@ -1141,7 +1141,7 @@ has special line-numbering conventions.
 	}
 	fmt.Println(string(buffer[l:]))
 	if len(buffer) > 0 && buffer[len(buffer)-1]=='|' {
-		fmt.Print("|") /* end of \CEE/ text in section names */
+		fmt.Print("|") /* end of \GO/ text in section names */
 	}
 	fmt.Print(" ") /* to separate the message from future asterisks */
 }
