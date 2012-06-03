@@ -972,8 +972,7 @@ mistake:
 
 @ The following code assigns values to the combinations \.{++},
 \.{--}, \.{->}, \.{>=}, \.{<=}, \.{==}, \.{<<}, \.{>>}, \.{!=}, \.{||} and
-\.{\&\&}, and to the \CPLUSPLUS/
-combinations \.{...}, \.{::}, \.{.*} and \.{->*}.
+\.{\&\&}, \.{...}.
 The compound assignment operators (e.g., \.{+=}) are
 treated as separate tokens.
 
