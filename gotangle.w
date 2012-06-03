@@ -66,7 +66,7 @@ const (
 @<Constants@>@/
 )
 
-@h
+
 @<Typedef declarations@>@/
 @<Global variables@>@/
 
@@ -197,7 +197,6 @@ construction or numerical constant.
 @<Constants@>=
 strs = 02 /* takes the place of extended ASCII \.{\char2} */
 join = 0177 /* takes the place of ASCII delete */
-output_defs_flag = unicode.UpperLower + 0205
 
 @** Stacks for output.  The output process uses a stack to keep track
 of what is going on at different ``levels'' as the sections are being
@@ -252,12 +251,10 @@ the new one going.
 /* suspends the current level */
 func push_level(p int32) { 
 	stack = append(stack, cur_state)
-	if p!=-1 { /* |p==-1| means we are in |output_defs| */
-		cur_state.name_field=p 
-		cur_state.repl_field=name_dir[p].equiv
-		cur_state.byte_field=text_info[cur_state.repl_field].token
-		cur_state.section_field=0
-	}
+	cur_state.name_field=p 
+	cur_state.repl_field=name_dir[p].equiv
+	cur_state.byte_field=text_info[cur_state.repl_field].token
+	cur_state.section_field=0
 }
 
 @ When we come to the end of a replacement text, the |pop_level| subroutine
@@ -266,8 +263,8 @@ text or returns the state to the most recently stacked level.
 
 @c
 /* do this when |cur_state.byte_field| reaches end */
-func pop_level(flag bool)  { /* |flag==false| means we are in |output_defs| */
-	if flag && text_info[cur_state.repl_field].text_link<max_texts { /* link to a continuation */
+func pop_level()  {
+	if text_info[cur_state.repl_field].text_link<max_texts { /* link to a continuation */
 		cur_state.repl_field=text_info[cur_state.repl_field].text_link /* stay on the same level */
 		cur_state.byte_field=text_info[cur_state.repl_field].token
 		return
@@ -311,7 +308,7 @@ restart:
 	}
 	if len(cur_state.byte_field) == 0 {
 		cur_val=-cur_state.section_field /* cast needed because of sign extension */
-		pop_level(true)
+		pop_level()
 		if cur_val==0 {
 			goto restart
 		}
@@ -332,11 +329,7 @@ restart:
 				cur_val=c
 				out_char(identifier) 
 			case section_name: 
-				if c==output_defs_flag {
-					output_defs()
-				} else {
-					@<Expand section |c|, |goto restart|@>
-				}
+				@<Expand section |c|, |goto restart|@>
 			case line_number:
 				cur_val=c
 				out_char(line_number)
@@ -456,7 +449,6 @@ output.
 func phase_two () {
 	line[include_depth]=1
 	@<Initialize the output stacks@>
-	@<Output macro definitions if appropriate@>
 	if text_info[0].text_link==0 && len(output_files) == 0 {
 		fmt.Print("\n! No program text was specified.")
 		mark_harmless()
@@ -514,61 +506,6 @@ for an_output_file:=len(output_files); an_output_file>0; {
 		get_output()
 	}
 	flush_buffer()
-}
-
-@ If a \.{@@h} was not encountered in the input,
-we go through the list of replacement texts and copy the ones
-that refer to macros, preceded by the \.{\#define} preprocessor command.
-
-@<Output macro definitions if appropriate@>=
-if !output_defs_seen {
-	output_defs()
-}
-
-@ @<Glob...@>=
-var output_defs_seen bool = false
-
-@ @c
-func output_defs() {
-	push_level(-1)
-	for cur_text=1; cur_text<int32(len(text_info)); cur_text++ {
-    	if text_info[cur_text].text_link==0 { /* |cur_text| is the text for a macro */
-			cur_state.byte_field=text_info[cur_text].token
-			fmt.Fprintf(go_file,"%s","#define ")
-			out_state=normal
-			protect=true /* newlines should be preceded by |'\\'| */
-			for len(cur_state.byte_field) > 0 {
-				a:=cur_state.byte_field[0]
-				cur_state.byte_field = cur_state.byte_field[1:]
-				if len(cur_state.byte_field) == 0 && a=='\n' {
-					break /* disregard a final newline */
-				}
-				if out_state==verbatim && a!=strs && a!=constant && a!='\n' {
-					fmt.Fprintf(go_file, "%c", a) 
-				} else if a<unicode.UpperLower {
-					out_char(a) /* one-byte token */
-				} else {
-					c:=cur_state.byte_field[0]
-					cur_state.byte_field = cur_state.byte_field[1:]
-					switch a%unicode.UpperLower {
- 						case identifier: 
-							cur_val=c
-							out_char(identifier) 
-						case section_number:    
-							cur_val=c
-							cur_state.section_field=cur_val 
-							out_char(section_number)
-						default:
-							confusion("macro defs have strange char")
-							/* no other cases */
-					}
-				}
-			}
-			protect=false
-			flush_buffer()
-		}
-	}
-	pop_level(false)
 }
 
 @ A many-way switch is used to send the output.  Note that this function
@@ -759,7 +696,6 @@ ignore rune = 0 /* control code of no interest to \.{GOTANGLE} */
 ord rune = 0302 /* control code for `\.{@@'}' */
 control_text rune = 0303 /* control code for `\.{@@t}', `\.{@@\^}', etc. */
 translit_code rune = 0304 /* control code for `\.{@@l}' */
-output_defs_code rune = 0305 /* control code for `\.{@@h}' */
 format_code rune = 0306 /* control code for `\.{@@f}' */
 definition rune = 0307 /* control code for `\.{@@d}' */
 begin_code rune = 0310 /* control code for `\.{@@c}' */
@@ -799,8 +735,6 @@ var ccode[256] rune/* meaning of a char following \.{@@} */
 	ccode['T']=control_text
 	ccode['q']=control_text
 	ccode['Q']=control_text
-	ccode['h']=output_defs_code
-	ccode['H']=output_defs_code
 	ccode['l']=translit_code
 	ccode['L']=translit_code
 	ccode['&']=join
@@ -910,17 +844,11 @@ var no_where bool /* suppress |print_where|? */
 @ As one might expect, |get_next| consists mostly of a big switch
 that branches to the various special cases that can arise.
 
-@<Global...@>=
-var preprocessing bool = false
-
 @ @c
 /* produces the next input token */
 func get_next() rune {
 	for true {
 		if loc>=len(buffer) {
-			if preprocessing && buffer[len(buffer)-1]!='\\' { 
-				preprocessing=false
-			}
 			if !get_line() {
 				return new_section
 			} else if print_where && !no_where {
@@ -954,15 +882,8 @@ func get_next() rune {
 		} else if c=='@@' {
 			@<Get control code and possible section name@>
 		} else if unicode.IsSpace(c) {
-			if !preprocessing || loc>=len(buffer) {
-				continue
-			} else {
-			/* we don't want a blank after a final backslash */
-				return ' ' /* ignore spaces and tabs, unless preprocessing */
-			}
-		} else if c=='#' && loc==1 {
-			preprocessing=true
-		}
+			continue /* ignore spaces and tabs*/
+		} 
 mistake: 
 		@<Compress two-symbol operator@>
 		return c
@@ -1351,9 +1272,6 @@ the name of the current section.
 \item{b)}The symbols \.{@@d} and \.{@@f} and \.{@@c} are not allowed after
 section names, while they terminate macro definitions.
 
-\item{c)}Spaces are inserted after right parentheses in macros, because the
-ANSI \CEE/ preprocessor sometimes requires it.
-
 \yskip Therefore there is a single procedure |scan_repl| whose parameter
 |t| specifies either |macro| or |section_name|. After |scan_repl| has
 acted, |cur_text| will point to the replacement text just generated, and
@@ -1434,17 +1352,6 @@ case section_name:
 		@<Was an `@@' missed here?@>
 		tok_mem = append(tok_mem, unicode.UpperLower + section_name)
 		a=cur_section_name
-		tok_mem = append(tok_mem, a)
-		@<Insert the line number into |tok_mem|@>
-	}
-case output_defs_code: 
-	if t!=section_name {
-		err_print("! Misplaced @@h")
-		@.Misplaced @@h@>
-	} else {
-		output_defs_seen=true
-		tok_mem = append(tok_mem, unicode.UpperLower + section_name)
-		a=output_defs_flag
 		tok_mem = append(tok_mem, a)
 		@<Insert the line number into |tok_mem|@>
 	}

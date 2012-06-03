@@ -10,11 +10,11 @@ goweave: goweave/goweave.go
 	(cd goweave; go build  $(gcflags))
 
 gotangle/gotangle.go: gotangle.w common.w
-	-mkdir gotangle
+	-mkdir -p gotangle
 	gotangle $< - $@
 
 goweave/goweave.go: goweave.w prod.w common.w
-	-mkdir goweave
+	-mkdir -p goweave
 	gotangle $< - $@
 
 install: gotangle goweave

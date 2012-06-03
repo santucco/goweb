@@ -72,7 +72,6 @@ const (
 @<Constants@>@/
 )
 
-@h
 @<Typedef declarations@>@/
 @<Global variables@>@/
 
