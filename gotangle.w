@@ -614,27 +614,6 @@ case dot_dot_dot:
 	fmt.Fprint(go_file,".")
 	out_state=normal
 
-@ When an identifier is output to the \GO/ file, characters in the
-range 128--255 must be changed into something else, so the \CEE/
-compiler won't complain.  By default, \.{GOTANGLE} converts the
-character with code $16 x+y$ to the three characters `\.X$xy$', but
-a different transliteration table can be specified.  Thus a German
-might want {\it gr\"un\/} to appear as a still readable \.{gruen}.
-This makes debugging a lot less confusing.
-
-@<Constants@>=
-translit_length = 10
-
-@ @<Glo...@>=
-var translit [128][]rune
-
-@ @<Set init...@>=
-{
-	for i:=0;i<128;i++ {
-		translit[i] = []rune(fmt.Sprintf("X%02X",128+i))
-	}
-}
-
 @ @<Case of an identifier@>=
 case identifier:
 	if out_state==num_or_id { 
@@ -695,7 +674,6 @@ milestones.
 ignore rune = 0 /* control code of no interest to \.{GOTANGLE} */
 ord rune = 0302 /* control code for `\.{@@'}' */
 control_text rune = 0303 /* control code for `\.{@@t}', `\.{@@\^}', etc. */
-translit_code rune = 0304 /* control code for `\.{@@l}' */
 format_code rune = 0306 /* control code for `\.{@@f}' */
 definition rune = 0307 /* control code for `\.{@@d}' */
 begin_code rune = 0310 /* control code for `\.{@@c}' */
@@ -735,8 +713,6 @@ var ccode[256] rune/* meaning of a char following \.{@@} */
 	ccode['T']=control_text
 	ccode['q']=control_text
 	ccode['Q']=control_text
-	ccode['l']=translit_code
-	ccode['L']=translit_code
 	ccode['&']=join
 	ccode['<']=section_name
 	ccode['(']=section_name
@@ -1108,10 +1084,6 @@ whether there is more work to do.
 	switch c  {
 		case ignore: 
 			continue
-		case translit_code: 
-			err_print("! Use @@l in limbo only")
-			continue
-			@.Use @@l in limbo...@>
 		case control_text: 
 			for c=skip_ahead(); c =='@@'; c = skip_ahead() {}
 			/* only \.{@@@@} and \.{@@>} are expected */
@@ -1638,8 +1610,6 @@ func skip_limbo() {
 				break
 			}
 			switch cc {
-				case translit_code: 
-					@<Read in transliteration of a character@>
 				case format_code, '@@': 
 				case control_text: 
 					if c=='q' || c=='Q' {
@@ -1659,41 +1629,7 @@ func skip_limbo() {
 	}
 }
 
-@ @<Read in transliteration of a character@>=
-	for loc<len(buffer)&& unicode.IsSpace(buffer[loc]) {
-		loc++
-	}
-	loc+=3
-	if loc>=len(buffer) || 
-		!xisxdigit(buffer[loc-3]) || 
-		!xisxdigit(buffer[loc-2]) || 
-		buffer[loc-3]>='0' && buffer[loc-3]<='7' || 
-		!unicode.IsSpace(buffer[loc-1]) {
-		err_print("! Improper hex number following @@l");
-		@.Improper hex number...@>
-	} else {
-		var i int32
-		fmt.Sscanf(string(buffer[loc-3:]),"%x",&i)
-		for loc<len(buffer) && unicode.IsSpace(buffer[loc]){
-			loc++
-		}
-		beg:=loc
-		for loc<len(buffer)&&
-			(unicode.IsLetter(buffer[loc])||unicode.IsDigit(buffer[loc])||buffer[loc]=='_') {
-			loc++
-		}
-		if loc-beg>=translit_length {
-			err_print("! Replacement string in @@l too long")
-			@.Replacement string in @@l...@>
-		} else{
-			copy(translit[i-0200],buffer[beg:loc-beg])
-		}
-	}
-
-@ Because on some systems the difference between two pointers is a |long|
-but not an |int|, we use \.{\%ld} to print these quantities.
-
-@c
+@ @c
 func print_stats() {
     fmt.Print("\nMemory usage statistics:\n")
     fmt.Printf("%v names\n", len(name_dir))

@@ -520,7 +520,6 @@ pseudo_semi rune = 0216 /* control code for `\.{@@;}' */
 macro_arg_open rune = 0220 /* control code for `\.{@@[}' */
 macro_arg_close rune = 0221 /* control code for `\.{@@]}' */
 trace rune = 0222 /* control code for `\.{@@0}', `\.{@@1}' and `\.{@@2}' */
-translit_code rune = 0223 /* control code for `\.{@@l}' */
 output_defs_code rune = 0224 /* control code for `\.{@@h}' */
 format_code rune = 0225 /* control code for `\.{@@f}' and `\.{@@s}' */
 definition rune = 0226 /* control code for `\.{@@d}' */
@@ -563,8 +562,6 @@ ccode['p']=begin_code
 ccode['P']=begin_code
 ccode['t']=TeX_string
 ccode['T']=TeX_string
-ccode['l']=translit_code
-ccode['L']=translit_code
 ccode['q']=noop
 ccode['Q']=noop
 ccode['h']=output_defs_code
@@ -1056,9 +1053,6 @@ whether there is more work to do.
 	c=nc
 	loc++	
 	switch ccode[c] {
-		case translit_code: 
-			err_print("! Use @@l in limbo only")
-			continue
 @.Use @@l in limbo...@>
 		case underline: 
 			xref_switch=def_flag
@@ -1337,10 +1331,6 @@ or \.{@@:}$\,\ldots\,$\.{@@>}.
 for true {
 	next_control=skip_TeX()
 	switch next_control {
-		case translit_code: 
-			err_print("! Use @@l in limbo only")
-			continue
-@.Use @@l in limbo...@>
 		case underline:
 			xref_switch=def_flag
 			continue
@@ -1769,9 +1759,6 @@ func copy_limbo() {
 				break
 			}
 			switch ccode[c] {
-				case translit_code: 
-					out_str("\\ATL")
-@.\\ATL@>
 				case '@@': 
 					out('@@')
 				case noop: 
