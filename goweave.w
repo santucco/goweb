@@ -17,7 +17,7 @@
 
 % Here is TeX material that gets inserted after \input cwebmac
 \def\hang{\hangindent 3em\indent\ignorespaces}
-\def\pb{$\.|\ldots\.|$} % C brackets (|...|)
+\def\pb{$\.|\ldots\.|$} % code brackets (|...|)
 \def\v{\char'174} % vertical (|) in typewriter font
 \def\dleft{[\![} \def\dright{]\!]} % double brackets
 \mathchardef\RA="3221 % right arrow
