@@ -639,10 +639,6 @@ case minus_minus:
 	fmt.Fprint(go_file,"-")
 	fmt.Fprint(go_file,"-")
 	out_state=normal
-case minus_gt: 
-	fmt.Fprint(go_file,"-")
-	fmt.Fprint(go_file,">")
-	out_state=normal
 case gt_gt: 
 	fmt.Fprint(go_file,">")
 	fmt.Fprint(go_file,">")
@@ -679,19 +675,6 @@ case dot_dot_dot:
 	fmt.Fprint(go_file,".")
 	fmt.Fprint(go_file,".")
 	fmt.Fprint(go_file,".")
-	out_state=normal
-case colon_colon: 
-	fmt.Fprint(go_file,":")
-	fmt.Fprint(go_file,":")
-	out_state=normal
-case period_ast: 
-	fmt.Fprint(go_file,".")
-	fmt.Fprint(go_file,"*")
-	out_state=normal
-case minus_gt_ast: 
-	fmt.Fprint(go_file,"-")
-	fmt.Fprint(go_file,">")
-	fmt.Fprint(go_file,"*")
 	out_state=normal
 
 @ When an identifier is output to the \GO/ file, characters in the
@@ -1011,42 +994,14 @@ switch c  {
 			if l <= len(buffer) {
 				return minus_minus
 			}
-		} else if nc=='>' { 
-			if buffer[loc+1]=='*' {
-				l := loc
-				loc++
-				if l <= len(buffer) {
-					return minus_gt_ast
-				}
-			} else { 
-				l := loc
-				loc++
-				if l <= len(buffer) {
-					return minus_gt
-				}
-			}
-		}
+		} 
 	case '.': 
-		if nc=='*' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return period_ast
-			}
-		} else if nc=='.' && buffer[loc+1]=='.' {
+		if nc=='.' && loc+1<len(buffer) && buffer[loc+1]=='.' {
 			loc++
 			l := loc
 			loc++
 			if l <= len(buffer) {
 				return dot_dot_dot
-			}
-		}
-	case ':': 
-		if nc==':' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return colon_colon
 			}
 		}
 	case '=': 
