@@ -97,16 +97,12 @@ lt_lt = 020 /* `\.{<<}'\,;  corresponds to MIT's {\tentex\char'20} */
 gt_gt = 021 /* `\.{>>}'\,;  corresponds to MIT's {\tentex\char'21} */
 plus_plus = 013 /* `\.{++}'\,;  corresponds to MIT's {\tentex\char'13} */
 minus_minus = 01 /* `\.{--}'\,;  corresponds to MIT's {\tentex\char'1} */
-minus_gt = 031 /* `\.{->}'\,;  corresponds to MIT's {\tentex\char'31} */
 not_eq = 032 /* `\.{!=}'\,;  corresponds to MIT's {\tentex\char'32} */
 lt_eq = 034 /* `\.{<=}'\,;  corresponds to MIT's {\tentex\char'34} */
 gt_eq = 035 /* `\.{>=}'\,;  corresponds to MIT's {\tentex\char'35} */
 eq_eq = 036 /* `\.{==}'\,;  corresponds to MIT's {\tentex\char'36} */
 or_or = 037 /* `\.{\v\v}'\,;  corresponds to MIT's {\tentex\char'37} */
 dot_dot_dot = 016 /* `\.{...}'\,;  corresponds to MIT's {\tentex\char'16} */
-colon_colon = 06 /* `\.{::}'\,;  corresponds to MIT's {\tentex\char'6} */
-period_ast = 026 /* `\.{.*}'\,;  corresponds to MIT's {\tentex\char'26} */
-minus_gt_ast = 027 /* `\.{->*}'\,;  corresponds to MIT's {\tentex\char'27} */
 
 @** Input routines.  The lowest level of input to the \.{GOWEB} programs
 is performed by |input_ln|, which must be told which file to read from.

@@ -840,43 +840,14 @@ switch(c) {
 			if l <=len(buffer) {
 				return minus_minus
 			}
-		} else if nc=='>' { 
-			if loc + 1 < len(buffer) && buffer[loc+1]=='*' {
-				loc++
-				l := loc
-				loc++
-				if l <=len(buffer) {
-					return minus_gt_ast
-				}
-			} else {
-				l := loc
-				loc++
-				if l <=len(buffer) {
-					return minus_gt
-				}
-			}
 		}
 	case '.': 
-		if nc=='*' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return period_ast
-			}
-		} else if nc=='.' && loc+1 < len(buffer) && buffer[loc+1]=='.' {
+		if nc=='.' && loc+1<len(buffer) && buffer[loc+1]=='.' {
 			loc++
 			l := loc
 			loc++
 			if l <=len(buffer) {
 				return dot_dot_dot
-			}
-		}
-	case ':': 
-		if nc==':' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return colon_colon
 			}
 		}
 	case '=': 
@@ -4157,10 +4128,6 @@ case minus_minus:
 	app_str("\\MM")
 	@+app_scrap(unop,yes_math)
 @.\\MM@>
-case minus_gt: 
-	app_str("\\MG")
-	@+app_scrap(binop,yes_math)
-@.\\MG@>
 case gt_gt: 
 	app_str("\\GG")
 	@+app_scrap(binop,yes_math)
@@ -4174,18 +4141,6 @@ case dot_dot_dot:
 	@+app_scrap(raw_int,yes_math);
 @.\\,@>
 @.\\ldots@>
-case colon_colon: 
-	app_str("\\DC")
-	@+app_scrap(colcol,maybe_math)
-@.\\DC@>
-case period_ast: 
-	app_str("\\PA")
-	@+app_scrap(binop,yes_math)
-@.\\PA@>
-case minus_gt_ast: 
-	app_str("\\MGA")
-	@+app_scrap(binop,yes_math)
-@.\\MGA@>
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
 \TEX/ will print them properly.
