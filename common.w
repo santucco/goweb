@@ -15,7 +15,7 @@
 % entire resulting derived work is given a different name and distributed
 % under the terms of a permission notice identical to this one.
 
-\def\v{\char'174} % vertical (|) in typewriter font
+\def\v{\char'174} % vertical (||) in typewriter font
 
 \def\title{Common code for GOTANGLE and GOWEAVE (Version 0.1)}
 \def\topofcontents{\null\vfill
