@@ -614,8 +614,11 @@ func skip_limbo() {
 		l := loc
 		loc++
 		if l <len(buffer) { 
-			c:=ccode[buffer[loc]]
-			loc++
+			c:=new_section
+			if loc < len(buffer) {
+				c=ccode[buffer[loc]]
+				loc++
+			}
 			if c==new_section {
 				return
 			}
@@ -718,7 +721,7 @@ func get_next() rune {
 		}
 		@+c:=buffer[loc] /* the current character */
 		loc++
-		nc:=ignore
+		nc:=' '
 		if loc < len(buffer) {
 			nc = buffer[loc]
 		}
@@ -1239,7 +1242,7 @@ func phase_one() {
 	section_count++
 	changed_section[section_count]=changing
 		 /* it will become 1 if any line changes */
-	if buffer[loc-1]=='*' && show_progress() {
+	if loc-1 < len(buffer) && buffer[loc-1]=='*' && show_progress() {
 		fmt.Printf("*%d",section_count)
 		os.Stdout.Sync() /* print a progress report */
 	}
@@ -1753,8 +1756,11 @@ func copy_limbo() {
 		l := loc
 		loc++
 		if l<len(buffer) {
-			c:=buffer[loc]
-			loc++
+			c:=' '
+			if loc < len(buffer) {
+				c=buffer[loc]
+				loc++
+			}
 			if ccode[c]==new_section {
 				break
 			}
@@ -4928,7 +4934,7 @@ specified depth, immediately after the \.{\\N}.
 If the section has changed, we put \.{\\*} just after the section number.
 
 @<Output the code for the beginning...@>=
-if buffer[loc-1]!='*' {
+if loc-1< len(buffer) && buffer[loc-1]!='*' {
 	out_str("\\M")
 @.\\M@>
 } else {
