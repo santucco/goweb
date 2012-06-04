@@ -2833,7 +2833,7 @@ case trace:
 tracing= buffer[loc-1]-'0'
 continue
 case'|':
-C_xref(section_name)
+Go_xref(section_name)
 break
 case xref_roman,xref_wildcard,xref_typewriter,noop,section_name:
 loc-= 2
@@ -2978,7 +2978,7 @@ section_check(name_root)
 //line goweave.w:1275
 
 
-func C_xref(spec_ctrl rune){
+func Go_xref(spec_ctrl rune){
 for next_control<format_code||next_control==spec_ctrl{
 if next_control>=identifier&&next_control<=xref_typewriter{
 if next_control> identifier{
@@ -3029,13 +3029,13 @@ return
 func outer_xref(){
 for next_control<format_code{
 if next_control!=begin_comment&&next_control!=begin_short_comment{
-C_xref(ignore)
+Go_xref(ignore)
 }else{
 is_long_comment:= (next_control==begin_comment)
 bal:= copy_comment(is_long_comment,1)
 next_control= '|'
 for bal> 0{
-C_xref(section_name)
+Go_xref(section_name)
 if next_control=='|'{
 bal= copy_comment(is_long_comment,bal)
 }else{
@@ -4910,7 +4910,7 @@ return int32(len(tok_start)-2)
 //line goweave.w:3911
 
 
-func C_parse(spec_ctrl rune){
+func Go_parse(spec_ctrl rune){
 for next_control<format_code||next_control==spec_ctrl{
 /*277:*/
 //line goweave.w:3936
@@ -5231,12 +5231,12 @@ app_scrap(name_dir[p].ilk,maybe_math)
 /*:282*//*283:*/
 //line goweave.w:4245
 
-func C_translate()int32{
+func Go_translate()int32{
 save_base:= scrap_base
 scrap_base= scrap_ptr+1
-C_parse(section_name)
+Go_parse(section_name)
 if next_control!='|'{
-err_print("! Missing '|' after C text")
+err_print("! Missing '|' after Go text")
 
 }
 app_tok(cancel)
@@ -5258,7 +5258,7 @@ return p
 func outer_parse(){
 for next_control<format_code{
 if next_control!=begin_comment&&next_control!=begin_short_comment{
-C_parse(ignore)
+Go_parse(ignore)
 }else{
 is_long_comment:= (next_control==begin_comment);
 app(cancel)
@@ -5275,7 +5275,7 @@ next_control= ignore
 for bal> 0{
 p:= int32(len(tok_start)-1)
 freeze_text()
-q:= C_translate()
+q:= Go_translate()
 app(tok_flag+p)
 if flags['e']{
 app_str("\\PB{")
@@ -5379,12 +5379,12 @@ return a
 //line goweave.w:4488
 
 
-func output_C(){
+func output_Go(){
 save_tok_ptr:= len(tok_mem)
 save_text_ptr:= len(tok_start)
 save_next_control:= next_control
 next_control= ignore
-p:= C_translate()
+p:= Go_translate()
 app(inner_tok_flag+p)
 if flags['e']{
 out_str("\\PB{")
@@ -5581,7 +5581,7 @@ var buf[]rune
 var delim rune
 for true{
 if i>=len(scratch){
-fmt.Print("\n! C text in section name didn't end: <");
+fmt.Print("\n! Go text in section name didn't end: <");
 
 print_section_name(cur_section_name)
 fmt.Print("> ")
@@ -5626,7 +5626,7 @@ save_loc:= loc
 buf= append(buf,'|')
 buffer= buf
 loc= 0
-output_C()
+output_Go()
 loc= save_loc
 buffer= save_buf
 }
@@ -5870,14 +5870,14 @@ next_control= copy_TeX()
 switch next_control{
 case'|':
 init_stack()
-output_C()
+output_Go()
 case'@':
 out('@')
 case TeX_string,noop,xref_roman,xref_wildcard,xref_typewriter,section_name:
 loc-= 2
 next_control= get_next()
 if next_control==TeX_string{
-err_print("! TeX string should be in C text only")
+err_print("! TeX string should be in Go text only")
 
 }
 case thin_space,math_break,ord,
@@ -5986,7 +5986,7 @@ err_print("! Improper format definition")
 
 }
 outer_parse()
-finish_C(format_visible)
+finish_Go(format_visible)
 format_visible= true
 doing_format= false
 }
@@ -6052,7 +6052,7 @@ outer_parse()
 //line goweave.w:5209
 
 if next_control<section_name{
-err_print("! You can't do that in C text")
+err_print("! You can't do that in Go text")
 
 next_control= get_next()
 }else if next_control==section_name{
@@ -6065,7 +6065,7 @@ next_control= get_next()
 //line goweave.w:5166
 
 }
-finish_C(true)
+finish_Go(true)
 }
 
 /*:323*/
@@ -6133,7 +6133,7 @@ space_checked= true
 
 
 
-func finish_C(visible bool){
+func finish_Go(visible bool){
 if visible{
 out_str("\\B")
 app_tok(force)

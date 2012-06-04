@@ -1251,16 +1251,16 @@ func phase_one() {
 	}
 }
 
-@ The |C_xref| subroutine stores references to identifiers in
+@ The |Go_xref| subroutine stores references to identifiers in
 \GO/ text material beginning with the current value of |next_control|
 and continuing until |next_control| is `\.\{' or `\.{\v}', or until the next
 ``milestone'' is passed (i.e., |next_control>=format_code|). If
-|next_control>=format_code| when |C_xref| is called, nothing will happen;
+|next_control>=format_code| when |Go_xref| is called, nothing will happen;
 but if |next_control=='|'| upon entry, the procedure assumes that this is
 the `\.{\v}' preceding \GO/ text that is to be processed.
 
 The parameter |spec_ctrl| is used to change this behavior. In most cases
-|C_xref| is called with |spec_ctrl==ignore|, which triggers the default
+|Go_xref| is called with |spec_ctrl==ignore|, which triggers the default
 processing described above. If |spec_ctrl==section_name|, section names will
 be gobbled. This is used when \GO/ text in the \TEX/ part or inside comments
 is parsed: It allows for section names to appear in \pb, but these
@@ -1274,7 +1274,7 @@ as well as |normal==0|.
 
 @ @c
 /* makes cross-references for \GO/ identifiers */
-func C_xref(spec_ctrl rune) {
+func Go_xref(spec_ctrl rune) {
 	for next_control<format_code || next_control==spec_ctrl {
 		if next_control>=identifier && next_control<=xref_typewriter {
 			if next_control>identifier {
@@ -1296,22 +1296,22 @@ func C_xref(spec_ctrl rune) {
 	}
 }
 
-@ The |outer_xref| subroutine is like |C_xref| except that it begins
+@ The |outer_xref| subroutine is like |Go_xref| except that it begins
 with |next_control!='|'| and ends with |next_control>=format_code|. Thus, it
 handles \GO/ text with embedded comments.
 
 @ @c
-/* extension of |C_xref| */
+/* extension of |Go_xref| */
 func outer_xref() {
 	for next_control<format_code {
 		if next_control!=begin_comment && next_control!=begin_short_comment {
-			C_xref(ignore)
+			Go_xref(ignore)
 		} else {
 			is_long_comment:=(next_control==begin_comment)
 			bal:=copy_comment(is_long_comment,1)/* brace level in comment */
 			next_control='|'
 			for bal>0 {
-				C_xref(section_name) /* do not reference section names in comments */
+				Go_xref(section_name) /* do not reference section names in comments */
 				if next_control=='|' {
 					 bal=copy_comment(is_long_comment,bal)
 				} else { 
@@ -1338,7 +1338,7 @@ for true {
 			tracing=buffer[loc-1]-'0'
 			continue
 		case '|': 
-			C_xref(section_name)
+			Go_xref(section_name)
 			break
 		case xref_roman, xref_wildcard, xref_typewriter, noop, section_name:
 			loc-=2
@@ -3898,10 +3898,10 @@ If we are going to use the powerful production mechanism just developed, we
 must get the scraps set up in the first place, given a \GO/ text. A table
 of the initial scraps corresponding to \GO/ tokens appeared above in the
 section on parsing; our goal now is to implement that table. We shall do this
-by implementing a subroutine called |C_parse| that is analogous to the
-|C_xref| routine used during phase one.
+by implementing a subroutine called |Go_parse| that is analogous to the
+|Go_xref| routine used during phase one.
 
-Like |C_xref|, the |C_parse| procedure starts with the current
+Like |Go_xref|, the |Go_parse| procedure starts with the current
 value of |next_control| and it uses the operation |next_control=get_next()|
 repeatedly to read \GO/ text until encountering the next `\.{\v}' or
 `\.{/*}', or until |next_control>=format_code|. The scraps corresponding to
@@ -3910,7 +3910,7 @@ is advanced.
 
 @c
 /* creates scraps from \GO/ tokens */
-func C_parse(spec_ctrl rune) {
+func Go_parse(spec_ctrl rune) {
 	for next_control<format_code || next_control==spec_ctrl {
 		@<Append the scrap appropriate to |next_control|@>
 		next_control=get_next()
@@ -4182,7 +4182,7 @@ app_scrap(exp,maybe_math)
 @ We do not make the \TEX/ string into a scrap, because there is no
 telling what the user will be putting into it; instead we leave it
 open, to be picked up by the next scrap. If it comes at the end of a
-section, it will be made into a scrap when |finish_C| is called.
+section, it will be made into a scrap when |finish_Go| is called.
 
 There's a known bug here, in cases where an adjacent scrap is
 |prelangle| or |prerangle|. Then the \TEX/ string can disappear
@@ -4238,17 +4238,17 @@ func app_cur_id(scrapping bool) {
 }
 
 @ When the `\.{\v}' that introduces \GO/ text is sensed, a call on
-|C_translate| will return a pointer to the \TEX/ translation of
+|Go_translate| will return a pointer to the \TEX/ translation of
 that text. If scraps exist in |scrap_info|, they are
 unaffected by this translation process.
 
 @c
-func C_translate() int32 {
+func Go_translate() int32 {
 	save_base:=scrap_base /* holds original value of |scrap_base| */
 	scrap_base=scrap_ptr+1
-	C_parse(section_name) /* get the scraps together */
+	Go_parse(section_name) /* get the scraps together */
 	if next_control!='|' {
-		err_print("! Missing '|' after C text")
+		err_print("! Missing '|' after Go text")
 @.Missing '|'...@>
 	}
 	app_tok(cancel)
@@ -4263,8 +4263,8 @@ func C_translate() int32 {
 	return p
 }
 
-@ The |outer_parse| routine is to |C_parse| as |outer_xref|
-is to |C_xref|: It constructs a sequence of scraps for \GO/ text
+@ The |outer_parse| routine is to |Go_parse| as |outer_xref|
+is to |Go_xref|: It constructs a sequence of scraps for \GO/ text
 until |next_control>=format_code|. Thus, it takes care of embedded comments.
 
 The token list created from within `\pb' brackets is output as an argument
@@ -4278,7 +4278,7 @@ program text.
 func outer_parse() {
 	for next_control<format_code {
 		if next_control!=begin_comment && next_control!=begin_short_comment {
-			C_parse(ignore)
+			Go_parse(ignore)
 		} else {
 			is_long_comment:=(next_control==begin_comment);
 			app(cancel)
@@ -4295,7 +4295,7 @@ func outer_parse() {
 			for bal>0 {
 				p:=int32(len(tok_start)-1)
 				freeze_text()
-				q:=C_translate()/* partial comments */
+				q:=Go_translate()/* partial comments */
 				app(tok_flag+p)
 				if flags['e'] {
 					app_str("\\PB{")
@@ -4478,21 +4478,21 @@ buffer until reaching the |end_translation| sentinel. It is possible for
 embedded \GO/ text; however, the depth of recursion never exceeds one
 level, since section names cannot be inside of section names.
 
-A procedure called |output_C| does the scanning, translation, and
+A procedure called |output_Go| does the scanning, translation, and
 output of \GO/ text within `\pb' brackets, and this procedure uses
 |make_output| to output the current token list. Thus, the recursive call
-of |make_output| actually occurs when |make_output| calls |output_C|
+of |make_output| actually occurs when |make_output| calls |output_Go|
 while outputting the name of a section.
 @^recursion@>
 
 @c
 /* outputs the current token list */
-func output_C() {
+func output_Go() {
 	save_tok_ptr:=len(tok_mem)
 	save_text_ptr:=len(tok_start)
 	save_next_control:=next_control/* values to be restored */
 	next_control=ignore
-	p:=C_translate()/* translation of the \GO/ text */
+	p:=Go_translate()/* translation of the \GO/ text */
 	app(inner_tok_flag+p)
 	if flags['e'] {
 		out_str("\\PB{")
@@ -4794,7 +4794,7 @@ for i := 0; i < len(scratch); {
 		buf=append(buf,'|')
 		buffer = buf
 		loc = 0
-		output_C()
+		output_Go()
 		loc=save_loc
 		buffer=save_buf
 	}
@@ -4821,8 +4821,8 @@ equals the delimiter that began the string being copied.
 var delim rune
 for true {
 	if i>=len(scratch) {
-		fmt.Print("\n! C text in section name didn't end: <");
-@.C text...didn't end@>
+		fmt.Print("\n! Go text in section name didn't end: <");
+@.Go text...didn't end@>
 		print_section_name(cur_section_name)
 		fmt.Print("> ")
 		mark_error()
@@ -4971,14 +4971,14 @@ for true {
 	switch next_control {
 		case '|': 
 			init_stack()
-			output_C()
+			output_Go()
 		case '@@': 
 			out('@@')
 		case TeX_string, noop, xref_roman, xref_wildcard, xref_typewriter, section_name: 
 			loc-=2
 			next_control=get_next() /* skip to \.{@@>} */
 			if next_control==TeX_string {
-				err_print("! TeX string should be in C text only")
+				err_print("! TeX string should be in Go text only")
 @.TeX string should be...@>
 			}
 		case thin_space,math_break,ord,
@@ -5006,12 +5006,12 @@ for next_control<=definition { /* |format_code| or |definition| */
 		@<Start a format definition@>
 	}
 	outer_parse()
-	finish_C(format_visible)
+	finish_Go(format_visible)
 	format_visible=true
 	doing_format=false
 }
 
-@ The |finish_C| procedure outputs the translation of the current
+@ The |finish_Go| procedure outputs the translation of the current
 scraps, preceded by the control sequence `\.{\\B}' and followed by the
 control sequence `\.{\\par}'. It also restores the token and scrap
 memories to their initial empty state.
@@ -5024,7 +5024,7 @@ takes place, so that the translation will normally end with \.{\\6} or
 @ @c
 /* finishes a definition or a \GO/ part */
 /* visible is nonzero if we should produce \TEX/ output */
-func finish_C(visible bool) {
+func finish_Go(visible bool) {
 	if visible {
 		out_str("\\B")
 		app_tok(force)
@@ -5165,7 +5165,7 @@ if next_control<=section_name {
 		outer_parse()
 		@<Emit the scrap for a section name if present@>
 	}
-	finish_C(true)
+	finish_Go(true)
 }
 
 @ The title of the section and an $\E$ or $\mathrel+\E$ are made
@@ -5208,7 +5208,7 @@ app_scrap(dead,no_math)
 
 @ @<Emit the scrap...@>=
 if next_control<section_name {
-	err_print("! You can't do that in C text")
+	err_print("! You can't do that in Go text")
 @.You can't do that...@>
 	next_control=get_next()
 } else if next_control==section_name {
