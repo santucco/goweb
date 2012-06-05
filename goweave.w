@@ -520,9 +520,7 @@ pseudo_semi rune = 0216 /* control code for `\.{@@;}' */
 macro_arg_open rune = 0220 /* control code for `\.{@@[}' */
 macro_arg_close rune = 0221 /* control code for `\.{@@]}' */
 trace rune = 0222 /* control code for `\.{@@0}', `\.{@@1}' and `\.{@@2}' */
-output_defs_code rune = 0224 /* control code for `\.{@@h}' */
 format_code rune = 0225 /* control code for `\.{@@f}' and `\.{@@s}' */
-definition rune = 0226 /* control code for `\.{@@d}' */
 begin_code rune = 0227 /* control code for `\.{@@c}' */
 section_name rune = 0230 /* control code for `\.{@@<}' */
 new_section rune = 0231 /* control code for `\.{@@\ }' and `\.{@@*}' */
@@ -550,8 +548,6 @@ ccode['\f']=new_section
 ccode['*']=new_section
 ccode['@@']='@@' /* `quoted' at sign */
 ccode['=']=verbatim
-ccode['d']=definition
-ccode['D']=definition
 ccode['f']=format_code
 ccode['F']=format_code
 ccode['s']=format_code
@@ -564,8 +560,6 @@ ccode['t']=TeX_string
 ccode['T']=TeX_string
 ccode['q']=noop
 ccode['Q']=noop
-ccode['h']=output_defs_code
-ccode['H']=output_defs_code
 ccode['&']=join
 ccode['<']=section_name
 ccode['(']=section_name
@@ -1001,7 +995,8 @@ delimiters if they are protected by a backslash.
 	delim := c /* what started the string */
 	section_text = section_text[0:0]
 
-	if delim=='\'' && buffer[loc-2]=='@@' {
+	if delim=='\'' && 
+		loc-2<len(buffer) && loc-2>=0 && buffer[loc-2]=='@@' {
 		section_text = append(section_text, '@@')
 		section_text = append(section_text, '@@')
 	}
@@ -1247,7 +1242,7 @@ func phase_one() {
 		os.Stdout.Sync() /* print a progress report */
 	}
 	@<Store cross-references in the \TEX/ part of a section@>
-	@<Store cross-references in the definition part of a section@>
+	@<Store cross-references in the format definition part of a section@>
 	@<Store cross-references in the \GO/ part of a section@>
 	if changed_section[section_count] {
 		change_exists=true
@@ -1394,14 +1389,9 @@ var res_wd_end int32
 
 @ When we get to the following code we have |next_control>=format_code|.
 
-@<Store cross-references in the d...@>=
-for next_control<=definition { /* |format_code| or |definition| */
-	if next_control==definition {
-		xref_switch=def_flag /* implied \.{@@!} */
-		next_control=get_next()
-	} else {
-		@<Process a format definition@>
-	}
+@<Store cross-references in the format d...@>=
+for next_control<=format_code { 
+	@<Process a format definition@>
 	outer_xref()
 }
 
@@ -2459,42 +2449,6 @@ res_flag rune = 2*id_flag /* signifies a reserved word */
 section_flag rune = 3*id_flag /* signifies a section name */
 tok_flag rune = 4*id_flag /* signifies a token list */
 inner_tok_flag rune = 5*id_flag /* signifies a token list in `\pb' */
-
-@ @<Print token |r|...@>=
-switch (r) {
-	case math_rel: 
-		printf("\\mathrel{"@q}@>)
-	case big_cancel: 
-		printf("[ccancel]")
-	case cancel: 
-		printf("[cancel]")
-	case indent: 
-		printf("[indent]")
-	case outdent: 
-		printf("[outdent]")
-	case backup: 
-		printf("[backup]")
-	case opt: 
-		printf("[opt]")
-	case break_space: 
-		printf("[break]")
-	case force: 
-		printf("[force]")
-	case big_force: 
-		printf("[fforce]")
-	case preproc_line: 
-		printf("[preproc]")
-	case quoted_char: 
-		j++
-		printf("[%o]",(unsigned)*j)
-	case end_translation: 
-		printf("[quit]")
-	case inserted: 
-		printf("[inserted]")
-	default: 
-		putxchar(r)
-}
-
 
 @ The production rules listed above are embedded directly into \.{GOWEAVE},
 since it is easier to do this than to write an interpretive system
@@ -4070,12 +4024,6 @@ switch (next_control) {
 		app_str("\\J")
 		app_scrap(insert,no_math)
 @.\\J@>
-	case output_defs_code: 
-		app(force)
-		app_str("\\ATH")
-		app(force)
-		app_scrap(insert,no_math)
-@.\\ATH@>
 	default: 
 		app(inserted)
 		app(next_control)
@@ -4989,8 +4937,7 @@ for true {
 			}
 		case thin_space,math_break,ord,
 		line_break, big_line_break, no_line_break, join,
-		pseudo_semi, macro_arg_open, macro_arg_close,
-		output_defs_code:
+		pseudo_semi, macro_arg_open, macro_arg_close:
 				err_print("! You can't do that in TeX text")
 @.You can't do that...@>
 	}
@@ -5004,13 +4951,9 @@ the token memory is in its initial empty state.
 
 @<Translate the d...@>=
 space_checked=false
-for next_control<=definition { /* |format_code| or |definition| */
+for next_control<=format_code { /* |format_code| or |definition| */
 	init_stack() 
-	if next_control==definition {
-		 @<Start a macro definition@>
-	} else {
-		@<Start a format definition@>
-	}
+	@<Start a format definition@>
 	outer_parse()
 	finish_Go(format_visible)
 	format_visible=true
@@ -5067,55 +5010,6 @@ func finish_Go(visible bool) {
 	tok_start=tok_start[:1]
 	scrap_ptr=0
 		/* forget the tokens and the scraps */
-}
-
-@ Keeping in line with the conventions of the \GO/ preprocessor (and
-otherwise contrary to the rules of \.{CWEB}) we distinguish here
-between the case that `\.(' immediately follows an identifier and the
-case that the two are separated by a space.  In the latter case, and
-if the identifier is not followed by `\.(' at all, the replacement
-text starts immediately after the identifier.  In the former case,
-it starts after we scan the matching `\.)'.
-
-@<Start a macro...@>= {
-	if save_line!=out_line || save_place!=out_ptr || space_checked {
-		app(backup)
-	}
-	if !space_checked {
-		emit_space_if_needed()
-		save_position()
-	}
-	app_str("\\D") /* this will produce `\&{define }' */
-@.\\D@>
-	if next_control=get_next(); next_control!=identifier {
-		err_print("! Improper macro definition")
-@.Improper macro definition@>
-	} else {
-		app('$')
-		app_cur_id(false)
-		if loc < len(buffer) && buffer[loc]=='(' {
-reswitch: 
-			next_control=get_next()
-			switch next_control {
-				case '(', ',': 
-					app(next_control)
-					goto reswitch
-				case identifier:
-					app_cur_id(false)
-					goto reswitch
-				case ')': 
-					app(next_control)
-					next_control=get_next()
-				default: 
-					err_print("! Improper macro definition")
-			}
-		} else {
-			next_control=get_next()
-		}
-		app_str("$ ")
-		app(break_space)
-		app_scrap(dead,no_math) /* scrap won't take part in the parsing */
-	}
 }
 
 @ @<Start a format...@>= {
