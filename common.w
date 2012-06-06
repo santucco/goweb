@@ -42,7 +42,7 @@ under the terms of a permission notice identical to this one.
 \pageno=\contentspagenumber \advance\pageno by 1
 \let\maybe=\iftrue
 
-@** Introduction.  This file contains code common
+@** Introduction in common code.  Next few sections contain code common
 to both \.{GOTANGLE} and \.{GOWEAVE}, which roughly concerns the following
 problems: character uniformity, input routines, error handling and
 parsing of command line. 
@@ -1422,5 +1422,3 @@ func xisxdigit(r rune) bool {
 	}
 	return false
 }
-
-@** Index.
