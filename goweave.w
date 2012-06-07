@@ -123,7 +123,7 @@ different purpose in the case of identifiers. It is then called the
 |ilk| of the identifier, and it is used to
 distinguish between various types of identifiers, as follows:
 
-\yskip\hang |normal| and |func_template| identifiers are part of the
+\yskip\hang |normal| identifiers are part of the
 \GO/ program that will  appear in italic type (or in typewriter type
 if all uppercase).
 
@@ -139,7 +139,7 @@ will be typeset in special ways.
 \yskip\hang |typewriter| identifiers are index entries that appear after
 \.{@@.} in the \.{CWEB} file.
 
-\yskip\hang |alfop|, \dots, |template_like|
+\yskip\hang |alfop|, \dots
 identifiers are \GO/ reserved words whose |ilk|
 explains how they are to be treated when \GO/ code is being
 formatted.
@@ -152,28 +152,19 @@ normal = 0 /* ordinary identifiers have |normal| ilk */
 roman = 1 /* normal index entries have |roman| ilk */
 wildcard = 2 /* user-formatted index entries have |wildcard| ilk */
 typewriter = 3 /* `typewriter type' entries have |typewriter| ilk */
-func_template = 4 /* identifiers that can be followed by optional template */
 custom = 5 /* identifiers with user-given control sequence */
 alfop = 22 /* alphabetic operators like \&{and} or \&{not\_eq} */
 else_like = 26 /* \&{else} */
-public_like = 40 /* \&{public}, \&{private}, \&{protected} */
-operator_like = 41 /* \&{operator} */
 new_like = 42 /* \&{new} */
-catch_like = 43 /* \&{catch} */
-for_like = 45 /* \&{for}, \&{switch}, \&{while} */
-do_like = 46 /* \&{do} */
-if_like = 47 /* \&{if}, \&{ifdef}, \&{endif}, \&{pragma}, \dots */
-delete_like = 48 /* \&{delete} */
+for_like = 45 /* \&{for}, \&{switch} */
+if_like = 47 /* \&{if} */
 raw_ubin = 49 /* `\.\&' or `\.*' when looking for \&{const} following */
-const_like = 50 /* \&{const}, \&{volatile} */
+const_like = 50 /* \&{const} */
 raw_int = 51 /* \&{int}, \&{char}, \dots; also structure and class names  */
 int_like = 52 /* same, when not followed by left parenthesis or \DC\ */
 case_like = 53 /* \&{case}, \&{return}, \&{goto}, \&{break}, \&{continue} */
-sizeof_like = 54 /* \&{sizeof} */
-struct_like = 55 /* \&{struct}, \&{union}, \&{enum}, \&{class} */
+struct_like = 55 /* \&{struct} */
 typedef_like rune = 56 /* \&{typedef} */
-define_like = 57 /* \&{define} */
-template_like = 58 /* \&{template} */
 
 @ We keep track of the current section number in |section_count|, which
 is the total number of sections that have started.  Sections which have
@@ -380,29 +371,21 @@ are defined in header files of the ISO Standard \GO/ Library.)
 @<Store all the reserved words@>=
 id_lookup([]rune("and"),alfop)
 id_lookup([]rune("and_eq"),alfop)
-id_lookup([]rune("asm"),sizeof_like)
 id_lookup([]rune("auto"),int_like)
 id_lookup([]rune("bitand"),alfop)
 id_lookup([]rune("bitor"),alfop)
 id_lookup([]rune("bool"),raw_int)
 id_lookup([]rune("break"),case_like)
 id_lookup([]rune("case"),case_like)
-id_lookup([]rune("catch"),catch_like)
 id_lookup([]rune("char"),raw_int)
 id_lookup([]rune("class"),struct_like)
 id_lookup([]rune("clock_t"),raw_int)
 id_lookup([]rune("compl"),alfop)
 id_lookup([]rune("const"),const_like)
-id_lookup([]rune("const_cast"),raw_int)
 id_lookup([]rune("continue"),case_like)
 id_lookup([]rune("default"),case_like)
-id_lookup([]rune("define"),define_like)
-id_lookup([]rune("defined"),sizeof_like)
-id_lookup([]rune("delete"),delete_like)
 id_lookup([]rune("div_t"),raw_int)
-id_lookup([]rune("do"),do_like)
 id_lookup([]rune("double"),raw_int)
-id_lookup([]rune("dynamic_cast"),raw_int)
 id_lookup([]rune("elif"),if_like)
 id_lookup([]rune("else"),else_like)
 id_lookup([]rune("endif"),if_like)
@@ -434,14 +417,10 @@ id_lookup([]rune("not"),alfop)
 id_lookup([]rune("not_eq"),alfop)
 id_lookup([]rune("NULL"),custom)
 id_lookup([]rune("offsetof"),raw_int)
-id_lookup([]rune("operator"),operator_like)
 id_lookup([]rune("or"),alfop)
 id_lookup([]rune("or_eq"),alfop)
 id_lookup([]rune("pragma"),if_like)
-id_lookup([]rune("private"),public_like)
-id_lookup([]rune("protected"),public_like)
 id_lookup([]rune("ptrdiff_t"),raw_int)
-id_lookup([]rune("public"),public_like)
 id_lookup([]rune("register"),int_like)
 id_lookup([]rune("reinterpret_cast"),raw_int)
 id_lookup([]rune("return"),case_like)
@@ -449,12 +428,10 @@ id_lookup([]rune("short"),raw_int)
 id_lookup([]rune("sig_atomic_t"),raw_int)
 id_lookup([]rune("signed"),raw_int)
 id_lookup([]rune("size_t"),raw_int)
-id_lookup([]rune("sizeof"),sizeof_like)
 id_lookup([]rune("static"),int_like)
 id_lookup([]rune("static_cast"),raw_int)
 id_lookup([]rune("struct"),struct_like)
 id_lookup([]rune("switch"),for_like)
-id_lookup([]rune("template"),template_like)
 id_lookup([]rune("this"),custom)
 id_lookup([]rune("throw"),case_like)
 id_lookup([]rune("time_t"),raw_int)
@@ -477,7 +454,6 @@ id_lookup([]rune("xor"),alfop)
 id_lookup([]rune("xor_eq"),alfop)
 res_wd_end=int32(len(name_dir))
 id_lookup([]rune("TeX"),custom)
-id_lookup([]rune("make_pair"),func_template)
 
 @* Lexical scanning.
 Let us now consider the subroutines that read the \.{CWEB} source file
@@ -517,8 +493,6 @@ line_break rune = 0213 /* control code for `\.{@@/}' */
 big_line_break rune = 0214 /* control code for `\.{@@\#}' */
 no_line_break rune = 0215 /* control code for `\.{@@+}' */
 pseudo_semi rune = 0216 /* control code for `\.{@@;}' */
-macro_arg_open rune = 0220 /* control code for `\.{@@[}' */
-macro_arg_close rune = 0221 /* control code for `\.{@@]}' */
 trace rune = 0222 /* control code for `\.{@@0}', `\.{@@1}' and `\.{@@2}' */
 format_code rune = 0225 /* control code for `\.{@@f}' and `\.{@@s}' */
 begin_code rune = 0227 /* control code for `\.{@@c}' */
@@ -573,8 +547,6 @@ ccode['/']=line_break
 ccode['#']=big_line_break
 ccode['+']=no_line_break
 ccode[';']=pseudo_semi
-ccode['[']=macro_arg_open
-ccode[']']=macro_arg_close
 ccode['\'']=ord
 @<Special control codes for debugging@>
 
@@ -709,7 +681,6 @@ compilers even allow the dollar sign.
 /* produces the next input token */
 func get_next() rune { 
 	for true {
-		@<Check if we're at the end of a preprocessor command@>
 		if loc>=len(buffer) && !get_line() {
 			return new_section 
 		}
@@ -722,17 +693,14 @@ func get_next() rune {
 		if unicode.IsDigit(c) || c=='.' {
 			@<Get a constant@>
 		} else if c=='\'' || c=='"' || c=='L' && 
-			(nc=='\'' || nc=='"') || c=='<' && sharp_include_line {
+			(nc=='\'' || nc=='"') {
 			@<Get a string@>
-		} else if unicode.IsLetter(c) || c=='_' || c=='$' {
+		} else if unicode.IsLetter(c) || c=='_' {
 			@<Get an identifier@>
 		} else if c=='@@' {
 			@<Get control code and possible section name@>
 		} else if unicode.IsSpace(c) {
 			continue /* ignore spaces and tabs */
-		}
-		if c=='#' && loc==1 {
-			@<Raise preprocessor flag@>
 		}
 mistake: 
 		@<Compress two-symbol operator@>
@@ -740,60 +708,6 @@ mistake:
 	}
 	return 0
 }
-
-@ Because preprocessor commands do not fit in with the rest of the syntax
-of \GO/,
-we have to deal with them separately.  One solution is to enclose such
-commands between special markers.  Thus, when a \.\# is seen as the
-first character of a line, |get_next| returns a special code
-|left_preproc| and raises a flag |preprocessing|.
-
-We can use the same internal code number for |left_preproc| as we do
-for |ord|, since |get_next| changes |ord| into a string.
-
-@ @<Constants@>=
-left_preproc = ord /* begins a preprocessor command */
-right_preproc = 0217 /* ends a preprocessor command */
-
-@ @<Glob...@>= 
-var preprocessing bool=false /* are we scanning a preprocessor command? */
-
-@ @<Raise prep...@>= {
-	preprocessing=true
-	@<Check if next token is |include|@>
-	return left_preproc
-}
-
-@ An additional complication is the freakish use of \.< and \.> to delimit
-a file name in lines that start with \.{\#include}.  We must treat this file
-name as a string.
-
-@<Glob...@>=
-var sharp_include_line bool=false /* are we scanning a |#include| line? */
-
-@ @<Check if next token is |include|@>=
-for len(buffer[loc:])>=7 && unicode.IsSpace(buffer[loc]) {
-	loc++
-}
-if len(buffer[loc:])>=7 && compare_runes(buffer[loc:loc+7], []rune("include"))==0 {
-	sharp_include_line=true
-}
-
-@ When we get to the end of a preprocessor line,
-we lower the flag and send a code |right_preproc|, unless
-the last character was a \.\\.
-
-@<Check if we're at...@>=
-	for loc==len(buffer)-1 && preprocessing && buffer[loc]=='\\' {
-		if !get_line() {
-			return new_section /* still in preprocessor mode */
-		}
-	}
-	if loc>=len(buffer) && preprocessing {
-		preprocessing=false
-		sharp_include_line=false
-		return right_preproc
-	}
 
 @ The following code assigns values to the combinations \.{++},
 \.{--}, \.{>=}, \.{<=}, \.{==}, \.{<<}, \.{>>}, \.{!=}, \.{\v\v}, and
@@ -910,8 +824,7 @@ switch(c) {
 	for loc < len(buffer) && 
 		(unicode.IsLetter(buffer[loc]) || 
 		unicode.IsDigit(buffer[loc]) || 
-		buffer[loc]=='_' || 
-		buffer[loc]=='$') {
+		buffer[loc]=='_') {
 		loc++
 	}
 	id = buffer[id_first:loc]
@@ -1994,7 +1907,6 @@ binop rune = 3 /* denotes a binary operator */
 ubinop rune = 4
 	/* denotes an operator that can be unary or binary, depending on context */
 cast rune = 5 /* denotes a cast */
-question rune = 6 /* denotes a question mark and possibly the expressions flanking it */
 lbrace rune = 7 /* denotes a left brace */
 rbrace rune = 8 /* denotes a right brace */
 decl_head rune = 9 /* denotes an incomplete declaration */
@@ -2004,7 +1916,6 @@ rpar rune = 12 /* denotes a right parenthesis or right bracket */
 prelangle rune = 13 /* denotes `$<$' before we know what it is */
 prerangle rune = 14 /* denotes `$>$' before we know what it is */
 langle rune = 15 /* denotes `$<$' when it's used as angle bracket in a template */
-colcol rune = 18 /* denotes `::' */
 base rune = 19 /* denotes a colon that introduces a base specifier */
 decl rune = 20 /* denotes a complete declaration */
 struct_head rune = 21 /* denotes the beginning of a structure specifier */
@@ -2017,12 +1928,9 @@ tag rune = 29 /* denotes a statement label */
 if_head rune = 30 /* denotes the beginning of a compound conditional */
 else_head rune = 31 /* denotes a prefix for a compound statement */
 if_clause rune = 32 /* pending \.{if} together with a condition */
-lproc rune = 35 /* begins a preprocessor command */
-rproc rune = 36 /* ends a preprocessor command */
 insert rune = 37 /* a scrap that gets combined with its neighbor */
 section_scrap rune = 38 /* section name */
 dead rune = 39 /* scrap that won't combine */
-ftemplate rune = 59 /* \\{make\_pair} */
 new_exp rune = 60 /* \&{new} and a following type identifier */
 begin_arg rune = 61 /* \.{@@[} */
 end_arg rune = 62 /* \.{@@]} */
@@ -2040,7 +1948,6 @@ var cat_name[256]string
 		cat_name[binop]="binop"
 		cat_name[ubinop]="ubinop"
 		cat_name[cast]="cast"
-		cat_name[question]="?"
 		cat_name[lbrace]="{"@q}@>
 		cat_name[rbrace]=@q{@>"}"
 		cat_name[decl_head]="decl_head"
@@ -2050,7 +1957,6 @@ var cat_name[256]string
 		cat_name[prelangle]="<"
 		cat_name[prerangle]=">"
 		cat_name[langle]="\\<"
-		cat_name[colcol]="::"
 		cat_name[base]="\\:"
 		cat_name[decl]="decl"
 		cat_name[struct_head]="struct_head"
@@ -2065,30 +1971,19 @@ var cat_name[256]string
 		cat_name[if_head]="if_head"
 		cat_name[else_head]="else_head"
 		cat_name[if_clause]="if()"
-		cat_name[lproc]="#{"@q}@>
-		cat_name[rproc]=@q{@>"#}"
 		cat_name[insert]="insert"
 		cat_name[section_scrap]="section"
 		cat_name[dead]="@@d"
-		cat_name[public_like]="public"
-		cat_name[operator_like]="operator"
 		cat_name[new_like]="new"
-		cat_name[catch_like]="catch"
 		cat_name[for_like]="for"
-		cat_name[do_like]="do"
 		cat_name[if_like]="if"
-		cat_name[delete_like]="delete"
 		cat_name[raw_ubin]="ubinop?"
 		cat_name[const_like]="const"
 		cat_name[raw_int]="raw"
 		cat_name[int_like]="int"
 		cat_name[case_like]="case"
-		cat_name[sizeof_like]="sizeof"
 		cat_name[struct_like]="struct"
 		cat_name[typedef_like]="typedef"
-		cat_name[define_like]="define"
-		cat_name[template_like]="template"
-		cat_name[ftemplate]="ftemplate"
 		cat_name[new_exp]="new_exp"
 		cat_name[begin_arg]="@@["@q]@>
 		cat_name[end_arg]=@q[@>"@@]"
@@ -2112,8 +2007,6 @@ interpreted by \.{GOWEAVE} before they are written to the output file.
 
 \yskip\hang |big_force| denotes a line break with additional vertical space;
 
-\yskip\hang |preproc_line| denotes that the line will be printed flush left;
-
 \yskip\hang |opt| denotes an optional line break (with the continuation
 line indented two ems with respect to the normal starting position)---this
 code is followed by an integer |n|, and the break will occur with penalty
@@ -2136,7 +2029,7 @@ comes from \GO/ text between \pb\ signs; |break_space| and |force| and
 \.{\\3}, \.{\\4}, \.{\\5}, \.{\\6}, \.{\\7}, \.{\\8}
 corresponding respectively to
 |indent|, |outdent|, |opt|, |backup|, |break_space|, |force|,
-|big_force| and |preproc_line|.
+|big_force|.
 However, a sequence of consecutive `\.\ ', |break_space|,
 |force|, and/or |big_force| tokens is first replaced by a single token
 (the maximum of the given ones).
@@ -2162,7 +2055,6 @@ backup = 0215 /* stick out one unit to the left (\.{\\4}) */
 break_space = 0216 /* optional break between statements (\.{\\5}) */
 force = 0217 /* forced break between statements (\.{\\6}) */
 big_force = 0220 /* forced break with additional space (\.{\\7}) */
-preproc_line = 0221 /* begin line without indentation (\.{\\8}) */
 @^high-bit character handling@>
 quoted_char = 0222
 				/* introduces a character token in the range |0200|--|0377| */
@@ -2196,12 +2088,8 @@ with discretionary breaks in between.
 \.{\v\v}&|binop|: \.{\\V}&yes\cr
 \.{++}&|unop|: \.{\\PP}&yes\cr
 \.{--}&|unop|: \.{\\MM}&yes\cr
-\.{->}&|binop|: \.{\\MG}&yes\cr
 \.{>>}&|binop|: \.{\\GG}&yes\cr
 \.{<<}&|binop|: \.{\\LL}&yes\cr
-\.{::}&|colcol|: \.{\\DC}&maybe\cr
-\.{.*}&|binop|: \.{\\PA}&yes\cr
-\.{->*}&|binop|: \.{\\MGA}&yes\cr
 \.{...}&|raw_int|: \.{\\,\\ldots\\,}&yes\cr
 \."string\."&|exp|: \.{\\.\{}string with special characters quoted\.\}&maybe\cr
 \.{@@=}string\.{@@>}&|exp|: \.{\\vb\{}string with special characters
@@ -2223,7 +2111,6 @@ with discretionary breaks in between.
 \.{\v}&|binop|: \.{\\OR}&yes\cr
 \.\^&|binop|: \.{\\XOR}&yes\cr
 \.\%&|binop|: \.{\\MOD}&yes\cr
-\.?&|question|: \.{\\?}&yes\cr
 \.!&|unop|: \.{\\R}&yes\cr
 \.\~&|unop|: \.{\\CM}&yes\cr
 \.\&&|raw_ubin|: \.{\\AND}&yes\cr
@@ -2236,21 +2123,16 @@ with discretionary breaks in between.
 \.,&|comma|: \.,&yes\cr
 \.;&|semi|: \.;&maybe\cr
 \.:&|colon|: \.:&no\cr
-\.\# (within line)&|ubinop|: \.{\\\#}&yes\cr
-\.\# (at beginning)&|lproc|:  |force| |preproc_line| \.{\\\#}&no\cr
-end of \.\# line&|rproc|:  |force|&no\cr
 identifier&|exp|: \.{\\\\\{}identifier with underlines and
 					   dollar signs quoted\.\}&maybe\cr
 \.{and}&|alfop|: \stars&yes\cr
 \.{and\_eq}&|alfop|: \stars&yes\cr
-\.{asm}&|sizeof_like|: \stars&maybe\cr
 \.{auto}&|int_like|: \stars&maybe\cr
 \.{bitand}&|alfop|: \stars&yes\cr
 \.{bitor}&|alfop|: \stars&yes\cr
 \.{bool}&|raw_int|: \stars&maybe\cr
 \.{break}&|case_like|: \stars&maybe\cr
 \.{case}&|case_like|: \stars&maybe\cr
-\.{catch}&|catch_like|: \stars&maybe\cr
 \.{char}&|raw_int|: \stars&maybe\cr
 \.{class}&|struct_like|: \stars&maybe\cr
 \.{clock\_t}&|raw_int|: \stars&maybe\cr
@@ -2259,11 +2141,7 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
 \.{const\_cast}&|raw_int|: \stars&maybe\cr
 \.{continue}&|case_like|: \stars&maybe\cr
 \.{default}&|case_like|: \stars&maybe\cr
-\.{define}&|define_like|: \stars&maybe\cr
-\.{defined}&|sizeof_like|: \stars&maybe\cr
-\.{delete}&|delete_like|: \stars&maybe\cr
 \.{div\_t}&|raw_int|: \stars&maybe\cr
-\.{do}&|do_like|: \stars&maybe\cr
 \.{double}&|raw_int|: \stars&maybe\cr
 \.{dynamic\_cast}&|raw_int|: \stars&maybe\cr
 \.{elif}&|if_like|: \stars&maybe\cr
@@ -2290,7 +2168,6 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
 \.{ldiv\_t}&|raw_int|: \stars&maybe\cr
 \.{line}&|if_like|: \stars&maybe\cr
 \.{long}&|raw_int|: \stars&maybe\cr
-\.{make\_pair}&|ftemplate|: \.{\\\\\{make\\\_pair\}}&maybe\cr
 \.{mutable}&|int_like|: \stars&maybe\cr
 \.{namespace}&|struct_like|: \stars&maybe\cr
 \.{new}&|new_like|: \stars&maybe\cr
@@ -2298,14 +2175,10 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
 \.{not\_eq}&|alfop|: \stars&yes\cr
 \.{NULL}&|exp|: \.{\\NULL}&yes\cr
 \.{offsetof}&|raw_int|: \stars&maybe\cr
-\.{operator}&|operator_like|: \stars&maybe\cr
 \.{or}&|alfop|: \stars&yes\cr
 \.{or\_eq}&|alfop|: \stars&yes\cr
 \.{pragma}&|if_like|: \stars&maybe\cr
-\.{private}&|public_like|: \stars&maybe\cr
-\.{protected}&|public_like|: \stars&maybe\cr
 \.{ptrdiff\_t}&|raw_int|: \stars&maybe\cr
-\.{public}&|public_like|: \stars&maybe\cr
 \.{register}&|int_like|: \stars&maybe\cr
 \.{reinterpret\_cast}&|raw_int|: \stars&maybe\cr
 \.{return}&|case_like|: \stars&maybe\cr
@@ -2313,12 +2186,10 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
 \.{sig\_atomic\_t}&|raw_int|: \stars&maybe\cr
 \.{signed}&|raw_int|: \stars&maybe\cr
 \.{size\_t}&|raw_int|: \stars&maybe\cr
-\.{sizeof}&|sizeof_like|: \stars&maybe\cr
 \.{static}&|int_like|: \stars&maybe\cr
 \.{static\_cast}&|raw_int|: \stars&maybe\cr
 \.{struct}&|struct_like|: \stars&maybe\cr
 \.{switch}&|for_like|: \stars&maybe\cr
-\.{template}&|template_like|: \stars&maybe\cr
 \.{TeX}&|exp|: \.{\\TeX}&yes\cr
 \.{this}&|exp|: \.{\\this}&yes\cr
 \.{throw}&|case_like|: \stars&maybe\cr
@@ -2608,18 +2479,14 @@ code needs to be provided with a proper environment.
 @<Match a production at |pp|, or increase |pp| if there is no match@>= {
 	/* not a production with left side length 1 */	
 	if scrap_info[pp+1].cat==end_arg && 
-		scrap_info[pp].cat!=public_like && 
 		scrap_info[pp].cat!=semi && 
 		scrap_info[pp].cat!=prelangle && 
 		scrap_info[pp].cat!=prerangle && 
-		scrap_info[pp].cat!=template_like && 
 		scrap_info[pp].cat!=new_like && 
 		scrap_info[pp].cat!=new_exp && 
-		scrap_info[pp].cat!=ftemplate && 
 		scrap_info[pp].cat!=raw_ubin && 
 		scrap_info[pp].cat!=const_like && 
-		scrap_info[pp].cat!=raw_int && 
-		scrap_info[pp].cat!=operator_like {
+		scrap_info[pp].cat!=raw_int {
 		if scrap_info[pp].cat==begin_arg { 
 			squash(pp,2,exp,-2,124) 
 		} else { 
@@ -2639,10 +2506,7 @@ code needs to be provided with a proper environment.
 			case ubinop: @<Cases for |ubinop|@>
 			case binop: @<Cases for |binop|@>
 			case cast: @<Cases for |cast|@>
-			case sizeof_like: @<Cases for |sizeof_like|@>
 			case int_like: @<Cases for |int_like|@>
-			case public_like: @<Cases for |public_like|@>
-			case colcol: @<Cases for |colcol|@>
 			case decl_head: @<Cases for |decl_head|@>
 			case decl: @<Cases for |decl|@>
 			case base: @<Cases for |base|@>
@@ -2656,30 +2520,22 @@ code needs to be provided with a proper environment.
 			case else_head: @<Cases for |else_head|@>
 			case if_clause: @<Cases for |if_clause|@>
 			case if_head: @<Cases for |if_head|@>
-			case do_like: @<Cases for |do_like|@>
 			case case_like: @<Cases for |case_like|@>
-			case catch_like: @<Cases for |catch_like|@>
 			case tag: @<Cases for |tag|@>
 			case stmt: @<Cases for |stmt|@>
 			case semi: @<Cases for |semi|@>
-			case lproc: @<Cases for |lproc|@>
 			case section_scrap: @<Cases for |section_scrap|@>
 			case insert: @<Cases for |insert|@>
 			case prelangle: @<Cases for |prelangle|@>
 			case prerangle: @<Cases for |prerangle|@>
 			case langle: @<Cases for |langle|@>
-			case template_like: @<Cases for |template_like|@>
 			case new_like: @<Cases for |new_like|@>
 			case new_exp: @<Cases for |new_exp|@>
-			case ftemplate: @<Cases for |ftemplate|@>
 			case for_like: @<Cases for |for_like|@>
 			case raw_ubin: @<Cases for |raw_ubin|@>
 			case const_like: @<Cases for |const_like|@>
 			case raw_int: @<Cases for |raw_int|@>
-			case operator_like: @<Cases for |operator_like|@>
 			case typedef_like: @<Cases for |typedef_like|@>
-			case delete_like: @<Cases for |delete_like|@>
-			case question: @<Cases for |question|@>
 		}
 	}
 	pp++ /* if no match was found, we move to the right */
@@ -2699,16 +2555,9 @@ If the first identifier found is a keyword like `\&{case}', we
 return the special value |case_found|; this prevents underlining
 of identifiers in case labels.
 
-If the first identifier is the keyword `\&{operator}', we give up;
-users who want to index definitions of overloaded \CPLUSPLUS/ operators
-should say, for example, `\.{@@!@@\^\\\&\{operator\} \$+\{=\}\$@@>}' (or,
-more properly alphebetized,
-`\.{@@!@@:operator+=\}\{\\\&\{operator\} \$+\{=\}\$@@>}').
-
 @<Constants@>=
-no_ident_found int32 = -3 /* distinct from any identifier token */
-case_found int32 = -2 /* likewise */
-operator_found int32 = -1 /* likewise */
+no_ident_found int32 = -2 /* distinct from any identifier token */
+case_found int32 = -1 /* likewise */
 
 @ @c
 func find_first_ident(p int32) int32 {
@@ -2718,9 +2567,6 @@ func find_first_ident(p int32) int32 {
 			case 2: /* |res_flag| */
 				if name_dir[r].ilk==case_like {
 					return case_found
-				}
-				if name_dir[r].ilk==operator_like { 
-					return operator_found
 				}
 				if name_dir[r].ilk!=raw_int {
 					break
@@ -2752,7 +2598,7 @@ the |for| loop below.
 /* make the first identifier in |scrap_info[p].trans_plus.Trans| like |int| */
 func make_reserved(p int32) {
 	tok_loc:=find_first_ident(scrap_info[p].trans_plus.Trans)/* pointer to |tok_value| */
-	if tok_loc<=operator_found {
+	if tok_loc<=case_found {
 		return /* this should not happen */
 	}
 	tok_value:=tok_mem[tok_loc] /* the name of this identifier, plus its flag*/
@@ -2786,7 +2632,7 @@ it has been swallowed up by an |exp|.
 /* underline the entry for the first identifier in |scrap_info[p].trans_plus.Trans| */
 func make_underlined(p int32) {
 	var tok_loc int32/* where the first identifier appears */
-	if tok_loc=find_first_ident(scrap_info[p].trans_plus.Trans); tok_loc<=operator_found {
+	if tok_loc=find_first_ident(scrap_info[p].trans_plus.Trans); tok_loc<=case_found {
 		return /* this happens, for example, in |case found:| */
 	}
 	xref_switch=def_flag
@@ -2987,16 +2833,6 @@ if scrap_info[pp+1].cat==lpar {
 	squash(pp,1,exp,-2,22)
 }
 
-@ @<Cases for |sizeof_like|@>=
-if scrap_info[pp+1].cat==cast {
-	squash(pp,2,exp,-2,23)
-} else if scrap_info[pp+1].cat==exp {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,exp,-2,24)
-}
-
 @ @<Cases for |int_like|@>=
 if scrap_info[pp+1].cat==int_like || 
 	scrap_info[pp+1].cat==struct_like {
@@ -3017,22 +2853,6 @@ if scrap_info[pp+1].cat==int_like ||
 } else if scrap_info[pp+1].cat==semi || 
 		scrap_info[pp+1].cat==binop {
 	squash(pp,1,decl_head,0,28)
-}
-
-@ @<Cases for |public_like|@>=
-if scrap_info[pp+1].cat==colon {
-	squash(pp,2,tag,-1,29)
-} else {
-	squash(pp,1,int_like,-2,30)
-}
-
-@ @<Cases for |colcol|@>=
-if scrap_info[pp+1].cat==exp || 
-	scrap_info[pp+1].cat==int_like {
-	app(qualifier)
-	squash(pp,2,scrap_info[pp+1].cat,-2,31)
-}@+else if scrap_info[pp+1].cat==colcol {
-		squash(pp,2,colcol,-1,32)
 }
 
 @ @<Cases for |decl_head|@>=
@@ -3301,22 +3121,6 @@ if scrap_info[pp+1].cat==stmt ||
 	}
 }
 
-@ @<Cases for |do_like|@>=
-if scrap_info[pp+1].cat==stmt && 
-	scrap_info[pp+2].cat==else_like && 
-	scrap_info[pp+3].cat==semi {
-	big_app1(pp)
-	big_app(break_space)
-	app(noop)
-	big_app(cancel)
-	big_app1(pp+1)
-	big_app(cancel)
-	app(noop)
-	big_app(break_space)
-	big_app2(pp+2)
-	reduce(pp,4,stmt,-1,69)
-}
-
 @ @<Cases for |case_like|@>=
 if scrap_info[pp+1].cat==semi {
 	squash(pp,2,stmt,-1,70)
@@ -3327,15 +3131,6 @@ if scrap_info[pp+1].cat==semi {
 	big_app(' ')
 	big_app1(pp+1)
 	reduce(pp,2,exp,-2,72)
-}
-
-@ @<Cases for |catch_like|@>=
-if scrap_info[pp+1].cat==cast || 
-	scrap_info[pp+1].cat==exp {
-	big_app2(pp)
-	big_app(indent)
-	big_app(indent)
-	reduce(pp,2,fn_decl,0,73)
 }
 
 @ @<Cases for |tag|@>=
@@ -3380,40 +3175,6 @@ if scrap_info[pp+1].cat==stmt ||
 big_app(' ')
 big_app1(pp)
 reduce(pp,1,stmt,-1,77)
-
-@ @<Cases for |lproc|@>=
-if scrap_info[pp+1].cat==define_like {
-	make_underlined(pp+2)
-}
-if scrap_info[pp+1].cat==else_like || 
-	scrap_info[pp+1].cat==if_like ||
-	scrap_info[pp+1].cat==define_like {
-	squash(pp,2,lproc,0,78)
-} else if scrap_info[pp+1].cat==rproc {
-	app(inserted)
-	big_app2(pp)
-	reduce(pp,2,insert,-1,79)
-} else if scrap_info[pp+1].cat==exp || 
-		scrap_info[pp+1].cat==function {
-	if scrap_info[pp+2].cat==rproc {
-		app(inserted)
-		big_app1(pp)
-		big_app(' ')
-		big_app2(pp+1)
-		reduce(pp,3,insert,-1,80)
-	} else if scrap_info[pp+2].cat==exp && 
-				scrap_info[pp+3].cat==rproc && 
-				scrap_info[pp+1].cat==exp {
-		app(inserted)
-		big_app1(pp)
-		big_app(' ')
-		big_app1(pp+1)
-		app_str(" \\5")
-@.\\5@>
-		big_app2(pp+2)
-		reduce(pp,4,insert,-1,80)
-	}
-}
 
 @ @<Cases for |section_scrap|@>=
 if scrap_info[pp+1].cat==semi {
@@ -3462,20 +3223,6 @@ if scrap_info[pp+1].cat==prerangle {
 	}
 }
 
-@ @<Cases for |template_like|@>=
-if scrap_info[pp+1].cat==exp && 
-	scrap_info[pp+2].cat==prelangle {
-	squash(pp+2,1,langle,2,89)
-} else if scrap_info[pp+1].cat==exp || 
-		scrap_info[pp+1].cat==raw_int {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,scrap_info[pp+1].cat,-2,90)
-}@+ else {
-	squash(pp,1,raw_int,0,91)
-}
-
 @ @<Cases for |new_like|@>=
 if scrap_info[pp+1].cat==lpar && 
 	scrap_info[pp+2].cat==exp && 
@@ -3519,16 +3266,8 @@ if scrap_info[pp+1].cat==int_like ||
 	big_app(' ')
 	reduce(pp,1,exp,-2,98)
 } else if scrap_info[pp+1].cat!=raw_int && 
-		scrap_info[pp+1].cat!=struct_like && 
-		scrap_info[pp+1].cat!=colcol {
+		scrap_info[pp+1].cat!=struct_like {
 	squash(pp,1,exp,-2,99)
-}
-
-@ @<Cases for |ftemplate|@>=
-if scrap_info[pp+1].cat==prelangle {
-	squash(pp+1,1,langle,1,100)
-} else {
-	squash(pp,1,exp,-2,101) 
 }
 
 @ @<Cases for |for_like|@>=
@@ -3555,38 +3294,12 @@ squash(pp,1,int_like,-2,105)
 @ @<Cases for |raw_int|@>=
 if scrap_info[pp+1].cat==prelangle { 
 	squash(pp+1,1,langle,1,106)
-} else if scrap_info[pp+1].cat==colcol {
-	squash(pp,2,colcol,-1,107)
 } else if scrap_info[pp+1].cat==cast {
 	squash(pp,2,raw_int,0,108)
 } else if scrap_info[pp+1].cat==lpar {
 	squash(pp,1,exp,-2,109)
 } else if scrap_info[pp+1].cat!=langle {
 	squash(pp,1,int_like,-3,110)
-}
-
-@ @<Cases for |operator_like|@>=
-if scrap_info[pp+1].cat==binop || 
-		scrap_info[pp+1].cat==unop || 
-		scrap_info[pp+1].cat==ubinop {
-	if scrap_info[pp+2].cat==binop {
-		break
-	}
-	big_app1(pp)
-	big_app('{')
-	big_app1(pp+1)
-	big_app('}')
-	reduce(pp,2,exp,-2,111)
-} else if scrap_info[pp+1].cat==new_like || 
-		scrap_info[pp+1].cat==delete_like {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,exp,-2,112);
-} else if scrap_info[pp+1].cat==comma {
-	squash(pp,2,exp,-2,113)
-} else if scrap_info[pp+1].cat!=raw_ubin {
-	squash(pp,1,new_exp,0,114)
 }
 
 @ @<Cases for |typedef_like|@>=
@@ -3624,30 +3337,6 @@ if (scrap_info[pp+1].cat==int_like ||
 	big_app('}')
 	big_app1(pp+2)
 	reduce(pp+1,2,scrap_info[pp+2].cat,0,120)
-}
-
-@ @<Cases for |delete_like|@>=
-if scrap_info[pp+1].cat==lpar && 
-	scrap_info[pp+2].cat==rpar {
-	big_app2(pp)
-	app('\\')
-	app(',')
-	big_app1(pp+2)
-@.\\,@>
-	reduce(pp,3,delete_like,0,121)
-} else if scrap_info[pp+1].cat==exp {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,exp,-2,122)
-}
-
-@ @<Cases for |question|@>=
-if scrap_info[pp+1].cat==exp && 
-	(scrap_info[pp+2].cat==colon || 
-	scrap_info[pp+2].cat==base) {
-	scrap_info[pp+2].mathness=5*yes_math /* this colon should be in math mode */
-	squash(pp,3,binop,-2,123)
 }
 
 @ Now here's the |reduce| procedure used in our code for productions.
@@ -3899,7 +3588,7 @@ switch (next_control) {
 		app(section_flag+cur_section)
 		app_scrap(section_scrap,maybe_math)
 		app_scrap(exp,yes_math)
-	case str, constant,verbatim:
+	case str,constant,verbatim:
 		@<Append a string or constant@>
 	case identifier: 
 		app_cur_id(true)
@@ -3950,14 +3639,6 @@ switch (next_control) {
 		app_str("\\AND")
 		app_scrap(raw_ubin,yes_math)
 @.\\AND@>
-	case '?': 
-		app_str("\\?")
-		app_scrap(question,yes_math)
-@.\\?@>
-	case '#': 
-		app_str("\\#")
-		app_scrap(ubinop,yes_math)
-@.\\\#@>
 	case ignore, xref_roman, xref_wildcard, xref_typewriter, noop:
 		@+break;
 	case '(', '[': 
@@ -3995,15 +3676,6 @@ switch (next_control) {
 	case line_break: 
 		app(force)
 		app_scrap(insert,no_math)
-	case left_preproc: 
-		app(force)
-		app(preproc_line)
-		app_str("\\#")
-		app_scrap(lproc,no_math)
-@.\\\#@>
-	case right_preproc: 
-		app(force)
-		app_scrap(rproc,no_math)
 	case big_line_break: 
 		app(big_force)
 		app_scrap(insert,no_math)
@@ -4016,10 +3688,6 @@ switch (next_control) {
 		app_scrap(insert,no_math)
 	case pseudo_semi: 
 		app_scrap(semi,maybe_math)
-	case macro_arg_open: 
-		app_scrap(begin_arg,maybe_math)
-	case macro_arg_close: 
-		app_scrap(end_arg,maybe_math)
 	case join: 
 		app_str("\\J")
 		app_scrap(insert,no_math)
@@ -4169,9 +3837,6 @@ func app_cur_id(scrapping bool) {
 		app(id_flag+p)
 		if scrapping {
 			a1 := exp
-			if name_dir[p].ilk==func_template {
-				a1 = ftemplate
-			}
 			a2 := maybe_math
 			if name_dir[p].ilk==custom {
 				a2 = yes_math
@@ -4514,7 +4179,7 @@ reswitch:
 				@<Output saved |indent| or |outdent| tokens@>
 				goto reswitch
 			case indent, outdent, opt, backup, break_space,
-				force, big_force, preproc_line: 
+				force, big_force: 
 					@<Output a control,
 				look ahead in case of line breaks, possibly |goto reswitch|@>
 			case quoted_char: 
@@ -4584,7 +4249,7 @@ break
 except when we are outputting control tokens.
 
 @<Output a control...@>=
-if a<break_space || a==preproc_line {
+if a<break_space {
 	if cur_state.mode_field==outer {
 		out('\\')
 		out(a-cancel+'0')
@@ -4937,7 +4602,7 @@ for true {
 			}
 		case thin_space,math_break,ord,
 		line_break, big_line_break, no_line_break, join,
-		pseudo_semi, macro_arg_open, macro_arg_close:
+		pseudo_semi:
 				err_print("! You can't do that in TeX text")
 @.You can't do that...@>
 	}
@@ -5480,7 +5145,7 @@ for sort_ptr>0 {
 
 @ @<Output the name...@>=
 switch name_dir[cur_name].ilk {
-	case normal, func_template: 
+	case normal: 
 		if is_tiny(cur_name) {
 			out_str("\\|")
 @.\\|@>
