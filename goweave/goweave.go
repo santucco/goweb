@@ -172,11 +172,11 @@ qualifier= 0225
 /*:188*//*194:*/
 //line goweave.w:2258
 
-id_flag rune= 10240
+id_flag rune= unicode.UpperLower
 res_flag rune= 2*id_flag
-section_flag rune= 3*id_flag
-tok_flag rune= 4*id_flag
-inner_tok_flag rune= 5*id_flag
+section_flag rune= 4*id_flag
+tok_flag rune= 6*id_flag
+inner_tok_flag rune= 8*id_flag
 
 /*:194*//*195:*/
 //line goweave.w:2335
@@ -3404,7 +3404,7 @@ break
 fallthrough
 case 1:
 return j
-case 4,5:
+case 6,8:
 if q:= find_first_ident(r);q!=no_ident_found{
 return q
 }
@@ -4984,12 +4984,12 @@ cur_name= a%id_flag
 switch a/id_flag{
 case 2:
 return res_word
-case 3:
-return section_code
 case 4:
+return section_code
+case 6:
 push_level(a%id_flag)
 goto restart
-case 5:
+case 8:
 push_level(a%id_flag)
 cur_state.mode_field= inner
 goto restart

@@ -2256,11 +2256,11 @@ items for \TEX/ output.
 translated without line-break controls.
 
 @<Constants@>=
-id_flag rune = 10240 /* signifies an identifier */
+id_flag rune = unicode.UpperLower /* signifies an identifier */
 res_flag rune = 2*id_flag /* signifies a reserved word */
-section_flag rune = 3*id_flag /* signifies a section name */
-tok_flag rune = 4*id_flag /* signifies a token list */
-inner_tok_flag rune = 5*id_flag /* signifies a token list in `\pb' */
+section_flag rune = 4*id_flag /* signifies a section name */
+tok_flag rune = 6*id_flag /* signifies a token list */
+inner_tok_flag rune = 8*id_flag /* signifies a token list in `\pb' */
 
 @ The production rules listed above are embedded directly into \.{GOWEAVE},
 since it is easier to do this than to write an interpretive system
@@ -2501,7 +2501,7 @@ func find_first_ident(p int32) int32 {
 				fallthrough
 			case 1: 
 				return j
-			case 4, 5: /* |tok_flag| or |inner_tok_flag| */
+			case 6, 8: /* |tok_flag| or |inner_tok_flag| */
 				if q:=find_first_ident(r); q!=no_ident_found {
 					return q
 				}
@@ -3999,12 +3999,12 @@ restart:
 		switch a / id_flag {
 			case 2: 
 				return res_word /* |a==res_flag+cur_name| */
-			case 3: 
-				return section_code /* |a==section_flag+cur_name| */
 			case 4: 
+				return section_code /* |a==section_flag+cur_name| */
+			case 6: 
 				push_level(a % id_flag)
 				goto restart /* |a==tok_flag+cur_name| */
-			case 5: 
+			case 8: 
 				push_level(a % id_flag)
 				cur_state.mode_field=inner
 				goto restart
