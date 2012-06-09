@@ -2849,7 +2849,7 @@ break
 }
 fallthrough
 default:
-err_print("! Double @ should be used in limbo");
+err_print("! Double @ should be used in limbo")
 
 }
 }

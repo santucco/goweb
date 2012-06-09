@@ -1622,7 +1622,7 @@ func skip_limbo() {
 					}
 					fallthrough
 				default: 
-					err_print("! Double @@ should be used in limbo");
+					err_print("! Double @@ should be used in limbo")
 					@.Double @@ should be used...@>
 			}
 		}

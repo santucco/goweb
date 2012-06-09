@@ -104,9 +104,9 @@ func main () {
 handle \TEX/, so they should be sufficient for most applications of \.{GOWEAVE}.
 
 @<Constants@>=
-max_names = 4000 /* number of identifiers, strings, section names;
+max_names = 4000 /* number of identifiers, strings, section names
 	must be less than 10240; used in |"common.w"| */
-line_length = 80 /* lines of \TEX/ output have at most this many characters;
+line_length = 80 /* lines of \TEX/ output have at most this many characters
 	should be less than 256 */
 max_scraps = 2000 /* number of tokens in \GO/ texts being parsed */
 stack_size = 400 /* number of simultaneous output levels */
@@ -935,7 +935,7 @@ delimiters if they are protected by a backslash.
 			if !get_line()  {
 				err_print("! Input ended in middle of string")
 				loc=0
-				break;
+				break
 @.Input ended in middle of string@>
 			}
 		}
@@ -1353,12 +1353,12 @@ definition is found in limbo.
 @<Process simple format in limbo@>=
 {
 	if get_next()!=identifier {
-		err_print("! Missing left identifier of @@s");
+		err_print("! Missing left identifier of @@s")
 @.Missing left identifier...@>
 	} else {
 		lhs=id_lookup(id,normal)
 		if get_next()!=identifier {
-			err_print("! Missing right identifier of @@s");
+			err_print("! Missing right identifier of @@s")
 @.Missing right identifier...@>
 		} else {
 			rhs=id_lookup(id,normal)
@@ -2613,7 +2613,7 @@ to insert the new cross-reference not at the beginning of the list
 
 @ Now comes the code that tries to match each production starting
 with a particular type of scrap. Whenever a match is discovered,
-the |squash| or |reduce| macro will cause the appropriate action
+the |squash| or |reduce| funcs will cause the appropriate action
 to be performed, followed by |goto found|.
 
 @<Cases for |exp|@>=
@@ -2848,7 +2848,7 @@ if scrap_info[pp+1].cat==int_like ||
 		big_app(' ')
 		big_app1(pp+1)
 		big_app(' ')
-		big_app1(pp+2);
+		big_app1(pp+2)
 		reduce(pp,3,lbrace,-2,43)
 	}
 }
@@ -2967,7 +2967,7 @@ if scrap_info[pp+1].cat==exp {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
-	reduce(pp,2,if_clause,0,57);
+	reduce(pp,2,if_clause,0,57)
 }
 
 @ @<Cases for |else_like|@>=
@@ -2992,7 +2992,7 @@ if scrap_info[pp+1].cat==stmt ||
 	big_app(force)
 	big_app1(pp)
 	big_app(break_space)
-	app(noop);
+	app(noop)
 	big_app(cancel)
 	big_app1(pp+1)
 	big_app(force)
@@ -3453,7 +3453,7 @@ where appropriate.
 
 @ @<If semi-tracing, show the irreducible scraps@>=
 if lo_ptr>scrap_base && tracing==1 {
-	fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count);
+	fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count)
 @.Irreducible scrap sequence...@>
 	mark_harmless()
 	for j:=scrap_base; j<=lo_ptr; j++ {
@@ -3567,7 +3567,7 @@ switch (next_control) {
 		app_scrap(raw_ubin,yes_math)
 @.\\AND@>
 	case ignore, xref_roman, xref_wildcard, xref_typewriter, noop:
-		@+break;
+		@+break
 	case '(', '[': 
 		app(next_control)
 		app_scrap(lpar,maybe_math)
@@ -3672,7 +3672,7 @@ case lt_lt:
 @.\\LL@>
 case dot_dot_dot: 
 	app_str("\\,\\ldots\\,")
-	@+app_scrap(raw_int,yes_math);
+	@+app_scrap(raw_int,yes_math)
 @.\\,@>
 @.\\ldots@>
 
@@ -3826,7 +3826,7 @@ func outer_parse() {
 		if next_control!=begin_comment && next_control!=begin_short_comment {
 			Go_parse(ignore)
 		} else {
-			is_long_comment:=(next_control==begin_comment);
+			is_long_comment:=(next_control==begin_comment)
 			app(cancel)
 			app(inserted)
 			if is_long_comment {
@@ -4367,7 +4367,7 @@ equals the delimiter that began the string being copied.
 var delim rune
 for true {
 	if i>=len(scratch) {
-		fmt.Print("\n! Go text in section name didn't end: <");
+		fmt.Print("\n! Go text in section name didn't end: <")
 @.Go text...didn't end@>
 		print_section_name(cur_section_name)
 		fmt.Print("> ")
@@ -4844,7 +4844,7 @@ func phase_three() {
 @.\\fin@>
 		if f, err := os.OpenFile(scn_file_name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666); 
 			err != nil {
-			fatal("! Cannot open section file ",scn_file_name);
+			fatal("! Cannot open section file ",scn_file_name)
 @.Cannot open section file@>
 		} else {
 			scn_file = f
@@ -5093,17 +5093,17 @@ switch name_dir[cur_name].ilk {
 			}
 		}
 	case wildcard: 
-		out_str("\\9");
+		out_str("\\9")
 		out_name(cur_name,false)
 		goto name_done
 @.\\9@>
 	case typewriter: 
-		out_str("\\.");
+		out_str("\\.")
 @.\\.@>
 		fallthrough 
 	case roman:
 		out_name(cur_name,false)
-		goto name_done;
+		goto name_done
 	case custom: {
 		out_str("$\\")
 		for _, v := range name_dir[cur_name].name {
@@ -5201,7 +5201,7 @@ rather than an |int|, we use \.{\%ld} to print these quantities.
 
 @c
 func print_stats() {
-	fmt.Println("\nMemory usage statistics:\n");
+	fmt.Println("\nMemory usage statistics:\n")
 @.Memory usage statistics:@>
 	fmt.Println("%v names", len(name_dir))
 	fmt.Println("Parsing:")
