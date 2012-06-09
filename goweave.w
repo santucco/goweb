@@ -160,7 +160,7 @@ for_like = 45 /* \&{for}, \&{switch} */
 if_like = 47 /* \&{if} */
 raw_ubin = 49 /* `\.\&' or `\.*' when looking for \&{const} following */
 const_like = 50 /* \&{const} */
-raw_int = 51 /* \&{int}, \&{char}, \dots; also structure and class names  */
+raw_int = 51 /* \&{int}, \&{byte}, \dots; also structure and class names  */
 int_like = 52 /* same, when not followed by left parenthesis or \DC\ */
 case_like = 53 /* \&{case}, \&{return}, \&{goto}, \&{break}, \&{continue} */
 struct_like = 55 /* \&{struct} */
@@ -371,87 +371,89 @@ are defined in header files of the ISO Standard \GO/ Library.)
 @<Store all the reserved words@>=
 id_lookup([]rune("and"),alfop)
 id_lookup([]rune("and_eq"),alfop)
-id_lookup([]rune("auto"),int_like)
 id_lookup([]rune("bitand"),alfop)
 id_lookup([]rune("bitor"),alfop)
-id_lookup([]rune("bool"),raw_int)
+id_lookup([]rune("compl"),alfop)
+id_lookup([]rune("line"),if_like)
+id_lookup([]rune("not"),alfop)
+id_lookup([]rune("not_eq"),alfop)
+id_lookup([]rune("or"),alfop)
+id_lookup([]rune("or_eq"),alfop)
+id_lookup([]rune("xor"),alfop)
+id_lookup([]rune("xor_eq"),alfop)
+// reserved words
 id_lookup([]rune("break"),case_like)
 id_lookup([]rune("case"),case_like)
-id_lookup([]rune("char"),raw_int)
-id_lookup([]rune("class"),struct_like)
-id_lookup([]rune("clock_t"),raw_int)
-id_lookup([]rune("compl"),alfop)
+id_lookup([]rune("chan"),raw_int)
 id_lookup([]rune("const"),const_like)
 id_lookup([]rune("continue"),case_like)
 id_lookup([]rune("default"),case_like)
-id_lookup([]rune("div_t"),raw_int)
-id_lookup([]rune("double"),raw_int)
-id_lookup([]rune("elif"),if_like)
+id_lookup([]rune("defer"),if_like)
 id_lookup([]rune("else"),else_like)
-id_lookup([]rune("endif"),if_like)
-id_lookup([]rune("enum"),struct_like)
-id_lookup([]rune("error"),if_like)
-id_lookup([]rune("explicit"),int_like)
-id_lookup([]rune("export"),int_like)
-id_lookup([]rune("extern"),int_like)
-id_lookup([]rune("FILE"),raw_int)
-id_lookup([]rune("float"),raw_int)
+id_lookup([]rune("fallthrough"),case_like)
 id_lookup([]rune("for"),for_like)
-id_lookup([]rune("fpos_t"),raw_int)
-id_lookup([]rune("friend"),int_like)
+id_lookup([]rune("func"),fn_decl)
+id_lookup([]rune("go"),if_like)
 id_lookup([]rune("goto"),case_like)
 id_lookup([]rune("if"),if_like)
-id_lookup([]rune("ifdef"),if_like)
-id_lookup([]rune("ifndef"),if_like)
-id_lookup([]rune("include"),if_like)
-id_lookup([]rune("inline"),int_like)
-id_lookup([]rune("int"),raw_int)
-id_lookup([]rune("jmp_buf"),raw_int)
-id_lookup([]rune("ldiv_t"),raw_int)
-id_lookup([]rune("line"),if_like)
-id_lookup([]rune("long"),raw_int)
-id_lookup([]rune("mutable"),int_like)
-id_lookup([]rune("namespace"),struct_like)
-id_lookup([]rune("new"),new_like)
-id_lookup([]rune("not"),alfop)
-id_lookup([]rune("not_eq"),alfop)
-id_lookup([]rune("NULL"),custom)
-id_lookup([]rune("offsetof"),raw_int)
-id_lookup([]rune("or"),alfop)
-id_lookup([]rune("or_eq"),alfop)
-id_lookup([]rune("pragma"),if_like)
-id_lookup([]rune("ptrdiff_t"),raw_int)
-id_lookup([]rune("register"),int_like)
-id_lookup([]rune("reinterpret_cast"),raw_int)
+id_lookup([]rune("import"),if_like)
+id_lookup([]rune("interface"),struct_like)
+id_lookup([]rune("map"),raw_int)
+id_lookup([]rune("package"),custom)
+id_lookup([]rune("range"),for_like)
 id_lookup([]rune("return"),case_like)
-id_lookup([]rune("short"),raw_int)
-id_lookup([]rune("sig_atomic_t"),raw_int)
-id_lookup([]rune("signed"),raw_int)
-id_lookup([]rune("size_t"),raw_int)
-id_lookup([]rune("static"),int_like)
-id_lookup([]rune("static_cast"),raw_int)
+id_lookup([]rune("select"),for_like)
 id_lookup([]rune("struct"),struct_like)
 id_lookup([]rune("switch"),for_like)
-id_lookup([]rune("this"),custom)
-id_lookup([]rune("throw"),case_like)
-id_lookup([]rune("time_t"),raw_int)
-id_lookup([]rune("try"),else_like)
-id_lookup([]rune("typedef"),typedef_like)
-id_lookup([]rune("typeid"),raw_int)
-id_lookup([]rune("typename"),struct_like)
-id_lookup([]rune("undef"),if_like)
-id_lookup([]rune("union"),struct_like)
-id_lookup([]rune("unsigned"),raw_int)
-id_lookup([]rune("using"),int_like)
-id_lookup([]rune("va_dcl"),decl) /* Berkeley's variable-arg-list convention */
-id_lookup([]rune("va_list"),raw_int) /* ditto */
-id_lookup([]rune("virtual"),int_like)
-id_lookup([]rune("void"),raw_int)
-id_lookup([]rune("volatile"),const_like)
-id_lookup([]rune("wchar_t"),raw_int)
-id_lookup([]rune("while"),for_like)
-id_lookup([]rune("xor"),alfop)
-id_lookup([]rune("xor_eq"),alfop)
+id_lookup([]rune("type"),typedef_like)
+id_lookup([]rune("var"),const_like)
+
+// types
+id_lookup([]rune("bool"),raw_int) 
+id_lookup([]rune("byte"),raw_int)
+id_lookup([]rune("complex64"),raw_int) 
+id_lookup([]rune("complex128"),raw_int) 
+id_lookup([]rune("error"),raw_int) 
+id_lookup([]rune("float32"),raw_int) 
+id_lookup([]rune("float64"),raw_int)
+id_lookup([]rune("int"),raw_int)
+id_lookup([]rune("int8"),raw_int)
+id_lookup([]rune("int16"),raw_int)
+id_lookup([]rune("int32"),raw_int)
+id_lookup([]rune("int64"),raw_int)
+id_lookup([]rune("rune"),raw_int)
+id_lookup([]rune("string"),raw_int)
+id_lookup([]rune("uint"),raw_int)
+id_lookup([]rune("uint8"),raw_int)
+id_lookup([]rune("uint16"),raw_int)
+id_lookup([]rune("uint32"),raw_int)
+id_lookup([]rune("uint64"),raw_int)
+id_lookup([]rune("uintptr"),raw_int)
+
+// constants
+id_lookup([]rune("true"),raw_int)
+id_lookup([]rune("false"),raw_int)
+id_lookup([]rune("iota"),raw_int)
+
+// zero value
+id_lookup([]rune("nil"),custom)
+
+// functions
+id_lookup([]rune("append"),new_like)
+id_lookup([]rune("cap"),new_like)
+id_lookup([]rune("close"),new_like)
+id_lookup([]rune("complex"),new_like)
+id_lookup([]rune("copy"),new_like)
+id_lookup([]rune("delete"),new_like)
+id_lookup([]rune("imag"),new_like)
+id_lookup([]rune("len"),new_like)
+id_lookup([]rune("make"),new_like)
+id_lookup([]rune("new"),new_like)
+id_lookup([]rune("panic"),new_like)
+id_lookup([]rune("print"),new_like)
+id_lookup([]rune("println"),new_like)
+id_lookup([]rune("real"),new_like)
+id_lookup([]rune("recover"),new_like)
 res_wd_end=int32(len(name_dir))
 id_lookup([]rune("TeX"),custom)
 
@@ -469,7 +471,7 @@ the line of input currently being studied.
 into a numeric code designed to simplify \.{GOWEAVE}'s logic; for example,
 larger numbers are given to the control codes that denote more significant
 milestones, and the code of |new_section| should be the largest of
-all. Some of these numeric control codes take the place of |char|
+all. Some of these numeric control codes take the place of |rune|
 control codes that will not otherwise appear in the output of the
 scanning routines.
 @^ASCII code dependencies@>
@@ -575,7 +577,7 @@ func skip_limbo() {
 			return
 		}
 		for loc < len(buffer) && buffer[loc]!='@@' {
-			loc++ /* look for '@@', then skip two chars */
+			loc++ /* look for '@@', then skip two symbols */
 		}
 		l := loc
 		loc++
@@ -1932,8 +1934,6 @@ insert rune = 37 /* a scrap that gets combined with its neighbor */
 section_scrap rune = 38 /* section name */
 dead rune = 39 /* scrap that won't combine */
 new_exp rune = 60 /* \&{new} and a following type identifier */
-begin_arg rune = 61 /* \.{@@[} */
-end_arg rune = 62 /* \.{@@]} */
 
 @ @<Glo...@>=
 var cat_name[256]string
@@ -1985,8 +1985,6 @@ var cat_name[256]string
 		cat_name[struct_like]="struct"
 		cat_name[typedef_like]="typedef"
 		cat_name[new_exp]="new_exp"
-		cat_name[begin_arg]="@@["@q]@>
-		cat_name[end_arg]=@q[@>"@@]"
 		cat_name[0]="zero"
 
 @ This code allows \.{GOWEAVE} to display its parsing steps.
@@ -2133,82 +2131,30 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
 \.{bool}&|raw_int|: \stars&maybe\cr
 \.{break}&|case_like|: \stars&maybe\cr
 \.{case}&|case_like|: \stars&maybe\cr
-\.{char}&|raw_int|: \stars&maybe\cr
-\.{class}&|struct_like|: \stars&maybe\cr
-\.{clock\_t}&|raw_int|: \stars&maybe\cr
 \.{compl}&|alfop|: \stars&yes\cr
 \.{const}&|const_like|: \stars&maybe\cr
-\.{const\_cast}&|raw_int|: \stars&maybe\cr
 \.{continue}&|case_like|: \stars&maybe\cr
 \.{default}&|case_like|: \stars&maybe\cr
-\.{div\_t}&|raw_int|: \stars&maybe\cr
-\.{double}&|raw_int|: \stars&maybe\cr
-\.{dynamic\_cast}&|raw_int|: \stars&maybe\cr
-\.{elif}&|if_like|: \stars&maybe\cr
 \.{else}&|else_like|: \stars&maybe\cr
-\.{endif}&|if_like|: \stars&maybe\cr
-\.{enum}&|struct_like|: \stars&maybe\cr
 \.{error}&|if_like|: \stars&maybe\cr
-\.{explicit}&|int_like|: \stars&maybe\cr
-\.{export}&|int_like|: \stars&maybe\cr
-\.{extern}&|int_like|: \stars&maybe\cr
-\.{FILE}&|raw_int|: \stars&maybe\cr
 \.{float}&|raw_int|: \stars&maybe\cr
 \.{for}&|for_like|: \stars&maybe\cr
-\.{fpos\_t}&|raw_int|: \stars&maybe\cr
-\.{friend}&|int_like|: \stars&maybe\cr
 \.{goto}&|case_like|: \stars&maybe\cr
 \.{if}&|if_like|: \stars&maybe\cr
-\.{ifdef}&|if_like|: \stars&maybe\cr
-\.{ifndef}&|if_like|: \stars&maybe\cr
-\.{include}&|if_like|: \stars&maybe\cr
-\.{inline}&|int_like|: \stars&maybe\cr
 \.{int}&|raw_int|: \stars&maybe\cr
-\.{jmp\_buf}&|raw_int|: \stars&maybe\cr
-\.{ldiv\_t}&|raw_int|: \stars&maybe\cr
 \.{line}&|if_like|: \stars&maybe\cr
-\.{long}&|raw_int|: \stars&maybe\cr
-\.{mutable}&|int_like|: \stars&maybe\cr
-\.{namespace}&|struct_like|: \stars&maybe\cr
 \.{new}&|new_like|: \stars&maybe\cr
 \.{not}&|alfop|: \stars&yes\cr
 \.{not\_eq}&|alfop|: \stars&yes\cr
-\.{NULL}&|exp|: \.{\\NULL}&yes\cr
-\.{offsetof}&|raw_int|: \stars&maybe\cr
+\.{nil}&|exp|: \.{\\NULL}&yes\cr
 \.{or}&|alfop|: \stars&yes\cr
 \.{or\_eq}&|alfop|: \stars&yes\cr
-\.{pragma}&|if_like|: \stars&maybe\cr
-\.{ptrdiff\_t}&|raw_int|: \stars&maybe\cr
-\.{register}&|int_like|: \stars&maybe\cr
-\.{reinterpret\_cast}&|raw_int|: \stars&maybe\cr
 \.{return}&|case_like|: \stars&maybe\cr
 \.{short}&|raw_int|: \stars&maybe\cr
-\.{sig\_atomic\_t}&|raw_int|: \stars&maybe\cr
-\.{signed}&|raw_int|: \stars&maybe\cr
-\.{size\_t}&|raw_int|: \stars&maybe\cr
-\.{static}&|int_like|: \stars&maybe\cr
-\.{static\_cast}&|raw_int|: \stars&maybe\cr
 \.{struct}&|struct_like|: \stars&maybe\cr
 \.{switch}&|for_like|: \stars&maybe\cr
 \.{TeX}&|exp|: \.{\\TeX}&yes\cr
-\.{this}&|exp|: \.{\\this}&yes\cr
-\.{throw}&|case_like|: \stars&maybe\cr
-\.{time\_t}&|raw_int|: \stars&maybe\cr
-\.{try}&|else_like|: \stars&maybe\cr
-\.{typedef}&|typedef_like|: \stars&maybe\cr
-\.{typeid}&|raw_int|: \stars&maybe\cr
-\.{typename}&|struct_like|: \stars&maybe\cr
-\.{undef}&|if_like|: \stars&maybe\cr
-\.{union}&|struct_like|: \stars&maybe\cr
-\.{unsigned}&|raw_int|: \stars&maybe\cr
-\.{using}&|int_like|: \stars&maybe\cr
-\.{va\_dcl}&|decl|: \stars&maybe\cr
-\.{va\_list}&|raw_int|: \stars&maybe\cr
-\.{virtual}&|int_like|: \stars&maybe\cr
-\.{void}&|raw_int|: \stars&maybe\cr
-\.{volatile}&|const_like|: \stars&maybe\cr
-\.{wchar\_t}&|raw_int|: \stars&maybe\cr
-\.{while}&|for_like|: \stars&maybe\cr
+\.{type}&|type_like|: \stars&maybe\cr
 \.{xor}&|alfop|: \stars&yes\cr
 \.{xor\_eq}&|alfop|: \stars&yes\cr
 \.{@@,}&|insert|: \.{\\,}&maybe\cr
@@ -2218,8 +2164,6 @@ identifier&|exp|: \.{\\\\\{}identifier with underlines and
 \.{@@+}&|insert|:  |big_cancel| \.{\{\}} |break_space|
 	\.{\{\}} |big_cancel|&no\cr
 \.{@@;}&|semi|: &maybe\cr
-\.{@@[@q]@>}&|begin_arg|: &maybe\cr
-\.{@q[@>@@]}&|end_arg|: &maybe\cr
 \.{@@\&}&|insert|: \.{\\J}&maybe\cr
 \.{@@h}&|insert|: |force| \.{\\ATH} |force|&no\cr
 \.{@@<}\thinspace section name\thinspace\.{@@>}&|section_scrap|:
@@ -2267,9 +2211,6 @@ by moving scraps from |hi_ptr| to |lo_ptr|. If there are
 fewer than |pp+3| scraps left, the positions up to |pp+3| are filled with
 blanks that will not match in any productions. Parsing stops when
 |pp==lo_ptr+1| and |hi_ptr==scrap_ptr+1|.
-
-Since the |scrap| structure will later be used for other purposes, we
-declare its second element as a union.
 
 @<Type...@>=
 type trans struct {
@@ -2352,7 +2293,7 @@ the production just mentioned.
 
 Before calling |reduce|, the program should have appended the tokens of
 the new translation to the |tok_mem| array. We commonly want to append
-copies of several existing translations, and macros are defined to
+copies of several existing translations, and few functions are defined to
 simplify these common cases. For example, \\{app2}|(pp)| will append the
 translations of two consecutive scraps, |scrap_info[pp].trans_plus.Trans| 
 and |scrap_info[pp+1].trans_plus.Trans|, to
@@ -2478,21 +2419,7 @@ code needs to be provided with a proper environment.
 
 @<Match a production at |pp|, or increase |pp| if there is no match@>= {
 	/* not a production with left side length 1 */	
-	if scrap_info[pp+1].cat==end_arg && 
-		scrap_info[pp].cat!=semi && 
-		scrap_info[pp].cat!=prelangle && 
-		scrap_info[pp].cat!=prerangle && 
-		scrap_info[pp].cat!=new_like && 
-		scrap_info[pp].cat!=new_exp && 
-		scrap_info[pp].cat!=raw_ubin && 
-		scrap_info[pp].cat!=const_like && 
-		scrap_info[pp].cat!=raw_int {
-		if scrap_info[pp].cat==begin_arg { 
-			squash(pp,2,exp,-2,124) 
-		} else { 
-			squash(pp,2,end_arg,-1,125) 
-		}
-	} else if (scrap_info[pp+1].cat==insert) { 
+	if (scrap_info[pp+1].cat==insert) { 
 		squash(pp,2,scrap_info[pp].cat,-2,0)
 	} else if (scrap_info[pp+2].cat==insert) { 
 		squash(pp+1,2,scrap_info[pp+1].cat,-1,0)
@@ -2579,7 +2506,7 @@ func find_first_ident(p int32) int32 {
 					return q
 				}
 				fallthrough
-			default:  /* char, |section_flag|, fall thru: move on to next token */
+			default:  /* char, |section_flag|, fallthru: move on to next token */
 				if tok_mem[j]==inserted {
 					return no_ident_found /* ignore inserts */
 				} else if tok_mem[j]==qualifier { 
@@ -3828,7 +3755,7 @@ for i:=0; i < len(id);{
 app(@q{@>'}')
 
 @ The function |app_cur_id| appends the current identifier to the
-token list; it also builds a new scrap if |scrapping==1|.
+token list; it also builds a new scrap if |scrapping==true|.
 
 @ @c
 func app_cur_id(scrapping bool) {
