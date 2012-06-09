@@ -2148,12 +2148,12 @@ skip_restricted()
 
 {
 if get_next()!=identifier{
-err_print("! Missing left identifier of @s");
+err_print("! Missing left identifier of @s")
 
 }else{
 lhs= id_lookup(id,normal)
 if get_next()!=identifier{
-err_print("! Missing right identifier of @s");
+err_print("! Missing right identifier of @s")
 
 }else{
 rhs= id_lookup(id,normal)
@@ -2309,7 +2309,7 @@ break
 if!get_line(){
 err_print("! Input ended in middle of string")
 loc= 0
-break;
+break
 
 }
 }
@@ -2509,7 +2509,7 @@ break
 if!get_line(){
 err_print("! Input ended in middle of string")
 loc= 0
-break;
+break
 
 }
 }
@@ -3961,7 +3961,7 @@ big_app1(pp)
 big_app(' ')
 big_app1(pp+1)
 big_app(' ')
-big_app1(pp+2);
+big_app1(pp+2)
 reduce(pp,3,lbrace,-2,43)
 }
 }
@@ -4110,7 +4110,7 @@ if scrap_info[pp+1].cat==exp{
 big_app1(pp)
 big_app(' ')
 big_app1(pp+1)
-reduce(pp,2,if_clause,0,57);
+reduce(pp,2,if_clause,0,57)
 }
 
 /*:222*/
@@ -4145,7 +4145,7 @@ scrap_info[pp+1].cat==exp{
 big_app(force)
 big_app1(pp)
 big_app(break_space)
-app(noop);
+app(noop)
 big_app(cancel)
 big_app1(pp+1)
 big_app(force)
@@ -4529,7 +4529,7 @@ pp++
 //line goweave.w:3454
 
 if lo_ptr> scrap_base&&tracing==1{
-fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count);
+fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count)
 
 mark_harmless()
 for j:= scrap_base;j<=lo_ptr;j++{
@@ -4695,7 +4695,7 @@ app_str("\\AND")
 app_scrap(raw_ubin,yes_math)
 
 case ignore,xref_roman,xref_wildcard,xref_typewriter,noop:
-break;
+break
 case'(','[':
 app(next_control)
 app_scrap(lpar,maybe_math)
@@ -4764,7 +4764,7 @@ app_scrap(binop,yes_math)
 
 case dot_dot_dot:
 app_str("\\,\\ldots\\,")
-app_scrap(raw_int,yes_math);
+app_scrap(raw_int,yes_math)
 
 
 
@@ -4886,7 +4886,7 @@ for next_control<format_code{
 if next_control!=begin_comment&&next_control!=begin_short_comment{
 Go_parse(ignore)
 }else{
-is_long_comment:= (next_control==begin_comment);
+is_long_comment:= (next_control==begin_comment)
 app(cancel)
 app(inserted)
 if is_long_comment{
@@ -5207,7 +5207,7 @@ var buf[]rune
 var delim rune
 for true{
 if i>=len(scratch){
-fmt.Print("\n! Go text in section name didn't end: <");
+fmt.Print("\n! Go text in section name didn't end: <")
 
 print_section_name(cur_section_name)
 fmt.Print("> ")
@@ -5915,17 +5915,17 @@ out_str("\\\\")
 }
 }
 case wildcard:
-out_str("\\9");
+out_str("\\9")
 out_name(cur_name,false)
 goto name_done
 
 case typewriter:
-out_str("\\.");
+out_str("\\.")
 
 fallthrough
 case roman:
 out_name(cur_name,false)
-goto name_done;
+goto name_done
 case custom:{
 out_str("$\\")
 for _,v:= range name_dir[cur_name].name{
@@ -6047,7 +6047,7 @@ finish_line()
 
 if f,err:= os.OpenFile(scn_file_name,os.O_WRONLY|os.O_CREATE|os.O_TRUNC,0666);
 err!=nil{
-fatal("! Cannot open section file ",scn_file_name);
+fatal("! Cannot open section file ",scn_file_name)
 
 }else{
 scn_file= f
@@ -6130,7 +6130,7 @@ section_print(name_dir[p].rlink)
 //line goweave.w:5202
 
 func print_stats(){
-fmt.Println("\nMemory usage statistics:\n");
+fmt.Println("\nMemory usage statistics:\n")
 
 fmt.Println("%v names",len(name_dir))
 fmt.Println("Parsing:")
