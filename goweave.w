@@ -164,7 +164,10 @@ raw_int = 51 /* \&{int}, \&{byte}, \dots; also structure and class names  */
 int_like = 52 /* same, when not followed by left parenthesis or \DC\ */
 case_like = 53 /* \&{case}, \&{return}, \&{goto}, \&{break}, \&{continue} */
 struct_like = 55 /* \&{struct} */
-typedef_like rune = 56 /* \&{typedef} */
+type_like rune = 56 /* \&{type} */
+var_like rune = 57 /* \&{var} */
+import_like rune = 58 /* \&{import} */
+
 
 @ We keep track of the current section number in |section_count|, which
 is the total number of sections that have started.  Sections which have
@@ -374,13 +377,13 @@ id_lookup([]rune("and_eq"),alfop)
 id_lookup([]rune("bitand"),alfop)
 id_lookup([]rune("bitor"),alfop)
 id_lookup([]rune("compl"),alfop)
-id_lookup([]rune("line"),if_like)
 id_lookup([]rune("not"),alfop)
 id_lookup([]rune("not_eq"),alfop)
 id_lookup([]rune("or"),alfop)
 id_lookup([]rune("or_eq"),alfop)
 id_lookup([]rune("xor"),alfop)
 id_lookup([]rune("xor_eq"),alfop)
+
 // reserved words
 id_lookup([]rune("break"),case_like)
 id_lookup([]rune("case"),case_like)
@@ -396,7 +399,7 @@ id_lookup([]rune("func"),fn_decl)
 id_lookup([]rune("go"),if_like)
 id_lookup([]rune("goto"),case_like)
 id_lookup([]rune("if"),if_like)
-id_lookup([]rune("import"),if_like)
+id_lookup([]rune("import"),import_like)
 id_lookup([]rune("interface"),struct_like)
 id_lookup([]rune("map"),raw_int)
 id_lookup([]rune("package"),custom)
@@ -405,8 +408,8 @@ id_lookup([]rune("return"),case_like)
 id_lookup([]rune("select"),for_like)
 id_lookup([]rune("struct"),struct_like)
 id_lookup([]rune("switch"),for_like)
-id_lookup([]rune("type"),typedef_like)
-id_lookup([]rune("var"),const_like)
+id_lookup([]rune("type"),type_like)
+id_lookup([]rune("var"),var_like)
 
 // types
 id_lookup([]rune("bool"),raw_int) 
@@ -1979,11 +1982,13 @@ var cat_name[256]string
 		cat_name[if_like]="if"
 		cat_name[raw_ubin]="ubinop?"
 		cat_name[const_like]="const"
+		cat_name[var_like]="var"
+		cat_name[import_like]="import"
 		cat_name[raw_int]="raw"
 		cat_name[int_like]="int"
 		cat_name[case_like]="case"
 		cat_name[struct_like]="struct"
-		cat_name[typedef_like]="typedef"
+		cat_name[type_like]="type"
 		cat_name[new_exp]="new_exp"
 		cat_name[0]="zero"
 
@@ -2462,7 +2467,7 @@ code needs to be provided with a proper environment.
 			case raw_ubin: @<Cases for |raw_ubin|@>
 			case const_like: @<Cases for |const_like|@>
 			case raw_int: @<Cases for |raw_int|@>
-			case typedef_like: @<Cases for |typedef_like|@>
+			case type_like: @<Cases for |type_like|@>
 		}
 	}
 	pp++ /* if no match was found, we move to the right */
@@ -3229,7 +3234,7 @@ if scrap_info[pp+1].cat==prelangle {
 	squash(pp,1,int_like,-3,110)
 }
 
-@ @<Cases for |typedef_like|@>=
+@ @<Cases for |type_like|@>=
 if (scrap_info[pp+1].cat==int_like || 
 		scrap_info[pp+1].cat==cast) && 
 		(scrap_info[pp+2].cat==comma || 
@@ -3239,7 +3244,7 @@ if (scrap_info[pp+1].cat==int_like ||
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
-	reduce(pp,2,typedef_like,0,116)
+	reduce(pp,2,type_like,0,116)
 } else if scrap_info[pp+1].cat==exp && 
 		scrap_info[pp+2].cat!=lpar && 
 		scrap_info[pp+2].cat!=exp && 
@@ -3249,11 +3254,11 @@ if (scrap_info[pp+1].cat==int_like ||
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
-	reduce(pp,2,typedef_like,0,117)
+	reduce(pp,2,type_like,0,117)
 } else if scrap_info[pp+1].cat==comma {
 	big_app2(pp)
 	big_app(' ')
-	reduce(pp,2,typedef_like,0,118)
+	reduce(pp,2,type_like,0,118)
 } else if scrap_info[pp+1].cat==semi {
 	squash(pp,2,decl,-1,119)
 } else if scrap_info[pp+1].cat==ubinop && 
@@ -3342,12 +3347,7 @@ conservative test; it's more important to make sure the program
 will still work if we change the production rules (within reason)
 than to squeeze the last bit of space from the memory arrays.
 
-@<Constants@>=
-safe_tok_incr = 20
-safe_text_incr = 10
-safe_scrap_incr = 10
-
-@ @<Reduce the scraps using the productions until no more rules apply@>=
+@<Reduce the scraps using the productions until no more rules apply@>=
 for true {
 	@<Make sure the entries |pp| through |pp+3| of |cat| are defined@>
 	if pp>lo_ptr {
