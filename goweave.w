@@ -15,7 +15,7 @@
 % entire resulting derived work is given a different name and distributed
 % under the terms of a permission notice identical to this one.
 
-% Here is TeX material that gets inserted after \input cwebmac
+% Here is TeX material that gets inserted after \input gowebmac
 \def\hang{\hangindent 3em\indent\ignorespaces}
 \def\pb{$\.|\ldots\.|$} % code brackets (|...|)
 \def\v{\char'174} % vertical (|) in typewriter font
@@ -821,6 +821,14 @@ switch(c) {
 				return not_eq
 			}
 		}
+	case ':':
+		if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return col_eq
+			}
+		}
 }
 
 @ @<Get an identifier@>= {
@@ -1523,14 +1531,14 @@ func finish_line() {
 @ In particular, the |finish_line| procedure is called near the very
 beginning of phase two. We initialize the output variables in a slightly
 tricky way so that the first line of the output file will be
-`\.{\\input cwebmac}'.
+`\.{\\input gowebmac}'.
 
 @<Set init...@>=
 out_ptr=1
 out_line=1
 active_file=tex_file
 out_buf[out_ptr]='c'
-fmt.Fprint(active_file,"\\input cwebma") 
+fmt.Fprint(active_file,"\\input gowebma") 
 
 @ When we wish to append one character |c| to the output buffer, we write
 `|out(c)|'; this will cause the buffer to be emptied if it was already
@@ -3675,6 +3683,10 @@ case dot_dot_dot:
 	@+app_scrap(raw_int,yes_math)
 @.\\,@>
 @.\\ldots@>
+case col_eq: 
+	app_str("\\K")
+	@+app_scrap(binop,yes_math)
+@.\\E@>
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
 \TEX/ will print them properly.
@@ -3815,7 +3827,7 @@ until |next_control>=format_code|. Thus, it takes care of embedded comments.
 
 The token list created from within `\pb' brackets is output as an argument
 to \.{\\PB}, if the user has invoked \.{GOWEAVE} with the \.{+e} flag.
-Although \.{cwebmac} ignores \.{\\PB}, other macro packages
+Although \.{gowebmac} ignores \.{\\PB}, other macro packages
 might use it to localize the special meaning of the macros that mark up
 program text.
 
