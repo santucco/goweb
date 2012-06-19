@@ -97,6 +97,7 @@ lt_lt = 020 /* `\.{<<}'\,;  corresponds to MIT's {\tentex\char'20} */
 gt_gt = 021 /* `\.{>>}'\,;  corresponds to MIT's {\tentex\char'21} */
 plus_plus = 013 /* `\.{++}'\,;  corresponds to MIT's {\tentex\char'13} */
 minus_minus = 01 /* `\.{--}'\,;  corresponds to MIT's {\tentex\char'1} */
+col_eq = 030 /* `\.{:=}'\,;  corresponds to MIT's {\tentex\char'30} */
 not_eq = 032 /* `\.{!=}'\,;  corresponds to MIT's {\tentex\char'32} */
 lt_eq = 034 /* `\.{<=}'\,;  corresponds to MIT's {\tentex\char'34} */
 gt_eq = 035 /* `\.{>=}'\,;  corresponds to MIT's {\tentex\char'35} */

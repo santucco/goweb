@@ -22,5 +22,5 @@ install: gotangle goweave
 	(cd goweave; go install)
 
 clean:
-	rm -f *.scn *.idx *.tex
+	rm -f *.scn *.idx *.tex *.toc *.log
 	rm -rf gotangle/ goweave/
