@@ -92,18 +92,33 @@ avoid character conflicts. Look for the entry ``ASCII code dependencies''
 in those indexes.
 
 @ @<Common constants@>=
-and_and = 04 /* `\.{\&\&}'\,; corresponds to MIT's {\tentex\char'4} */
-lt_lt = 020 /* `\.{<<}'\,;  corresponds to MIT's {\tentex\char'20} */
-gt_gt = 021 /* `\.{>>}'\,;  corresponds to MIT's {\tentex\char'21} */
-plus_plus = 013 /* `\.{++}'\,;  corresponds to MIT's {\tentex\char'13} */
-minus_minus = 01 /* `\.{--}'\,;  corresponds to MIT's {\tentex\char'1} */
-col_eq = 030 /* `\.{:=}'\,;  corresponds to MIT's {\tentex\char'30} */
-not_eq = 032 /* `\.{!=}'\,;  corresponds to MIT's {\tentex\char'32} */
-lt_eq = 034 /* `\.{<=}'\,;  corresponds to MIT's {\tentex\char'34} */
-gt_eq = 035 /* `\.{>=}'\,;  corresponds to MIT's {\tentex\char'35} */
-eq_eq = 036 /* `\.{==}'\,;  corresponds to MIT's {\tentex\char'36} */
-or_or = 037 /* `\.{\v\v}'\,;  corresponds to MIT's {\tentex\char'37} */
-dot_dot_dot = 016 /* `\.{...}'\,;  corresponds to MIT's {\tentex\char'16} */
+and_and rune = 04 /* `\.{\&\&}'\,; corresponds to MIT's {\tentex\char'4} */
+lt_lt rune = 020 /* `\.{<<}'\,;  corresponds to MIT's {\tentex\char'20} */
+gt_gt rune = 021 /* `\.{>>}'\,;  corresponds to MIT's {\tentex\char'21} */
+plus_plus rune = 013 /* `\.{++}'\,;  corresponds to MIT's {\tentex\char'13} */
+minus_minus rune = 01 /* `\.{--}'\,;  corresponds to MIT's {\tentex\char'1} */
+col_eq rune = 030 /* `\.{:=}'\,;  corresponds to MIT's {\tentex\char'30} */
+not_eq rune = 032 /* `\.{!=}'\,;  corresponds to MIT's {\tentex\char'32} */
+lt_eq rune = 034 /* `\.{<=}'\,;  corresponds to MIT's {\tentex\char'34} */
+gt_eq rune = 035 /* `\.{>=}'\,;  corresponds to MIT's {\tentex\char'35} */
+eq_eq rune = 036 /* `\.{==}'\,;  corresponds to MIT's {\tentex\char'36} */
+or_or rune = 037 /* `\.{\v\v}'\,;  corresponds to MIT's {\tentex\char'37} */
+dot_dot_dot rune = 016 /* `\.{...}'\,;  corresponds to MIT's {\tentex\char'16} */
+begin_comment rune = '\t' /* tab marks will not appear */
+div_eq rune = 05 /*`\.{/=}'\,;*/
+plus_eq rune = 06 /*`\.{+=}'\,;*/
+minus_eq rune = 07 /*`\.{-=}'\,;*/
+and_not rune = 010  /*`\.{&^}'\,;*/
+and_eq rune = 014 /*`\.{&=}'\,;*/
+and_not_eq rune = 015 /*`\.{&^=}'\,;*/
+or_eq rune = 017 /*`\.{|=}'\,;*/
+xor_eq rune = 022 /*`\.{^=}'\,;*/
+mod_eq rune = 023 /*`\.{%=}'\,;*/
+direct rune = 024 /*`\.{<-}'\,;*/
+rshift_eq rune = 025 /*`\.{>>=}'\,;*/
+lshift_eq rune = 026 /*`\.{<<=}'\,;*/
+mul_eq rune = 027 /*`\.{*=}'\,;*/
+begin_short_comment rune = 031 /* short comment */
 
 @** Input routines.  The lowest level of input to the \.{GOWEB} programs
 is performed by |input_ln|, which must be told which file to read from.
@@ -1422,4 +1437,209 @@ func xisxdigit(r rune) bool {
 		return true
 	}
 	return false
+}
+
+@ The following code assigns values to the combinations \.{++},
+\.{--}, \.{->}, \.{>=}, \.{<=}, \.{==}, \.{<<}, \.{>>}, \.{!=}, \.{||} and
+\.{\&\&}, \.{...}.
+The compound assignment operators (e.g., \.{+=}) are
+treated as separate tokens.
+
+@<Compress two-symbol operator@>=
+switch c {
+	case '/': 
+		if nc=='*' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return begin_comment
+			}
+		} else if nc=='/' { 
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return begin_short_comment
+			}
+		} else if nc=='=' { 
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return div_eq
+			}
+		}
+	case '+': 
+		if nc=='+' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return plus_plus
+			}
+		} else if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return plus_eq
+			}
+		}	
+	case '-': 
+		if nc=='-' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return minus_minus
+			}
+		} else if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return minus_eq
+			}
+		}
+	case '.': 
+		if nc=='.' && loc+1<len(buffer) && buffer[loc+1]=='.' {
+			loc++
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return dot_dot_dot
+			}
+		}
+	case '=': 
+		if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return eq_eq
+			}
+		}
+	case '>': 
+		if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return gt_eq
+			}
+		} else if nc=='>' {
+			if loc+1 < len(buffer) && buffer[loc+1] == '=' {
+				l := loc + 1
+				loc+=2
+				if l <=len(buffer) {
+					return rshift_eq
+				}
+			} 
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return gt_gt
+			}
+		}
+	case '<': 
+		if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return lt_eq
+			}
+		} else if nc=='<' {
+			if loc+1 < len(buffer) && buffer[loc+1] == '=' {
+				l := loc + 1
+				loc+=2
+				if l <=len(buffer) {
+					return lshift_eq
+				}
+			} 
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return lt_lt
+			}
+		} else if nc=='-' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return direct
+			}
+		}
+	case '&': 
+		if nc=='&' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return and_and
+			}
+		} else if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return and_eq
+			}
+		} else if nc=='^' {
+			if loc+1 < len(buffer) && buffer[loc+1] == '=' {
+				l := loc + 1
+				loc+=2
+				if l <=len(buffer) {
+					return and_not_eq
+				}
+			} 
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return and_not
+			}
+		}
+		
+	case '|': 
+		if nc=='|' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return or_or
+			}
+		} else if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return or_eq
+			}
+		}
+	case '!':
+		if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return not_eq
+			}
+		}
+	case ':':
+		if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return col_eq
+			}
+		}
+	case '*':
+	 	if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return mul_eq
+			}
+		}
+	case '^':
+	 	if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return xor_eq
+			}
+		}
+	case '%':
+	 	if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return mod_eq
+			}
+		}
 }

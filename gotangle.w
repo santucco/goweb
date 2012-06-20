@@ -569,50 +569,81 @@ restart:
 
 @ @<Cases like \.{!=}@>=
 case plus_plus: 
-	fmt.Fprint(go_file,"+")
-	fmt.Fprint(go_file,"+")
+	fmt.Fprint(go_file,"++")
 	out_state=normal
 case minus_minus: 
-	fmt.Fprint(go_file,"-")
-	fmt.Fprint(go_file,"-")
+	fmt.Fprint(go_file,"--")
 	out_state=normal
 case gt_gt: 
-	fmt.Fprint(go_file,">")
-	fmt.Fprint(go_file,">")
+	fmt.Fprint(go_file,">>")
 	out_state=normal
 case eq_eq: 
-	fmt.Fprint(go_file,"=")
-	fmt.Fprint(go_file,"=")
+	fmt.Fprint(go_file,"==")
 	out_state=normal
 case lt_lt: 
-	fmt.Fprint(go_file,"<")
-	fmt.Fprint(go_file,"<")
+	fmt.Fprint(go_file,"<<")
 	out_state=normal
 case gt_eq: 
-	fmt.Fprint(go_file,">")
-	fmt.Fprint(go_file,"=")
+	fmt.Fprint(go_file,">=")
 	out_state=normal
 case lt_eq: 
-	fmt.Fprint(go_file,"<")
-	fmt.Fprint(go_file,"=")
+	fmt.Fprint(go_file,"<=")
 	out_state=normal
 case not_eq: 
-	fmt.Fprint(go_file,"!")
-	fmt.Fprint(go_file,"=")
+	fmt.Fprint(go_file,"!=")
 	out_state=normal
 case and_and: 
-	fmt.Fprint(go_file,"&")
-	fmt.Fprint(go_file,"&")
+	fmt.Fprint(go_file,"&&")
 	out_state=normal
 case or_or: 
-	fmt.Fprint(go_file,"|")
-	fmt.Fprint(go_file,"|")
+	fmt.Fprint(go_file,"||")
 	out_state=normal
 case dot_dot_dot: 
-	fmt.Fprint(go_file,".")
-	fmt.Fprint(go_file,".")
-	fmt.Fprint(go_file,".")
+	fmt.Fprint(go_file,"...")
 	out_state=normal
+case div_eq:
+	fmt.Fprint(go_file,"/=")
+	out_state=normal
+case plus_eq:
+	fmt.Fprint(go_file,"+=")
+	out_state=normal
+case minus_eq:
+	fmt.Fprint(go_file,"-=")
+	out_state=normal
+case rshift_eq:
+	fmt.Fprint(go_file,">>=")
+	out_state=normal
+case lshift_eq:
+	fmt.Fprint(go_file,"<<=")
+	out_state=normal
+case direct:
+	fmt.Fprint(go_file,"<-")
+	out_state=normal
+case and_eq:
+	fmt.Fprint(go_file,"&=")
+	out_state=normal
+case and_not_eq:
+	fmt.Fprint(go_file,"&^=")
+	out_state=normal
+case and_not:
+	fmt.Fprint(go_file,"&^")
+	out_state=normal
+case or_eq:
+	fmt.Fprint(go_file,"|=")
+	out_state=normal
+case mul_eq:
+	fmt.Fprint(go_file,"*=")
+	out_state=normal
+case xor_eq:
+	fmt.Fprint(go_file,"^=")
+	out_state=normal
+case mod_eq:
+	fmt.Fprint(go_file,"%=")
+	out_state=normal
+case col_eq:
+	fmt.Fprint(go_file,":=")
+	out_state=normal
+
 
 @ @<Case of an identifier@>=
 case identifier:
@@ -867,100 +898,6 @@ mistake:
 	return 0
 }
 
-@ The following code assigns values to the combinations \.{++},
-\.{--}, \.{->}, \.{>=}, \.{<=}, \.{==}, \.{<<}, \.{>>}, \.{!=}, \.{||} and
-\.{\&\&}, \.{...}.
-The compound assignment operators (e.g., \.{+=}) are
-treated as separate tokens.
-
-@<Compress tw...@>=
-switch c  {
-	case '+': 
-		if nc=='+' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return plus_plus
-			}
-		}
-	case '-': 
-		if nc=='-' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return minus_minus
-			}
-		} 
-	case '.': 
-		if nc=='.' && loc+1<len(buffer) && buffer[loc+1]=='.' {
-			loc++
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return dot_dot_dot
-			}
-		}
-	case '=': 
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return eq_eq
-			}
-		}
-	case '>': 
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return gt_eq
-			}
-		} else if nc=='>' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return gt_gt
-			}
-		}
-	case '<': 
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return lt_eq
-			}
-		} else if nc=='<' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return lt_lt
-			}
-		}
-	case '&': 
-		if nc=='&' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return and_and
-			}
-		}
-	case '|': 
-		if nc=='|' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return or_or
-			}
-		}
-	case '!': 
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <= len(buffer) {
-				return not_eq
-			}
-		}
-}
 
 @ @<Get an identifier@>= 
 {
