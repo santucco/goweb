@@ -482,8 +482,6 @@ scanning routines.
 @ @<Constants@>=
 ignore rune = 00 /* control code of no interest to \.{GOWEAVE} */
 verbatim rune = 02 /* takes the place of extended ASCII \.{\char2} */
-begin_short_comment rune = 03 /* short comment */
-begin_comment rune = '\t' /* tab marks will not appear */
 underline rune = '\n' /* this code will be intercepted without confusion */
 noop rune = 0177 /* takes the place of ASCII delete */
 xref_roman rune = 0203 /* control code for `\.{@@\^}' */
@@ -719,117 +717,6 @@ mistake:
 \.{\&\&}, \.{...}.
 The compound assignment operators (e.g., \.{+=}) are
 treated as separate tokens.
-
-@<Compress tw...@>=
-switch(c) {
-	case '/': 
-		if nc=='*' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return begin_comment
-			}
-		} else if nc=='/' { 
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return begin_short_comment
-			}
-		}
-	case '+': 
-		if nc=='+' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return plus_plus
-			}
-		}	
-	case '-': 
-		if nc=='-' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return minus_minus
-			}
-		}
-	case '.': 
-		if nc=='.' && loc+1<len(buffer) && buffer[loc+1]=='.' {
-			loc++
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return dot_dot_dot
-			}
-		}
-	case '=': 
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return eq_eq
-			}
-		}
-	case '>': 
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return gt_eq
-			}
-		} else if nc=='>' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return gt_gt
-			}
-		}
-	case '<': 
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return lt_eq
-			}
-		} else if nc=='<' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return lt_lt
-			}
-		}
-	case '&': 
-		if nc=='&' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return and_and
-			}
-		}
-	case '|': 
-		if nc=='|' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return or_or
-			}
-		}
-	case '!':
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return not_eq
-			}
-		}
-	case ':':
-		if nc=='=' {
-			l := loc
-			loc++
-			if l <=len(buffer) {
-				return col_eq
-			}
-		}
-}
 
 @ @<Get an identifier@>= {
 	loc--
@@ -3687,6 +3574,45 @@ case col_eq:
 	app_str("\\K")
 	@+app_scrap(binop,yes_math)
 @.\\E@>
+case div_eq:
+	app_str("/=")
+	@+app_scrap(binop,yes_math)
+case plus_eq:
+	app_str("+=")
+	@+app_scrap(binop,yes_math)
+case minus_eq:
+	app_str("-=")
+	@+app_scrap(binop,yes_math)
+case rshift_eq:
+	app_str(">>=")
+	@+app_scrap(binop,yes_math)
+case lshift_eq:
+	app_str("<<=")
+	@+app_scrap(binop,yes_math)
+case direct:
+	app_str(".")
+	@+app_scrap(binop,yes_math)
+case and_eq:
+	app_str("&=")
+	@+app_scrap(binop,yes_math)
+case and_not_eq:
+	app_str("&^=")
+	@+app_scrap(binop,yes_math)
+case and_not:
+	app_str("&^")
+	@+app_scrap(binop,yes_math)
+case or_eq:
+	app_str("|=")
+	@+app_scrap(binop,yes_math)
+case mul_eq:
+	app_str("*=")
+	@+app_scrap(binop,yes_math)
+case xor_eq:
+	app_str("^=")
+	@+app_scrap(binop,yes_math)
+case mod_eq:
+	app_str("%=")
+	@+app_scrap(binop,yes_math)
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
 \TEX/ will print them properly.
