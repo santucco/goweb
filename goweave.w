@@ -695,8 +695,7 @@ func get_next() rune {
 		}
 		if unicode.IsDigit(c) || c=='.' {
 			@<Get a constant@>
-		} else if c=='\'' || c=='"' || c=='L' && 
-			(nc=='\'' || nc=='"') {
+		} else if c=='\'' || c=='"' || c=='`' {
 			@<Get a string@>
 		} else if unicode.IsLetter(c) || c=='_' {
 			@<Get an identifier@>
@@ -814,22 +813,11 @@ delimiters if they are protected by a backslash.
 		section_text = append(section_text, '@@')
 	}
 	section_text = append(section_text, delim)
-	if loc < len(buffer) && delim=='L' { /* wide character constant */
-		delim=buffer[loc]
-		loc++
-		section_text = append(section_text, delim)
-	}
 	if delim=='<' {
 		 delim='>' /* for file names in |#include| lines */
 	}
 	for true {
 		if loc>=len(buffer) {
-			if buffer[len(buffer)-1]!='\\' {
-				err_print("! String didn't end")
-				loc=len(buffer)
-				break
-@.String didn't end@>
-			}
 			if !get_line()  {
 				err_print("! Input ended in middle of string")
 				loc=0
@@ -3437,7 +3425,7 @@ switch (next_control) {
 @.\\OR@>
 	case '^': 
 		app_str("\\XOR")
-		app_scrap(binop,yes_math)
+		app_scrap(ubinop,yes_math)
 @.\\XOR@>
 	case '%': 
 		app_str("\\MOD")
@@ -3456,10 +3444,10 @@ switch (next_control) {
 		app_scrap(ubinop,yes_math)
 	case '*': 
 		app(next_control)
-		app_scrap(raw_ubin,yes_math)
+		app_scrap(ubinop,yes_math)
 	case '&': 
 		app_str("\\AND")
-		app_scrap(raw_ubin,yes_math)
+		app_scrap(ubinop,yes_math)
 @.\\AND@>
 	case ignore, xref_roman, xref_wildcard, xref_typewriter, noop:
 		@+break
@@ -3590,8 +3578,8 @@ case lshift_eq:
 	app_str("<<=")
 	@+app_scrap(binop,yes_math)
 case direct:
-	app_str(".")
-	@+app_scrap(binop,yes_math)
+	app_str("<-")
+	@+app_scrap(unop,maybe_math)
 case and_eq:
 	app_str("&=")
 	@+app_scrap(binop,yes_math)
