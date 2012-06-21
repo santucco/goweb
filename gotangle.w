@@ -386,8 +386,6 @@ strs, verbatim constructions and numerical constants.
 
 \yskip\hang |normal| means none of the above.
 
-\yskip\noindent Furthermore, if the variable |protect| is positive, newlines
-are preceded by a `\.\\'.
 
 @<Constants@>=
 normal = 0 /* non-unusual state */
@@ -398,7 +396,6 @@ verbatim = 4 /* state in the middle of a string */
 
 @ @<Global...@>=
 var out_state rune  /* current status of partial output */
-var protect bool /* should newline characters be quoted? */
 
 @ Here is a routine that is invoked when we want to output the current line.
 During the output process, |line[include_depth]| equals the number of the next line
@@ -515,15 +512,8 @@ is not called if |out_state==verbatim|, except perhaps with arguments
 
 @ @c
 func out_char(cur_char rune) {
-restart:
 	switch (cur_char) {
 		case '\n': 
-			if protect && out_state!=verbatim {
-				fmt.Fprint(go_file," ")
-			}
-			if protect || out_state==verbatim {
-				fmt.Fprint(go_file,"\\")
-			}
 			flush_buffer()
 			if out_state!=verbatim {
 				out_state=normal
@@ -659,10 +649,6 @@ case section_number:
 		fmt.Fprintf(go_file,"/*%d:*/",cur_val)
 	} else if cur_val<0 {
 		fmt.Fprintf(go_file,"/*:%d*/",-cur_val)
-	} else if protect {
-		cur_state.byte_field = cur_state.byte_field[4:] /* skip line number and file name */
-		cur_char = '\n'
-		goto restart
 	} 
 
 @ @<Case of a line...@>=
@@ -882,9 +868,9 @@ func get_next() rune {
 		loc++
 		if unicode.IsDigit(c) || c=='.' {
 			@<Get a constant@>
-		} else if c=='\'' || c=='"' || ( c=='L' && (nc=='\'' || nc=='"')) {
+		} else if c=='\'' || c=='"' || c=='`' {
 			@<Get a string@>
-		} else if unicode.IsLetter(c) || c=='_' || c=='$' {
+		} else if unicode.IsLetter(c) || c=='_' {
 			@<Get an identifier@>
 		} else if c=='@@' {
 			@<Get control code and possible section name@>
@@ -969,19 +955,8 @@ delimiters if they are protected by a backslash.
 	section_text = section_text[0:0]
 	section_text = append(section_text, delim)
 	
-	if delim=='L' { /* wide character constant */
-		delim=buffer[loc]
-		loc++
-		section_text = append(section_text, delim)
-	}
 	for true {
 		if loc>=len(buffer) {
-			if buffer[len(buffer)-1]!='\\' {
-				err_print("! String didn't end")
-				loc=len(buffer)
-				break
-				@.String didn't end@>
-			}
 			if !get_line() {
 				err_print("! Input ended in middle of string")
 				loc=0
@@ -997,10 +972,10 @@ delimiters if they are protected by a backslash.
 			section_text = append(section_text, c)
 			break
 		}
-		if c=='\\' {
+		if c=='\\' { 
 			if loc>=len(buffer) {
 				continue
-			}
+			} 
 			section_text = append(section_text, '\\')
 			c=buffer[loc]
 			loc++
