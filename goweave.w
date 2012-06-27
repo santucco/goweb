@@ -786,14 +786,8 @@ is a slice of the array |section_text|, not of |buffer|.
 		}
 	}
 	for loc < len(buffer) && 
-		(buffer[loc]=='u' || 
-		buffer[loc]=='U' || 
-		buffer[loc]=='l' || 
-		buffer[loc]=='L' || 
-		buffer[loc]=='f' || 
-		buffer[loc]=='F') {
+		buffer[loc]=='i' {
 		id = append(id, '$')
-		id = append(id, unicode.ToUpper(buffer[loc]))
 		loc++
 	}
 	return constant
@@ -1509,7 +1503,7 @@ entry, enclosing it in braces.
 func out_name(p int32, quote_xalpha bool) {
 	out('{')
 	for _, v := range name_dir[p].name {
-		if (v=='_' || v=='$') && quote_xalpha {
+		if v=='_' && quote_xalpha {
 			out('\\')
 		}
 @.\\\$@>
@@ -4078,7 +4072,7 @@ if a==identifier {
 }
 @.\\\&@>
 if is_tiny(cur_name) {
-	if name_dir[cur_name].name[0]=='_' || name_dir[cur_name].name[0]=='$' {
+	if name_dir[cur_name].name[0]=='_'  {
 		out('\\')
 	}
 	out(name_dir[cur_name].name[0]) 
@@ -4090,8 +4084,6 @@ if is_tiny(cur_name) {
 for _, v := range name_dir[cur_name].name {
 	if v == '_' {
 		out('x')
-	} else if v == '$' {
-		out('X')
 	} else {
 		out(v)
 	}
@@ -5035,8 +5027,6 @@ switch name_dir[cur_name].ilk {
 		for _, v := range name_dir[cur_name].name {
 			if v == '_' {
 				out('x')
-			} else if v == '$' {
-				out('X')
 			} else {
 				out(v)
 			}
