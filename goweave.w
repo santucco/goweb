@@ -4392,7 +4392,7 @@ specified depth, immediately after the \.{\\N}.
 If the section has changed, we put \.{\\*} just after the section number.
 
 @<Output the code for the beginning...@>=
-if loc-1< len(buffer) && buffer[loc-1]!='*' {
+if loc-1 >= len(buffer) || buffer[loc-1]!='*' {
 	out_str("\\M")
 @.\\M@>
 } else {
