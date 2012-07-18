@@ -2291,8 +2291,20 @@ func big_app1(a int32) {
 		cur_mathness=scrap_info[a].mathness / 4 /* right boundary */
 	case maybe_math: /* no changes */
 	}
-	app(tok_flag+scrap_info[a].trans_plus.Trans)
+	app1(a)
 }
+
+@ The function |isCat| checks if the specified index |i| is inside 
+the |scrap_info| and a corresponding scrap has the specified category |cat|
+
+@c
+func isCat(i int32, cat int32) bool {
+	if i < 0 || i >=int32(len(scrap_info)) {
+		return false
+	}
+	return scrap_info[i].cat == cat
+}
+
 
 @ Let us consider the big switch for productions now, before looking
 at its context. We want to design the program so that this switch
@@ -2301,14 +2313,14 @@ code needs to be provided with a proper environment.
 
 @<Match a production at |pp|, or increase |pp| if there is no match@>= {
 	/* not a production with left side length 1 */	
-	if (scrap_info[pp+1].cat==insert) { 
+	if isCat(pp+1,insert) { 
 		squash(pp,2,scrap_info[pp].cat,-2,0)
-	} else if (scrap_info[pp+2].cat==insert) { 
+	} else if isCat(pp+2,insert) { 
 		squash(pp+1,2,scrap_info[pp+1].cat,-1,0)
-	} else if (scrap_info[pp+3].cat==insert) { 
+	} else if isCat(pp+3,insert) { 
 		squash(pp+2,2,scrap_info[pp+2].cat,0,0)
 	} else {
-		switch (scrap_info[pp].cat) {
+		switch scrap_info[pp].cat {
 			case exp: @<Cases for |exp|@>
 			case lpar: @<Cases for |lpar|@>
 			case unop: @<Cases for |unop|@>
@@ -2498,116 +2510,116 @@ with a particular type of scrap. Whenever a match is discovered,
 the |squash| or |reduce| funcs will cause the appropriate action
 to be performed, followed by |goto found|.
 
-@<Cases for |exp|@>=
-if (scrap_info[pp+1].cat==lbrace || 
-	scrap_info[pp+1].cat==int_like || 
-	scrap_info[pp+1].cat==decl) {
+@ @<Cases for |exp|@>=
+if isCat(pp+1,lbrace) || 
+	isCat(pp+1,int_like) || 
+	isCat(pp+1,decl) {
 	make_underlined(pp)
 	big_app1(pp)
 	big_app(indent)
 	app(indent)
 	reduce(pp,1,fn_decl,0,1)
-} else if scrap_info[pp+1].cat==unop { 
-		squash(pp,2,exp,-2,2) 
-} else if (scrap_info[pp+1].cat==binop || 
-		scrap_info[pp+1].cat==ubinop) && 
-		scrap_info[pp+2].cat==exp {
+} else if isCat(pp+1,unop) { 
+	squash(pp,2,exp,-2,2) 
+} else if (isCat(pp+1,binop) || 
+		isCat(pp+1,ubinop)) && 
+		isCat(pp+2,exp) {
 	squash(pp,3,exp,-2,3)
-} else if scrap_info[pp+1].cat==comma && 
-		scrap_info[pp+2].cat==exp {
+} else if isCat(pp+1,comma) && 
+		isCat(pp+2,exp) {
 	big_app2(pp)
 	app(opt)
 	app('9')
 	big_app1(pp+2)
 	reduce(pp,3,exp,-2,4)
-} else if scrap_info[pp+1].cat==lpar && 
-		scrap_info[pp+2].cat==rpar && 
-		scrap_info[pp+3].cat==colon {
+} else if isCat(pp+1,lpar) && 
+		isCat(pp+2,rpar) && 
+		isCat(pp+3,colon) {
 	squash(pp+3,1,base,0,5)
-} else if scrap_info[pp+1].cat==cast && 
-		scrap_info[pp+2].cat==colon {
+} else if isCat(pp+1,cast) && 
+		isCat(pp+2,colon) {
 	squash(pp+2,1,base,0,5)
-} else if scrap_info[pp+1].cat==semi {
-		squash(pp,2,stmt,-1,6)
-} else if scrap_info[pp+1].cat==colon {
+} else if isCat(pp+1,semi) {
+	squash(pp,2,stmt,-1,6)
+} else if isCat(pp+1,colon) {
 	make_underlined (pp)
 	squash(pp,2,tag,-1,7)
-} else if scrap_info[pp+1].cat==rbrace {
-		squash(pp,1,stmt,-1,8)
-} else if scrap_info[pp+1].cat==lpar && 
-		scrap_info[pp+2].cat==rpar && 
-		(scrap_info[pp+3].cat==const_like || 
-		scrap_info[pp+3].cat==case_like) {
+} else if isCat(pp+1,rbrace) {
+	squash(pp,1,stmt,-1,8)
+} else if isCat(pp+1,lpar) && 
+		isCat(pp+2,rpar) && 
+		(isCat(pp+3,const_like) || 
+		isCat(pp+3,case_like)) {
 	big_app1(pp+2)
 	big_app(' ')
 	big_app1(pp+3)
 	reduce(pp+2,2,rpar,0,9)
-} else if scrap_info[pp+1].cat==cast && 
-		(scrap_info[pp+2].cat==const_like || 
-		scrap_info[pp+2].cat==case_like) {
+} else if isCat(pp+1,cast) && 
+		(isCat(pp+2,const_like) || 
+		isCat(pp+2,case_like)) {
 	big_app1(pp+1)
 	big_app(' ')
 	big_app1(pp+2)
 	reduce(pp+1,2,cast,0,9)
-} else if scrap_info[pp+1].cat==exp || 
-		scrap_info[pp+1].cat==cast {
+} else if isCat(pp+1,exp) || 
+		isCat(pp+1,cast) {
 	squash(pp,2,exp,-2,10)
 }
 
 @ @<Cases for |lpar|@>=
-if (scrap_info[pp+1].cat==exp ||
-	scrap_info[pp+1].cat==ubinop) && 
-	scrap_info[pp+2].cat==rpar {
+if (isCat(pp+1,exp) ||
+	isCat(pp+1,ubinop)) && 
+	isCat(pp+2,rpar) {
 	squash(pp,3,exp,-2,11)
-} else if scrap_info[pp+1].cat==rpar {
+} else if isCat(pp+1,rpar) {
 	big_app1(pp)
 	app('\\')
 	app(',')
 	big_app1(pp+1)
 @.\\,@>
 	reduce(pp,2,exp,-2,12)
-} else if (scrap_info[pp+1].cat==decl_head || 
-		scrap_info[pp+1].cat==int_like || 
-		scrap_info[pp+1].cat==cast) && 
-		scrap_info[pp+2].cat==rpar {
+} else if (isCat(pp+1,decl_head) || 
+		isCat(pp+1,int_like) || 
+		isCat(pp+1,cast)) && 
+		isCat(pp+2,rpar) {
 	squash(pp,3,cast,-2,13)
-} else if (scrap_info[pp+1].cat==decl_head || 
-		scrap_info[pp+1].cat==int_like || 
-		scrap_info[pp+1].cat==exp) && 
-		scrap_info[pp+2].cat==comma {
+} else if (isCat(pp+1,decl_head) || 
+		isCat(pp+1,int_like) || 
+		isCat(pp+1,exp)) && 
+		isCat(pp+2,comma) {
 	big_app3(pp)
 	app(opt)
 	app('9')
 	reduce(pp,3,lpar,-1,14)
-} else if scrap_info[pp+1].cat==stmt || 
-		scrap_info[pp+1].cat==decl {
+} else if isCat(pp+1,stmt) || 
+		isCat(pp+1,decl) {
 	big_app2(pp)
 	big_app(' ')
 	reduce(pp,2,lpar,-1,15)
 }
 
 @ @<Cases for |unop|@>=
-if scrap_info[pp+1].cat==exp || 
-	scrap_info[pp+1].cat==int_like {
+if isCat(pp+1,exp) || 
+	isCat(pp+1,int_like) {
 	squash(pp,2,exp,-2,16)
 }
 
 @ @<Cases for |ubinop|@>=
-if scrap_info[pp+1].cat==cast && 
-	scrap_info[pp+2].cat==rpar {
+if isCat(pp+1,cast) && 
+	isCat(pp+2,rpar) {
 	big_app('{')
 	big_app1(pp)
 	big_app('}')
 	big_app1(pp+1)
 	reduce(pp,2,cast,-2,17)
-} else if scrap_info[pp+1].cat==exp || 
-		scrap_info[pp+1].cat==int_like {
+} else if isCat(pp+1,exp) || 
+		isCat(pp+1,int_like) {
 	big_app('{')
 	big_app1(pp)
 	big_app('}')
 	big_app1(pp+1)
 	reduce(pp,2,scrap_info[pp+1].cat,-2,18)
-} else if scrap_info[pp+1].cat==binop {
+} else if isCat(pp+1,binop) {
 	big_app(math_rel)
 	big_app1(pp)
 	big_app('{')
@@ -2618,7 +2630,7 @@ if scrap_info[pp+1].cat==cast &&
 }
 
 @ @<Cases for |binop|@>=
-if scrap_info[pp+1].cat==binop {
+if isCat(pp+1,binop) {
 	big_app(math_rel)
 	big_app('{')
 	big_app1(pp)
@@ -2631,84 +2643,84 @@ if scrap_info[pp+1].cat==binop {
 }
 
 @ @<Cases for |cast|@>=
-if scrap_info[pp+1].cat==lpar {
+if isCat(pp+1,lpar) {
 	squash(pp,2,lpar,-1,21)
-} else if scrap_info[pp+1].cat==exp {
+} else if isCat(pp+1,exp) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
 	reduce(pp,2,exp,-2,21)
-} else if scrap_info[pp+1].cat==semi {
+} else if isCat(pp+1,semi) {
 	squash(pp,1,exp,-2,22)
 }
 
 @ @<Cases for |int_like|@>=
-if scrap_info[pp+1].cat==int_like || 
-	scrap_info[pp+1].cat==struct_like {
+if isCat(pp+1,int_like) || 
+	isCat(pp+1,struct_like) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
 	reduce(pp,2,scrap_info[pp+1].cat,-2,25)
-} else if scrap_info[pp+1].cat==exp && 
-		(scrap_info[pp+2].cat==raw_int ||
-		scrap_info[pp+2].cat==struct_like) {
+} else if isCat(pp+1,exp) && 
+		(isCat(pp+2,raw_int) ||
+		isCat(pp+2,struct_like)) {
 	squash(pp,2,int_like,-2,26)
-} else if scrap_info[pp+1].cat==exp || 
-		scrap_info[pp+1].cat==ubinop || 
-		scrap_info[pp+1].cat==colon {
+} else if isCat(pp+1,exp) || 
+		isCat(pp+1,ubinop) || 
+		isCat(pp+1,colon) {
 	big_app1(pp)
 	big_app(' ')
 	reduce(pp,1,decl_head,-1,27)
-} else if scrap_info[pp+1].cat==semi || 
-		scrap_info[pp+1].cat==binop {
+} else if isCat(pp+1,semi) || 
+		isCat(pp+1,binop) {
 	squash(pp,1,decl_head,0,28)
 }
 
 @ @<Cases for |decl_head|@>=
-if scrap_info[pp+1].cat==comma {
+if isCat(pp+1,comma) {
 	big_app2(pp)
 	big_app(' ')
 	reduce(pp,2,decl_head,-1,33)
-} else if scrap_info[pp+1].cat==ubinop {
+} else if isCat(pp+1,ubinop) {
 	big_app1(pp)
 	big_app('{')
 	big_app1(pp+1)
 	big_app('}')
 	reduce(pp,2,decl_head,-1,34)
-} else if scrap_info[pp+1].cat==exp && 
+} else if isCat(pp+1,exp) && 
 		scrap_info[pp+2].cat!=lpar && 
 		scrap_info[pp+2].cat!=exp && 
 		scrap_info[pp+2].cat!=cast {
 	make_underlined(pp+1)
 	squash(pp,2,decl_head,-1,35)
-} else if (scrap_info[pp+1].cat==binop ||
-		scrap_info[pp+1].cat==colon) && 
-		scrap_info[pp+2].cat==exp && 
-		(scrap_info[pp+3].cat==comma ||
-		scrap_info[pp+3].cat==semi || 
-		scrap_info[pp+3].cat==rpar) {
+} else if (isCat(pp+1,binop) ||
+		isCat(pp+1,colon)) && 
+		isCat(pp+2,exp) && 
+		(isCat(pp+3,comma) ||
+		isCat(pp+3,semi) || 
+		isCat(pp+3,rpar)) {
 	squash(pp,3,decl_head,-1,36)
-} else if scrap_info[pp+1].cat==cast {
-		squash(pp,2,decl_head,-1,37)
-} else if scrap_info[pp+1].cat==lbrace || 
-		scrap_info[pp+1].cat==int_like || 
-		scrap_info[pp+1].cat==decl {
+} else if isCat(pp+1,cast) {
+	squash(pp,2,decl_head,-1,37)
+} else if isCat(pp+1,lbrace) || 
+		isCat(pp+1,int_like) || 
+		isCat(pp+1,decl) {
 	big_app1(pp)
 	big_app(indent)
 	app(indent)
 	reduce(pp,1,fn_decl,0,38)
-} else if scrap_info[pp+1].cat==semi {
+} else if isCat(pp+1,semi) {
 	squash(pp,2,decl,-1,39)
 }
 
 @ @<Cases for |decl|@>=
-if scrap_info[pp+1].cat==decl {
+if isCat(pp+1,decl) {
 	big_app1(pp)
 	big_app(force)
 	big_app1(pp+1)
 	reduce(pp,2,decl,-1,40)
-} else if scrap_info[pp+1].cat==stmt || 
-		scrap_info[pp+1].cat==function {
+} else if isCat(pp+1,stmt) || 
+		isCat(pp+1,function) {
 	big_app1(pp)
 	big_app(big_force)
 	big_app1(pp+1)
@@ -2716,16 +2728,16 @@ if scrap_info[pp+1].cat==decl {
 }
 
 @ @<Cases for |base|@>=
-if scrap_info[pp+1].cat==int_like || 
-	scrap_info[pp+1].cat==exp {
-	if scrap_info[pp+2].cat==comma {
+if isCat(pp+1,int_like) || 
+	isCat(pp+1,exp) {
+	if isCat(pp+2,comma) {
 		big_app1(pp)
 		big_app(' ')
 		big_app2(pp+1)
 		app(opt)
 		app('9')
 		reduce(pp,3,base,0,42)
-	} else if scrap_info[pp+2].cat==lbrace {
+	} else if isCat(pp+2,lbrace) {
 		big_app1(pp)
 		big_app(' ')
 		big_app1(pp+1)
@@ -2736,28 +2748,28 @@ if scrap_info[pp+1].cat==int_like ||
 }
 
 @ @<Cases for |struct_like|@>=
-if scrap_info[pp+1].cat==lbrace {
+if isCat(pp+1,lbrace) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
 	reduce(pp,2,struct_head,0,44)
-} else if scrap_info[pp+1].cat==exp ||
-		scrap_info[pp+1].cat==int_like {
-	if scrap_info[pp+2].cat==lbrace || 
-		scrap_info[pp+2].cat==semi {
+} else if isCat(pp+1,exp) ||
+		isCat(pp+1,int_like) {
+	if isCat(pp+2,lbrace) || 
+		isCat(pp+2,semi) {
 		make_underlined(pp+1)
 		make_reserved(pp+1)
 		big_app1(pp)
 		big_app(' ')
 		big_app1(pp+1)
-		if scrap_info[pp+2].cat==semi {
+		if isCat(pp+2,semi) {
 			reduce(pp,2,decl_head,0,45)
 		} else {
 			big_app(' ')
 			big_app1(pp+2)
 			reduce(pp,3,struct_head,0,46)
 		}
-	} else if scrap_info[pp+2].cat==colon {
+	} else if isCat(pp+2,colon) {
 		squash(pp+2,1,base,2,47)
 	} else if scrap_info[pp+2].cat!=base {
 		big_app1(pp)
@@ -2768,10 +2780,10 @@ if scrap_info[pp+1].cat==lbrace {
 }
 
 @ @<Cases for |struct_head|@>=
-if (scrap_info[pp+1].cat==decl || 
-	scrap_info[pp+1].cat==stmt || 
-	scrap_info[pp+1].cat==function) && 
-	scrap_info[pp+2].cat==rbrace {
+if (isCat(pp+1,decl) || 
+	isCat(pp+1,stmt) || 
+	isCat(pp+1,function)) && 
+	isCat(pp+2,rbrace) {
 	big_app1(pp)
 	big_app(indent)
 	big_app(force)
@@ -2779,7 +2791,7 @@ if (scrap_info[pp+1].cat==decl ||
 	big_app(outdent); big_app(force)
 	big_app1(pp+2)
 	reduce(pp,3,int_like,-2,49)
-} else if scrap_info[pp+1].cat==rbrace {
+} else if isCat(pp+1,rbrace) {
 	big_app1(pp)
 	app_str("\\,")
 	big_app1(pp+1)
@@ -2788,12 +2800,12 @@ if (scrap_info[pp+1].cat==decl ||
 }
 
 @ @<Cases for |fn_decl|@>=
-if scrap_info[pp+1].cat==decl {
+if isCat(pp+1,decl) {
 	big_app1(pp)
 	big_app(force)
 	big_app1(pp+1)
 	reduce(pp,2,fn_decl,0,51)
-} else if scrap_info[pp+1].cat==stmt {
+} else if isCat(pp+1,stmt) {
 	big_app1(pp)
 	app(outdent)
 	app(outdent)
@@ -2803,9 +2815,9 @@ if scrap_info[pp+1].cat==decl {
 }
 
 @ @<Cases for |function|@>=
-if scrap_info[pp+1].cat==function || 
-	scrap_info[pp+1].cat==decl || 
-	scrap_info[pp+1].cat==stmt {
+if isCat(pp+1,function) || 
+	isCat(pp+1,decl) || 
+	isCat(pp+1,stmt) {
 	big_app1(pp)
 	big_app(big_force)
 	big_app1(pp+1)
@@ -2813,17 +2825,17 @@ if scrap_info[pp+1].cat==function ||
 }
 
 @ @<Cases for |lbrace|@>=
-if scrap_info[pp+1].cat==rbrace {
+if isCat(pp+1,rbrace) {
 	big_app1(pp)
 	app('\\')
 	app(',')
 	big_app1(pp+1)
 @.\\,@>
 	reduce(pp,2,stmt,-1,54)
-} else if (scrap_info[pp+1].cat==stmt ||
-		scrap_info[pp+1].cat==decl ||
-		scrap_info[pp+1].cat==function) && 
-		scrap_info[pp+2].cat==rbrace {
+} else if (isCat(pp+1,stmt) ||
+		isCat(pp+1,decl) ||
+		isCat(pp+1,function)) && 
+		isCat(pp+2,rbrace) {
 	big_app(force)
 	big_app1(pp)
 	big_app(indent)
@@ -2835,17 +2847,17 @@ if scrap_info[pp+1].cat==rbrace {
 	big_app(outdent)
 	big_app(force)
 	reduce(pp,3,stmt,-1,55)
-} else if scrap_info[pp+1].cat==exp {
-	if scrap_info[pp+2].cat==rbrace {
+} else if isCat(pp+1,exp) {
+	if isCat(pp+2,rbrace) {
 		squash(pp,3,exp,-2,56)
-	} else if scrap_info[pp+2].cat==comma && 
-				scrap_info[pp+3].cat==rbrace {
+	} else if isCat(pp+2,comma) && 
+				isCat(pp+3,rbrace) {
 		squash(pp,4,exp,-2,56)
 	}
 }
 
 @ @<Cases for |if_like|@>=
-if scrap_info[pp+1].cat==exp {
+if isCat(pp+1,exp) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
@@ -2853,11 +2865,11 @@ if scrap_info[pp+1].cat==exp {
 }
 
 @ @<Cases for |else_like|@>=
-if scrap_info[pp+1].cat==colon {
+if isCat(pp+1,colon) {
 	squash(pp+1,1,base,1,58)
-} else if scrap_info[pp+1].cat==lbrace {
-		squash(pp,1,else_head,0,59)
-} else if scrap_info[pp+1].cat==stmt {
+} else if isCat(pp+1,lbrace) {
+	squash(pp,1,else_head,0,59)
+} else if isCat(pp+1,stmt) {
 	big_app(force)
 	big_app1(pp)
 	big_app(indent)
@@ -2869,8 +2881,8 @@ if scrap_info[pp+1].cat==colon {
 }
 
 @ @<Cases for |else_head|@>=
-if scrap_info[pp+1].cat==stmt || 
-	scrap_info[pp+1].cat==exp {
+if isCat(pp+1,stmt) || 
+	isCat(pp+1,exp) {
 	big_app(force)
 	big_app1(pp)
 	big_app(break_space)
@@ -2882,10 +2894,10 @@ if scrap_info[pp+1].cat==stmt ||
 }
 
 @ @<Cases for |if_clause|@>=
-if scrap_info[pp+1].cat==lbrace {
+if isCat(pp+1,lbrace) {
 	squash(pp,1,if_head,0,62)
-} else if scrap_info[pp+1].cat==stmt {
-	if scrap_info[pp+2].cat==else_like {
+} else if isCat(pp+1,stmt) {
+	if isCat(pp+2,else_like) {
 		big_app(force)
 		big_app1(pp)
 		big_app(indent)
@@ -2894,7 +2906,7 @@ if scrap_info[pp+1].cat==lbrace {
 		big_app(outdent)
 		big_app(force)
 		big_app1(pp+2)
-		if scrap_info[pp+3].cat==if_like {
+		if isCat(pp+3,if_like) {
 			big_app(' ')
 			big_app1(pp+3)
 			reduce(pp,4,if_like,0,63)
@@ -2907,9 +2919,9 @@ if scrap_info[pp+1].cat==lbrace {
 }
 
 @ @<Cases for |if_head|@>=
-if scrap_info[pp+1].cat==stmt || 
-	scrap_info[pp+1].cat==exp {
-	if scrap_info[pp+2].cat==else_like {
+if isCat(pp+1,stmt) || 
+	isCat(pp+1,exp) {
+	if isCat(pp+2,else_like) {
 		big_app(force)
 		big_app1(pp)
 		big_app(break_space)
@@ -2918,7 +2930,7 @@ if scrap_info[pp+1].cat==stmt ||
 		big_app1(pp+1)
 		big_app(force)
 		big_app1(pp+2)
-		if scrap_info[pp+3].cat==if_like {
+		if isCat(pp+3,if_like) {
 			big_app(' ')
 			big_app1(pp+3)
 			reduce(pp,4,if_like,0,66)
@@ -2931,11 +2943,11 @@ if scrap_info[pp+1].cat==stmt ||
 }
 
 @ @<Cases for |case_like|@>=
-if scrap_info[pp+1].cat==semi {
+if isCat(pp+1,semi) {
 	squash(pp,2,stmt,-1,70)
-} else if scrap_info[pp+1].cat==colon {
-		squash(pp,2,tag,-1,71)
-} else if scrap_info[pp+1].cat==exp {
+} else if isCat(pp+1,colon) {
+	squash(pp,2,tag,-1,71)
+} else if isCat(pp+1,exp) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
@@ -2943,14 +2955,14 @@ if scrap_info[pp+1].cat==semi {
 }
 
 @ @<Cases for |tag|@>=
-if scrap_info[pp+1].cat==tag {
+if isCat(pp+1,tag) {
 	big_app1(pp)
 	big_app(break_space)
 	big_app1(pp+1)
 	reduce(pp,2,tag,-1,74)
-} else if scrap_info[pp+1].cat==stmt ||
-		scrap_info[pp+1].cat==decl ||
-		scrap_info[pp+1].cat==function {
+} else if isCat(pp+1,stmt) ||
+		isCat(pp+1,decl) ||
+		isCat(pp+1,function) {
 	big_app(force)
 	big_app(backup)
 	big_app1(pp)
@@ -2963,13 +2975,13 @@ if scrap_info[pp+1].cat==tag {
 grouped together on the same line.
 
 @<Cases for |stmt|@>=
-if scrap_info[pp+1].cat==stmt ||
-	scrap_info[pp+1].cat==decl ||
-	scrap_info[pp+1].cat==function {
+if isCat(pp+1,stmt) ||
+	isCat(pp+1,decl) ||
+	isCat(pp+1,function) {
 	big_app1(pp)
-	if scrap_info[pp+1].cat==function {
+	if isCat(pp+1,function) {
 		big_app(big_force)
-	} else if scrap_info[pp+1].cat==decl {
+	} else if isCat(pp+1,decl) {
 		big_app(big_force)
 	} else if flags['f'] {
 		big_app(force)
@@ -2986,7 +2998,7 @@ big_app1(pp)
 reduce(pp,1,stmt,-1,77)
 
 @ @<Cases for |section_scrap|@>=
-if scrap_info[pp+1].cat==semi {
+if isCat(pp+1,semi) {
 	big_app2(pp)
 	big_app(force)
 	reduce(pp,2,stmt,-2,81)
@@ -3012,19 +3024,19 @@ app('>')
 reduce(pp,1,binop,-2,85)
 
 @ @<Cases for |langle|@>=
-if scrap_info[pp+1].cat==prerangle {
+if isCat(pp+1,prerangle) {
 	big_app1(pp)
 	app('\\')
 	app(',')
 	big_app1(pp+1)
 @.\\,@>
 	reduce(pp,2,cast,-1,86)
-} else if scrap_info[pp+1].cat==decl_head || 
-		scrap_info[pp+1].cat==int_like || 
-		scrap_info[pp+1].cat==exp {
-	if scrap_info[pp+2].cat==prerangle {
+} else if isCat(pp+1,decl_head) || 
+		isCat(pp+1,int_like) || 
+		isCat(pp+1,exp) {
+	if isCat(pp+2,prerangle) {
 		squash(pp,3,cast,-1,87)
-	} else if scrap_info[pp+2].cat==comma {
+	} else if isCat(pp+2,comma) {
 		big_app3(pp)
 		app(opt)
 		app('9')
@@ -3033,11 +3045,11 @@ if scrap_info[pp+1].cat==prerangle {
 }
 
 @ @<Cases for |new_like|@>=
-if scrap_info[pp+1].cat==lpar && 
-	scrap_info[pp+2].cat==exp && 
-	scrap_info[pp+3].cat==rpar {
+if isCat(pp+1,lpar) && 
+	isCat(pp+2,exp) && 
+	isCat(pp+3,rpar) {
 	squash(pp,4,new_like,0,92)
-} else if scrap_info[pp+1].cat==cast {
+} else if isCat(pp+1,cast) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
@@ -3047,30 +3059,30 @@ if scrap_info[pp+1].cat==lpar &&
 }
 
 @ @<Cases for |new_exp|@>=
-if scrap_info[pp+1].cat==int_like || 
-	scrap_info[pp+1].cat==const_like {
+if isCat(pp+1,int_like) || 
+	isCat(pp+1,const_like) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
 	reduce(pp,2,new_exp,0,95)
-} else if scrap_info[pp+1].cat==struct_like && 
-		(scrap_info[pp+2].cat==exp || 
-		scrap_info[pp+2].cat==int_like) {
+} else if isCat(pp+1,struct_like) && 
+		(isCat(pp+2,exp) || 
+		isCat(pp+2,int_like)) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
 	big_app(' ')
 	big_app1(pp+2)
 	reduce(pp,3,new_exp,0,96)
-} else if scrap_info[pp+1].cat==raw_ubin {
+} else if isCat(pp+1,raw_ubin) {
 	big_app1(pp)
 	big_app('{')
 	big_app1(pp+1)
 	big_app('}')
 	reduce(pp,2,new_exp,0,97)
-} else if scrap_info[pp+1].cat==lpar {
+} else if isCat(pp+1,lpar) {
 	squash(pp,1,exp,-2,98)
-} else if (scrap_info[pp+1].cat==exp) {
+} else if (isCat(pp+1,exp)) {
 	big_app1(pp)
 	big_app(' ')
 	reduce(pp,1,exp,-2,98)
@@ -3080,7 +3092,7 @@ if scrap_info[pp+1].cat==int_like ||
 }
 
 @ @<Cases for |for_like|@>=
-if scrap_info[pp+1].cat==exp {
+if isCat(pp+1,exp) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
@@ -3088,7 +3100,7 @@ if scrap_info[pp+1].cat==exp {
 }
 
 @ @<Cases for |raw_ubin|@>=
-if scrap_info[pp+1].cat==const_like {
+if isCat(pp+1,const_like) {
 	big_app2(pp)
 	app_str("\\ ")
 	reduce(pp,2,raw_ubin,0,103)
@@ -3101,28 +3113,28 @@ if scrap_info[pp+1].cat==const_like {
 squash(pp,1,int_like,-2,105)
 
 @ @<Cases for |raw_int|@>=
-if scrap_info[pp+1].cat==prelangle { 
+if isCat(pp+1,prelangle) { 
 	squash(pp+1,1,langle,1,106)
-} else if scrap_info[pp+1].cat==cast {
+} else if isCat(pp+1,cast) {
 	squash(pp,2,raw_int,0,108)
-} else if scrap_info[pp+1].cat==lpar {
+} else if isCat(pp+1,lpar) {
 	squash(pp,1,exp,-2,109)
 } else if scrap_info[pp+1].cat!=langle {
 	squash(pp,1,int_like,-3,110)
 }
 
 @ @<Cases for |type_like|@>=
-if (scrap_info[pp+1].cat==int_like || 
-		scrap_info[pp+1].cat==cast) && 
-		(scrap_info[pp+2].cat==comma || 
-		scrap_info[pp+2].cat==semi) {
+if (isCat(pp+1,int_like) || 
+		isCat(pp+1,cast)) && 
+		(isCat(pp+2,comma) || 
+		isCat(pp+2,semi)) {
 	squash(pp+1,1,exp,-1,115)
-} else if scrap_info[pp+1].cat==int_like {
+} else if isCat(pp+1,int_like) {
 	big_app1(pp)
 	big_app(' ')
 	big_app1(pp+1)
 	reduce(pp,2,type_like,0,116)
-} else if scrap_info[pp+1].cat==exp && 
+} else if isCat(pp+1,exp) && 
 		scrap_info[pp+2].cat!=lpar && 
 		scrap_info[pp+2].cat!=exp && 
 		scrap_info[pp+2].cat!=cast {
@@ -3132,15 +3144,15 @@ if (scrap_info[pp+1].cat==int_like ||
 	big_app(' ')
 	big_app1(pp+1)
 	reduce(pp,2,type_like,0,117)
-} else if scrap_info[pp+1].cat==comma {
+} else if isCat(pp+1,comma) {
 	big_app2(pp)
 	big_app(' ')
 	reduce(pp,2,type_like,0,118)
-} else if scrap_info[pp+1].cat==semi {
+} else if isCat(pp+1,semi) {
 	squash(pp,2,decl,-1,119)
-} else if scrap_info[pp+1].cat==ubinop && 
-		(scrap_info[pp+2].cat==ubinop || 
-		scrap_info[pp+2].cat==cast) {
+} else if isCat(pp+1,ubinop) && 
+		(isCat(pp+2,ubinop) || 
+		isCat(pp+2,cast)) {
 	big_app('{')
 	big_app1(pp+1)
 	big_app('}')
