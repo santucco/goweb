@@ -59,7 +59,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-banner = "This is GOWEAVE (Version 0.1)\n"
+const banner = "This is GOWEAVE (Version 0.1)\n"
 
 @ @c
 package main
@@ -68,11 +68,11 @@ import (
 @<Import packages@>@/
 )
 
-const (
-@<Constants@>@/
-)
-
 @<Typedef declarations@>@/
+
+@<Constants@>@/
+
+
 @<Global variables@>@/
 
 @ \.{GOWEAVE} has a fairly straightforward outline.  It operates in
@@ -104,12 +104,12 @@ func main () {
 handle \TEX/, so they should be sufficient for most applications of \.{GOWEAVE}.
 
 @<Constants@>=
-max_names = 4000 /* number of identifiers, strings, section names
-	must be less than 10240; used in |"common.w"| */
-line_length = 80 /* lines of \TEX/ output have at most this many characters
-	should be less than 256 */
-max_scraps = 2000 /* number of tokens in \GO/ texts being parsed */
-stack_size = 400 /* number of simultaneous output levels */
+const (
+	max_names = 4000 /* number of identifiers, strings, section names
+		must be less than 10240; used in |"common.w"| */
+	line_length = 80 /* lines of \TEX/ output have at most this many characters
+		should be less than 256 */
+)
 
 @ The next few sections contain stuff from the file |"common.w"| that must
 be included in both |"gotangle.w"| and |"goweave.w"|. 
@@ -146,28 +146,6 @@ formatted.
 
 @<More elements of |name_info| structure@>=
 	ilk		int32 /* used by identifiers in \.{GOWEAVE} only */
-
-@ @<Constants@>=
-normal = 0 /* ordinary identifiers have |normal| ilk */
-roman = 1 /* normal index entries have |roman| ilk */
-wildcard = 2 /* user-formatted index entries have |wildcard| ilk */
-typewriter = 3 /* `typewriter type' entries have |typewriter| ilk */
-custom = 5 /* identifiers with user-given control sequence */
-alfop = 22 /* alphabetic operators like \&{and} or \&{not\_eq} */
-else_like = 26 /* \&{else} */
-new_like = 42 /* \&{new} */
-for_like = 45 /* \&{for}, \&{switch} */
-if_like = 47 /* \&{if} */
-raw_ubin = 49 /* `\.\&' or `\.*' when looking for \&{const} following */
-const_like = 50 /* \&{const} */
-raw_int = 51 /* \&{int}, \&{byte}, \dots; also structure and class names  */
-int_like = 52 /* same, when not followed by left parenthesis or \DC\ */
-case_like = 53 /* \&{case}, \&{return}, \&{goto}, \&{break}, \&{continue} */
-struct_like = 55 /* \&{struct} */
-type_like rune = 56 /* \&{type} */
-var_like rune = 57 /* \&{var} */
-import_like rune = 58 /* \&{import} */
-
 
 @ We keep track of the current section number in |section_count|, which
 is the total number of sections that have started.  Sections which have
@@ -213,9 +191,11 @@ var section_xref_switch int32 /* either zero or |def_flag| */
 has a special first cross-reference whose |num| field is |file_flag|.
 
 @ @<Constants@>=
-cite_flag = 10240 /* must be strictly larger than |max_sections| */
-file_flag = 3*cite_flag
-def_flag = 2*cite_flag
+const (
+	cite_flag = 10240 /* must be strictly larger than |max_sections| */
+	file_flag = 3*cite_flag
+	def_flag = 2*cite_flag
+)
 
 @ @<More elements of |name...@>=
 xref int32 /* info corresponding to names */
@@ -330,15 +310,15 @@ are used to contain the result of \GO/ code translated into \TEX/ form;
 further details about them will be explained later.
 
 @ @<Global...@>=
-var tok_mem []rune /* tokens */
-var tok_start []int32 /* directory into |tok_mem| */
+var tok_mem []interface{} /* tokens */
+//var tok_start []int32 /* directory into |tok_mem| */
 var max_tok_ptr int /* largest length of |tok_mem| */
-var max_text_ptr int /* largest length of |tok_start| */
+//var max_text_ptr int /* largest length of |tok_start| */
 
 @ @<Set init...@>=
-tok_start=append(tok_start, 0)
+//tok_start=append(tok_start, 0)
 max_tok_ptr=1
-max_text_ptr=1
+//max_text_ptr=1
 
 @ Here are the three procedures needed to complete |id_lookup|:
 @c
@@ -372,91 +352,79 @@ are defined in header files of the ISO Standard \GO/ Library.)
 @^reserved words@>
 
 @<Store all the reserved words@>=
-id_lookup([]rune("and"),alfop)
-id_lookup([]rune("and_eq"),alfop)
-id_lookup([]rune("bitand"),alfop)
-id_lookup([]rune("bitor"),alfop)
-id_lookup([]rune("compl"),alfop)
-id_lookup([]rune("not"),alfop)
-id_lookup([]rune("not_eq"),alfop)
-id_lookup([]rune("or"),alfop)
-id_lookup([]rune("or_eq"),alfop)
-id_lookup([]rune("xor"),alfop)
-id_lookup([]rune("xor_eq"),alfop)
-
 // reserved words
-id_lookup([]rune("break"),case_like)
-id_lookup([]rune("case"),case_like)
-id_lookup([]rune("chan"),raw_int)
-id_lookup([]rune("const"),const_like)
-id_lookup([]rune("continue"),case_like)
-id_lookup([]rune("default"),case_like)
-id_lookup([]rune("defer"),if_like)
-id_lookup([]rune("else"),else_like)
-id_lookup([]rune("fallthrough"),case_like)
-id_lookup([]rune("for"),for_like)
-id_lookup([]rune("func"),fn_decl)
-id_lookup([]rune("go"),if_like)
-id_lookup([]rune("goto"),case_like)
-id_lookup([]rune("if"),if_like)
-id_lookup([]rune("import"),import_like)
-id_lookup([]rune("interface"),struct_like)
-id_lookup([]rune("map"),raw_int)
-id_lookup([]rune("package"),custom)
-id_lookup([]rune("range"),for_like)
-id_lookup([]rune("return"),case_like)
-id_lookup([]rune("select"),for_like)
-id_lookup([]rune("struct"),struct_like)
-id_lookup([]rune("switch"),for_like)
-id_lookup([]rune("type"),type_like)
-id_lookup([]rune("var"),var_like)
+id_lookup([]rune("break"),break_token)
+id_lookup([]rune("case"),case_token)
+id_lookup([]rune("chan"),chan_token)
+id_lookup([]rune("const"),const_token)
+id_lookup([]rune("continue"),continue_token)
+id_lookup([]rune("default"),default_token)
+id_lookup([]rune("defer"),defer_token)
+id_lookup([]rune("else"),else_token)
+id_lookup([]rune("fallthrough"),fallthrough_token)
+id_lookup([]rune("for"),for_token)
+id_lookup([]rune("func"),func_token)
+id_lookup([]rune("go"),go_token)
+id_lookup([]rune("goto"),goto_token)
+id_lookup([]rune("if"),if_token)
+id_lookup([]rune("import"),import_token)
+id_lookup([]rune("interface"),interface_token)
+id_lookup([]rune("map"),Type)
+id_lookup([]rune("package"),package_token)
+id_lookup([]rune("range"),range_token)
+id_lookup([]rune("return"),return_token)
+id_lookup([]rune("select"),select_token)
+id_lookup([]rune("struct"),struct_token)
+id_lookup([]rune("switch"),switch_token)
+id_lookup([]rune("type"),type_token)
+id_lookup([]rune("var"),var_token)
 
 // types
-id_lookup([]rune("bool"),raw_int) 
-id_lookup([]rune("byte"),raw_int)
-id_lookup([]rune("complex64"),raw_int) 
-id_lookup([]rune("complex128"),raw_int) 
-id_lookup([]rune("error"),raw_int) 
-id_lookup([]rune("float32"),raw_int) 
-id_lookup([]rune("float64"),raw_int)
-id_lookup([]rune("int"),raw_int)
-id_lookup([]rune("int8"),raw_int)
-id_lookup([]rune("int16"),raw_int)
-id_lookup([]rune("int32"),raw_int)
-id_lookup([]rune("int64"),raw_int)
-id_lookup([]rune("rune"),raw_int)
-id_lookup([]rune("string"),raw_int)
-id_lookup([]rune("uint"),raw_int)
-id_lookup([]rune("uint8"),raw_int)
-id_lookup([]rune("uint16"),raw_int)
-id_lookup([]rune("uint32"),raw_int)
-id_lookup([]rune("uint64"),raw_int)
-id_lookup([]rune("uintptr"),raw_int)
+id_lookup([]rune("bool"),Type) 
+id_lookup([]rune("byte"),Type)
+id_lookup([]rune("complex64"),Type) 
+id_lookup([]rune("complex128"),Type) 
+id_lookup([]rune("error"),Type) 
+id_lookup([]rune("float32"),Type) 
+id_lookup([]rune("float64"),Type)
+id_lookup([]rune("int"),Type)
+id_lookup([]rune("int8"),Type)
+id_lookup([]rune("int16"),Type)
+id_lookup([]rune("int32"),Type)
+id_lookup([]rune("int64"),Type)
+id_lookup([]rune("rune"),Type)
+id_lookup([]rune("string"),Type)
+id_lookup([]rune("uint"),Type)
+id_lookup([]rune("uint8"),Type)
+id_lookup([]rune("uint16"),Type)
+id_lookup([]rune("uint32"),Type)
+id_lookup([]rune("uint64"),Type)
+id_lookup([]rune("uintptr"),Type)
 
 // constants
-id_lookup([]rune("true"),raw_int)
-id_lookup([]rune("false"),raw_int)
-id_lookup([]rune("iota"),raw_int)
+id_lookup([]rune("true"),Type)
+id_lookup([]rune("false"),Type)
+id_lookup([]rune("iota"),Expression)
 
 // zero value
-id_lookup([]rune("nil"),custom)
+id_lookup([]rune("nil"),identifier)
 
 // functions
-id_lookup([]rune("append"),new_like)
-id_lookup([]rune("cap"),new_like)
-id_lookup([]rune("close"),new_like)
-id_lookup([]rune("complex"),new_like)
-id_lookup([]rune("copy"),new_like)
-id_lookup([]rune("delete"),new_like)
-id_lookup([]rune("imag"),new_like)
-id_lookup([]rune("len"),new_like)
-id_lookup([]rune("make"),new_like)
-id_lookup([]rune("new"),new_like)
-id_lookup([]rune("panic"),new_like)
-id_lookup([]rune("print"),new_like)
-id_lookup([]rune("println"),new_like)
-id_lookup([]rune("real"),new_like)
-id_lookup([]rune("recover"),new_like)
+id_lookup([]rune("append"),identifier)
+id_lookup([]rune("cap"),identifier)
+id_lookup([]rune("close"),identifier)
+id_lookup([]rune("complex"),identifier)
+id_lookup([]rune("copy"),identifier)
+id_lookup([]rune("delete"),identifier)
+id_lookup([]rune("imag"),identifier)
+id_lookup([]rune("len"),identifier)
+id_lookup([]rune("make"),identifier)
+id_lookup([]rune("new"),identifier)
+id_lookup([]rune("panic"),identifier)
+id_lookup([]rune("print"),identifier)
+id_lookup([]rune("println"),identifier)
+id_lookup([]rune("real"),identifier)
+id_lookup([]rune("recover"),identifier)
 res_wd_end=int32(len(name_dir))
 id_lookup([]rune("TeX"),custom)
 
@@ -480,27 +448,29 @@ scanning routines.
 @^ASCII code dependencies@>
 
 @ @<Constants@>=
-ignore rune = 00 /* control code of no interest to \.{GOWEAVE} */
-verbatim rune = 02 /* takes the place of extended ASCII \.{\char2} */
-underline rune = '\n' /* this code will be intercepted without confusion */
-noop rune = 0177 /* takes the place of ASCII delete */
-xref_roman rune = 0203 /* control code for `\.{@@\^}' */
-xref_wildcard rune = 0204 /* control code for `\.{@@:}' */
-xref_typewriter rune = 0205 /* control code for `\.{@@.}' */
-TeX_string rune = 0206 /* control code for `\.{@@t}' */
-ord rune = 0207 /* control code for `\.{@@'}' */
-join rune = 0210 /* control code for `\.{@@\&}' */
-thin_space rune = 0211 /* control code for `\.{@@,}' */
-math_break rune = 0212 /* control code for `\.{@@\v}' */
-line_break rune = 0213 /* control code for `\.{@@/}' */
-big_line_break rune = 0214 /* control code for `\.{@@\#}' */
-no_line_break rune = 0215 /* control code for `\.{@@+}' */
-pseudo_semi rune = 0216 /* control code for `\.{@@;}' */
-trace rune = 0222 /* control code for `\.{@@0}', `\.{@@1}' and `\.{@@2}' */
-format_code rune = 0225 /* control code for `\.{@@f}' and `\.{@@s}' */
-begin_code rune = 0227 /* control code for `\.{@@c}' */
-section_name rune = 0230 /* control code for `\.{@@<}' */
-new_section rune = 0231 /* control code for `\.{@@\ }' and `\.{@@*}' */
+const (
+	ignore rune = 00 /* control code of no interest to \.{GOWEAVE} */
+	verbatim rune = 02 /* takes the place of extended ASCII \.{\char2} */
+	underline rune = '\n' /* this code will be intercepted without confusion */
+	noop rune = 0177 /* takes the place of ASCII delete */
+	xref_roman rune = 0213 /* control code for `\.{@@\^}' */
+	xref_wildcard rune = 0214 /* control code for `\.{@@:}' */
+	xref_typewriter rune = 0215 /* control code for `\.{@@.}' */
+	TeX_string rune = 0216 /* control code for `\.{@@t}' */
+	ord rune = 0217 /* control code for `\.{@@'}' */
+	join rune = 0220 /* control code for `\.{@@\&}' */
+	thin_space rune = 0221 /* control code for `\.{@@,}' */
+	math_break rune = 0222 /* control code for `\.{@@\v}' */
+	line_break rune = 0223 /* control code for `\.{@@/}' */
+	big_line_break rune = 0224 /* control code for `\.{@@\#}' */
+	no_line_break rune = 0225 /* control code for `\.{@@+}' */
+	pseudo_semi rune = 0226 /* control code for `\.{@@;}' */
+	trace rune = 0232 /* control code for `\.{@@0}', `\.{@@1}' and `\.{@@2}' */
+	format_code rune = 0235 /* control code for `\.{@@f}' and `\.{@@s}' */
+	begin_code rune = 0237 /* control code for `\.{@@c}' */
+	section_name rune = 0240 /* control code for `\.{@@<}' */
+	new_section rune = 0241 /* control code for `\.{@@\ }' and `\.{@@*}' */
+)
 
 @ @f TeX_string TeX
 
@@ -561,6 +531,11 @@ and off, respectively.
 ccode['0']=trace
 ccode['1']=trace
 ccode['2']=trace
+ccode['3']=trace
+ccode['4']=trace
+ccode['5']=trace
+ccode['6']=trace
+ccode['7']=trace
 
 @ The |skip_limbo| routine is used on the first pass to skip through
 portions of the input that are not in any sections, i.e., that precede
@@ -573,7 +548,7 @@ interpretation of identifiers.
 
 @ @c
 func skip_limbo() {
-	for true {
+	for {
 		if loc>=len(buffer) && !get_line() {
 			return
 		}
@@ -582,7 +557,7 @@ func skip_limbo() {
 		}
 		l := loc
 		loc++
-		if l <len(buffer) { 
+		if l<len(buffer) { 
 			c:=new_section
 			if loc < len(buffer) {
 				c=ccode[buffer[loc]]
@@ -610,7 +585,7 @@ assumed to exist at the very end of the file.
 @c
 /* skip past pure \TEX/ code */
 func skip_TeX() rune {
-	for true {
+	for {
 		if loc>=len(buffer) && !get_line() {
 			return new_section
 		}
@@ -666,9 +641,11 @@ preceded by \.{@@(} instead of \.{@@<}.
 it sets |xref_switch| to |def_flag| and goes on to the next token.
 
 @ @<Constants@>=
-constant = 0200 /* \GO/ constant */
-str = 0201 /* \GO/ string */
-identifier = 0202 /* \GO/ identifier or reserved word */
+const (
+	constant rune = 0210 /* \GO/ constant */
+	str rune = 0211 /* \GO/ string */
+	identifier rune = 0212 /* \GO/ identifier or reserved word */
+)
 
 @ @<Global...@>=
 var cur_section int32 /* name of section just scanned */
@@ -683,9 +660,25 @@ compilers even allow the dollar sign.
 @ @c
 /* produces the next input token */
 func get_next() rune { 
-	for true {
-		if loc>=len(buffer) && !get_line() {
-			return new_section 
+	for {
+		if loc>=len(buffer) {
+			if next_control==identifier ||
+				next_control==constant ||
+				next_control==str ||
+				next_control==break_token ||
+				next_control==continue_token ||
+				next_control==fallthrough_token ||
+				next_control==return_token ||
+				next_control==plus_plus ||
+				next_control==minus_minus ||
+				next_control==rpar ||
+				next_control==rbracket ||
+				next_control==rbrace {
+				return pseudo_semi
+			}
+			if !get_line() {
+				return new_section 
+			}
 		}
 		@+c:=buffer[loc] /* the current character */
 		loc++
@@ -693,11 +686,12 @@ func get_next() rune {
 		if loc < len(buffer) {
 			nc = buffer[loc]
 		}
-		if unicode.IsDigit(c) || c=='.' {
+		if unicode.IsDigit(c) || ( c=='.' && unicode.IsDigit(nc)) {
 			@<Get a constant@>
 		} else if c=='\'' || c=='"' || c=='`' {
 			@<Get a string@>
-		} else if unicode.IsLetter(c) || c=='_' {
+		} else if unicode.IsLetter(c) || 
+				c=='_' && (unicode.IsLetter(c) || unicode.IsDigit(c)) {
 			@<Get an identifier@>
 		} else if c=='@@' {
 			@<Get control code and possible section name@>
@@ -784,11 +778,11 @@ is a slice of the array |section_text|, not of |buffer|.
 				loc++
 			}
 		}
-	}
-	for loc < len(buffer) && 
-		buffer[loc]=='i' {
-		id = append(id, '$')
-		loc++
+		if loc < len(buffer) && buffer[loc]=='i' {
+			id = append(id, '$')
+			id = append(id, 'i')
+			loc++
+		}
 	}
 	return constant
 }
@@ -810,7 +804,7 @@ delimiters if they are protected by a backslash.
 	if delim=='<' {
 		 delim='>' /* for file names in |#include| lines */
 	}
-	for true {
+	for {
 		if loc>=len(buffer) {
 			if !get_line()  {
 				err_print("! Input ended in middle of string")
@@ -893,7 +887,7 @@ character of the name.)
 
 
 @ @<Put section name...@>=
-for true {
+for {
 	if loc>=len(buffer) {
 		if !get_line() {
 			err_print("! Input ended in section name")
@@ -1121,7 +1115,7 @@ enclosed in \.{@@\^}$\,\ldots\,$\.{@@>} or \.{@@.}$\,\ldots\,$\.{@@>}
 or \.{@@:}$\,\ldots\,$\.{@@>}.
 
 @<Store cross-references in the \T...@>=
-for true {
+for {
 	next_control=skip_TeX()
 	switch next_control {
 		case underline:
@@ -1260,7 +1254,7 @@ if next_control<=section_name {  /* |begin_code| or |section_name| */
 			set_file_flag(cur_section)	
 		}
 	}
-	for true {
+	for {
 		if next_control==section_name && cur_section!=-1 {
 			new_section_xref(cur_section)
 		}
@@ -1449,7 +1443,7 @@ the break.
 /* finds a way to break the output line */
 func break_out() {
 	k:=out_ptr /* pointer into |out_buf| */
-	for true {
+	for {
 		if k==0 {
 			@<Print warning message, break the line, |return|@>
 		}
@@ -1528,7 +1522,7 @@ The use of `\.{@@}' signs is severely restricted in such material:
 
 @c
 func copy_limbo() {
-	for true {
+	for {
 		if loc >= len(buffer) {
 			finish_line()
 			if !get_line() {
@@ -1580,7 +1574,7 @@ makes the test for empty lines in |finish_line| work.
 @ @f copy_TeX TeX
 @c
 func copy_TeX() rune {
-	for true {
+	for {
 		if loc>=len(buffer) {
 			finish_line()
 			if !get_line() {
@@ -1621,20 +1615,13 @@ braces to keep \TEX/ from complaining about unbalanced braces.
 Instead of copying the \TEX/ material
 into the output buffer, this function copies it into the token memory
 (in phase two only).
-The function |app_tok(t)| is used to append token |t| to the current
-token list..
-
-@c
-func app_tok(c rune){
-	tok_mem = append(tok_mem, c)
-}
 
 @ @c
 /* copies \TEX/ code in comments */
 func copy_comment(
 	is_long_comment bool, /* is this a traditional \GO/ comment? */
 	bal int /* brace balance */) int {
-	for true {
+	for {
 		if loc>=len(buffer) {
 			if is_long_comment {
 				if !get_line() {
@@ -1661,9 +1648,9 @@ func copy_comment(
 		}
 		if phase==2 {
 			if c>0177 {
-				app_tok(quoted_char)
+				app(quoted_char)
 			}
-			app_tok(c)
+			app(c)
 		}
 		@<Copy special things when |c=='@@', '\\'|@>
 		if c=='{' {
@@ -1709,7 +1696,7 @@ if c=='@@' {
 	}
 } else if c=='\\' && loc < len(buffer) && buffer[loc]!='@@' {
 	if phase==2 {
-		app_tok(buffer[loc])
+		app(buffer[loc])
 	}
 	loc++
 }
@@ -1720,7 +1707,7 @@ enough right braces to keep \TEX/ happy.
 @<Clear |bal|...@>=
 if phase==2 {
 	for bal--; bal>=0; bal-- {
-		app_tok('}')
+		app('}')
 	}
 }
 return 0
@@ -1753,10 +1740,10 @@ try to match $s_3\,s_4\ldots\,$, etc.
 
 A production applies if the category codes have a given pattern. For
 example, one of the productions (see rule~3) is
-$$\hbox{|exp| }\left\{\matrix{\hbox{|binop|}\cr\hbox{|ubinop|}}\right\}
+$$\hbox{|exp| }\left\{\matrix{\hbox{|binary_op|}}\right\}
 \hbox{ |exp| }\RA\hbox{ |exp|}$$
 and it means that three consecutive scraps whose respective categories are
-|exp|, |binop| (or |ubinop|),
+|exp|, |binary_op|
 and |exp| are converted to one scrap whose category
 is |exp|.  The translations of the original
 scraps are simply concatenated.  The case of
@@ -1770,8 +1757,8 @@ In the \TEX/ file, this will specify an optional line break after the
 comma, with penalty 90.
 
 At each opportunity the longest possible production is applied.  For
-example, if the current sequence of scraps is |int_like| |cast|
-|lbrace|, rule 31 is applied; but if the sequence is |int_like| |cast|
+example, if the current sequence of scraps is |int| |cast|
+|lbrace|, rule 31 is applied; but if the sequence is |int| |cast|
 followed by anything other than |lbrace|, rule 32 takes effect.
 
 Translation rules such as `$E_1C\,\\{opt}9\,E_2$' above use subscripts
@@ -1779,102 +1766,305 @@ to distinguish between translations of scraps whose categories have the
 same initial letter; these subscripts are assigned from left to right.
 
 @ Here is a list of the category codes that scraps can have.
-(A few others, like |int_like|, have already been defined; the
+(A few others, like |int|, have already been defined; the
 |cat_name| array contains a complete list.)
 
 @<Constants@>=
-exp rune = 1 /* denotes an expression, including perhaps a single identifier */
-unop rune = 2 /* denotes a unary operator */
-binop rune = 3 /* denotes a binary operator */
-ubinop rune = 4
-	/* denotes an operator that can be unary or binary, depending on context */
-cast rune = 5 /* denotes a cast */
-lbrace rune = 7 /* denotes a left brace */
-rbrace rune = 8 /* denotes a right brace */
-decl_head rune = 9 /* denotes an incomplete declaration */
-comma rune = 10 /* denotes a comma */
-lpar rune = 11 /* denotes a left parenthesis or left bracket */
-rpar rune = 12 /* denotes a right parenthesis or right bracket */
-prelangle rune = 13 /* denotes `$<$' before we know what it is */
-prerangle rune = 14 /* denotes `$>$' before we know what it is */
-langle rune = 15 /* denotes `$<$' when it's used as angle bracket in a template */
-base rune = 19 /* denotes a colon that introduces a base specifier */
-decl rune = 20 /* denotes a complete declaration */
-struct_head rune = 21 /* denotes the beginning of a structure specifier */
-stmt rune = 23 /* denotes a complete statement */
-function rune = 24 /* denotes a complete function */
-fn_decl rune = 25 /* denotes a function declarator */
-semi rune = 27 /* denotes a semicolon */
-colon rune = 28 /* denotes a colon */
-tag rune = 29 /* denotes a statement label */
-if_head rune = 30 /* denotes the beginning of a compound conditional */
-else_head rune = 31 /* denotes a prefix for a compound statement */
-if_clause rune = 32 /* pending \.{if} together with a condition */
-insert rune = 37 /* a scrap that gets combined with its neighbor */
-section_scrap rune = 38 /* section name */
-dead rune = 39 /* scrap that won't combine */
-new_exp rune = 60 /* \&{new} and a following type identifier */
+const (
+	normal rune = iota /* ordinary identifiers have |normal| ilk */
+	roman rune = iota /* normal index entries have |roman| ilk */
+	wildcard rune = iota /* user-formatted index entries have |wildcard| ilk */
+	typewriter rune = iota /* `typewriter type' entries have |typewriter| ilk */
+	custom rune = iota /* identifiers with user-given control sequence */
+)
+
+const (
+	zero rune = iota
+	Type rune = iota
+	ArrayType rune = iota
+	StructType rune = iota
+	PointerType rune = iota
+	InterfaceType rune = iota
+	SliceType rune = iota
+	MapType rune = iota
+	ChannelType rune = iota
+	FieldDecl rune = iota
+	AnonymousField rune = iota
+	Signature rune = iota
+	Parameters rune = iota
+	ParameterList rune = iota
+	ParameterDecl rune = iota
+	MethodSpec rune = iota
+	Block rune = iota
+	Statement rune = iota
+	ConstDecl rune = iota
+	TypeDecl rune = iota
+	VarDecl rune = iota
+	FunctionDecl rune = iota
+	MethodDecl rune = iota
+	ConstSpec rune = iota
+	IdentifierList rune = iota
+	ExpressionList rune = iota
+	TypeSpec rune = iota
+	VarSpec rune = iota
+	ShortVarDecl rune = iota
+	Receiver rune = iota
+	Operand rune = iota
+	QualifiedIdent rune = iota
+	MethodExpr rune = iota
+	CompositeLit rune = iota
+	FunctionLit rune = iota
+	FunctionType rune = iota
+	LiteralType rune = iota
+	LiteralValue rune = iota
+	ElementList rune = iota
+	Element rune = iota
+	PrimaryExpr rune = iota
+	Conversion rune = iota
+	BuiltinCall rune = iota
+	Selector rune = iota
+	Index rune = iota
+	Slice rune = iota
+	TypeAssertion rune = iota
+	Call rune = iota
+	Expression rune = iota
+	UnaryExpr rune = iota
+	ReceiverType rune = iota
+	LabeledStmt rune = iota
+	SimpleStmt rune = iota
+	GoStmt rune = iota
+	ReturnStmt rune = iota
+	BreakStmt rune = iota
+	ContinueStmt rune = iota
+	GotoStmt rune = iota
+	fallthrough_token rune = iota
+	IfStmt rune = iota
+	SelectStmt rune = iota
+	ForStmt rune = iota
+	DeferStmt rune = iota
+	SendStmt rune = iota
+	IncDecStmt rune = iota
+	Assignment rune = iota
+	ExprSwitchStmt rune = iota
+	ExprCaseClause rune = iota
+	TypeSwitchStmt rune = iota
+	TypeSwitchGuard rune = iota
+	TypeCaseClause rune = iota
+	TypeSwitchCase rune = iota
+	ForClause rune = iota
+	RangeClause rune = iota
+	CommClause rune = iota
+	CommCase rune = iota
+	RecvStmt rune = iota
+	BuiltinArgs rune = iota
+	PackageClause rune = iota
+	PackageName rune = iota
+	ImportDecl rune = iota
+	ImportSpec rune = iota
+	package_token rune = iota /* denotes \.{package}*/
+	import_token rune = iota /* denotes \&{import} */
+	type_token rune = iota /* \&{type} */
+	interface_token rune = iota /* \&{interface} */
+	const_token rune = iota /* \&{const} */
+	go_token rune = iota /* \&{go} */
+	return_token rune = iota /* \&{return} */
+	break_token rune = iota /* \&{break} */
+	continue_token rune = iota /* \&{continue} */
+	goto_token rune = iota /* \&{goto} */
+	if_token rune = iota /* \&{if} */
+	switch_token rune = iota /* \&{switch} */
+	select_token rune = iota /* \&{select} */
+	case_token rune = iota /* \&{case} */
+	default_token rune = iota /* \&{default} */
+	for_token rune = iota /* \&{for}*/
+	else_token rune = iota /* \&{else} */
+	defer_token rune = iota /* denotes \.{defer} and \.{go} statements*/
+	func_token rune = iota /* denotes a function declarator */
+	struct_token rune = iota /* \&{struct} */
+	var_token rune = iota /* \&{var} */
+	range_token rune = iota /* \&{range} */
+	map_token rune = iota /* \&{map} */
+	chan_token rune = iota /* \&{cnah} */
+	dot rune = iota /* \&{.} */
+	eq rune = iota /* denotes an assign operator '=' */
+	binary_op rune = iota /* "||" | "&&" | rel_op | add_op | mul_op  */
+	rel_op rune = iota /* "==" | "!=" | "<" | "<=" | ">" | ">=" */
+	add_op rune = iota	/* "+" | "-" | "|" | "^" . */
+	mul_op rune = iota /*  "/" | "%" | "<<" | ">>" | "&" | "&^"  */
+	unary_op rune = iota /* "+" | "-" | "!" | "^" | "*" | "&" | "<-" */
+	asterisk rune = iota /* "*" */
+	assign_op rune = iota
+
+	lbrace rune = iota /* denotes a left brace */
+	rbrace rune = iota /* denotes a right brace */
+	comma rune = iota /* denotes a comma */
+	lpar rune = iota /* denotes a left parenthesis */
+	rpar rune = iota /* denotes a right parenthesis */
+	lbracket rune = iota /* denotes a left bracket */
+	rbracket rune = iota /* denotes a right bracket */
+
+	semi rune = iota /* denotes a semicolon */
+	colon rune = iota /* denotes a colon */
+	insert rune = iota /* a scrap that gets combined with its neighbor */
+	section_scrap rune = iota /* section name */
+	dead rune = iota /* scrap that won't combine */
+)
 
 @ @<Glo...@>=
 var cat_name[256]string
 
 @ @<Set in...@>=
-	for cat_index:=0;cat_index<255;cat_index++ {
-		cat_name[cat_index] = "UNKNOWN"
-	}
+for cat_index:=0;cat_index<255;cat_index++ {
+	cat_name[cat_index] = "UNKNOWN-" + fmt.Sprintf("%v", cat_index) 
+}
 @.UNKNOWN@>
-		cat_name[exp]="exp"
-		cat_name[unop]="unop"
-		cat_name[binop]="binop"
-		cat_name[ubinop]="ubinop"
-		cat_name[cast]="cast"
-		cat_name[lbrace]="{"@q}@>
-		cat_name[rbrace]=@q{@>"}"
-		cat_name[decl_head]="decl_head"
-		cat_name[comma]=","
-		cat_name[lpar]="("
-		cat_name[rpar]=")"
-		cat_name[prelangle]="<"
-		cat_name[prerangle]=">"
-		cat_name[langle]="\\<"
-		cat_name[base]="\\:"
-		cat_name[decl]="decl"
-		cat_name[struct_head]="struct_head"
-		cat_name[alfop]="alfop"
-		cat_name[stmt]="stmt"
-		cat_name[function]="function"
-		cat_name[fn_decl]="fn_decl"
-		cat_name[else_like]="else_like"
-		cat_name[semi]=";"
-		cat_name[colon]=":"
-		cat_name[tag]="tag"
-		cat_name[if_head]="if_head"
-		cat_name[else_head]="else_head"
-		cat_name[if_clause]="if()"
-		cat_name[insert]="insert"
-		cat_name[section_scrap]="section"
-		cat_name[dead]="@@d"
-		cat_name[new_like]="new"
-		cat_name[for_like]="for"
-		cat_name[if_like]="if"
-		cat_name[raw_ubin]="ubinop?"
-		cat_name[const_like]="const"
-		cat_name[var_like]="var"
-		cat_name[import_like]="import"
-		cat_name[raw_int]="raw"
-		cat_name[int_like]="int"
-		cat_name[case_like]="case"
-		cat_name[struct_like]="struct"
-		cat_name[type_like]="type"
-		cat_name[new_exp]="new_exp"
-		cat_name[0]="zero"
+
+cat_name[Type]="Type"
+cat_name[ArrayType]="ArrayType"
+cat_name[StructType]="StructType"
+cat_name[PointerType]="PointerType"
+cat_name[InterfaceType]="InterfaceType"
+cat_name[SliceType]="SliceType"
+cat_name[MapType]="MapType"
+cat_name[ChannelType]="ChannelType"
+cat_name[FieldDecl]="FieldDecl"
+cat_name[AnonymousField]="AnonymousField"
+cat_name[Signature]="Signature"
+cat_name[Parameters]="Parameters"
+cat_name[ParameterList]="ParameterList"
+cat_name[ParameterDecl]="ParameterDecl"
+cat_name[MethodSpec]="MethodSpec"
+cat_name[Block]="Block"
+cat_name[Statement]="Statement"
+cat_name[ConstDecl]="ConstDecl"
+cat_name[TypeDecl]="TypeDecl"
+cat_name[VarDecl]="VarDecl"
+cat_name[FunctionDecl]="FunctionDecl"
+cat_name[MethodDecl]="MethodDecl"
+cat_name[ConstSpec]="ConstSpec"
+cat_name[IdentifierList]="IdentifierList"
+cat_name[ExpressionList]="ExpressionList"
+cat_name[TypeSpec]="TypeSpec"
+cat_name[VarSpec]="VarSpec"
+cat_name[ShortVarDecl]="ShortVarDecl"
+cat_name[Receiver]="Receiver"
+cat_name[Operand]="Operand"
+cat_name[QualifiedIdent]="QualifiedIdent"
+cat_name[MethodExpr]="MethodExpr"
+cat_name[CompositeLit]="CompositeLit"
+cat_name[FunctionLit]="FunctionLit"
+cat_name[FunctionType]="FunctionType"
+cat_name[LiteralType]="LiteralType"
+cat_name[LiteralValue]="LiteralValue"
+cat_name[ElementList]="ElementList"
+cat_name[Element]="Element"
+cat_name[PrimaryExpr]="PrimaryExpr"
+cat_name[Conversion]="Conversion"
+cat_name[BuiltinCall]="BuiltinCall"
+cat_name[Selector]="Selector"
+cat_name[Index]="Index"
+cat_name[Slice]="Slice"
+cat_name[TypeAssertion]="TypeAssertion"
+cat_name[Call]="Call"
+cat_name[Expression]="Expression"
+cat_name[UnaryExpr]="UnaryExpr"
+cat_name[ReceiverType]="ReceiverType"
+cat_name[LabeledStmt]="LabeledStmt"
+cat_name[SimpleStmt]="SimpleStmt"
+cat_name[GoStmt]="GoStmt"
+cat_name[ReturnStmt]="ReturnStmt"
+cat_name[BreakStmt]="BreakStmt"
+cat_name[ContinueStmt]="ContinueStmt"
+cat_name[GotoStmt]="GotoStmt"
+cat_name[fallthrough_token]="fallthrough_token"
+cat_name[IfStmt]="IfStmt"
+cat_name[SelectStmt]="SelectStmt"
+cat_name[ForStmt]="ForStmt"
+cat_name[DeferStmt]="DeferStmt"
+cat_name[SendStmt]="SendStmt"
+cat_name[IncDecStmt]="IncDecStmt"
+cat_name[Assignment]="Assignment"
+cat_name[ExprSwitchStmt]="ExprSwitchStmt"
+cat_name[ExprCaseClause]="ExprCaseClause"
+cat_name[TypeSwitchStmt]="TypeSwitchStmt"
+cat_name[TypeSwitchGuard]="TypeSwitchGuard"
+cat_name[TypeCaseClause]="TypeCaseClause"
+cat_name[TypeSwitchCase]="TypeSwitchCase"
+cat_name[ForClause]="ForClause"
+cat_name[RangeClause]="RangeClause"
+cat_name[CommClause]="CommClause"
+cat_name[CommCase]="CommCase"
+cat_name[RecvStmt]="RecvStmt"
+cat_name[BuiltinArgs]="BuiltinArgs"
+cat_name[PackageClause]="PackageClause"
+cat_name[PackageName]="PackageName"
+cat_name[ImportDecl]="ImportDecl"
+cat_name[ImportSpec]="ImportSpec"
+
+cat_name[package_token]="package"
+cat_name[import_token]="import"
+cat_name[type_token]="type"
+cat_name[interface_token]="interface"
+cat_name[const_token]="const"
+cat_name[go_token]="go"
+cat_name[return_token]="return"
+cat_name[break_token]="break"
+cat_name[continue_token]="continue"
+cat_name[goto_token]="goto"
+cat_name[if_token]="if"
+cat_name[switch_token]= "switch"
+cat_name[select_token]= "select"
+cat_name[case_token]= "case"
+cat_name[default_token]= "default"
+cat_name[for_token]="for"
+cat_name[else_token]="else"
+cat_name[defer_token]="defer"
+cat_name[func_token]="func"
+cat_name[struct_token]="struct"
+cat_name[var_token]="var"
+cat_name[range_token]="range"
+cat_name[map_token]="map"
+cat_name[chan_token]="chan"
+
+cat_name[dot]="'.'"
+
+cat_name[eq]="'='"
+cat_name[col_eq]="':='"
+cat_name[binary_op]="binary_op"
+cat_name[rel_op]="rel_op"
+cat_name[add_op]="add_op"
+cat_name[mul_op]="mul_op"
+cat_name[unary_op]="unary_op"
+cat_name[asterisk]="'*'"
+cat_name[assign_op]="assign_op"
+
+cat_name[lbrace]="'{'"@q}@>
+cat_name[rbrace]=@q{@>"'}'"
+cat_name[comma]="','"
+cat_name[lpar]="'('"
+cat_name[rpar]="')'"
+cat_name[lbracket]="'['"
+cat_name[rbracket]="']'"
+cat_name[semi]="';'"
+cat_name[colon]="':'"
+cat_name[insert]="insert"
+cat_name[section_scrap]="section_scrap"
+cat_name[dead]="@@d"
+cat_name[dot_dot_dot]="'...'"
+cat_name[constant]="constant"
+cat_name[str]="str"
+cat_name[identifier]="identifier"
+cat_name[0]="zero"
+cat_name[direct]="'<-'"
+cat_name[plus_plus]="'++'"
+cat_name[minus_minus]="'--'"
 
 @ This code allows \.{GOWEAVE} to display its parsing steps.
 
 @c
 /* symbolic printout of a category */
 func print_cat(c int32) {
-	fmt.Print(cat_name[c])
+	fmt.Printf("%s(%v)", cat_name[c],c)
 }
 
 @ The token lists for translated \TEX/ output contain some special control
@@ -1925,22 +2115,21 @@ reserved words, `\.{\\.\{}$\,\ldots\,$\.\}' surrounding strings,
 |n| is the section number.
 
 @<Constants@>=
-math_rel = 0206
-big_cancel = 0210 /* like |cancel|, also overrides spaces */
-cancel = 0211 /* overrides |backup|, |break_space|, |force|, |big_force| */
-indent = 0212 /* one more tab (\.{\\1}) */
-outdent = 0213 /* one less tab (\.{\\2}) */
-opt = 0214 /* optional break in mid-statement (\.{\\3}) */
-backup = 0215 /* stick out one unit to the left (\.{\\4}) */
-break_space = 0216 /* optional break between statements (\.{\\5}) */
-force = 0217 /* forced break between statements (\.{\\6}) */
-big_force = 0220 /* forced break with additional space (\.{\\7}) */
-@^high-bit character handling@>
-quoted_char = 0222
-				/* introduces a character token in the range |0200|--|0377| */
-end_translation = 0223 /* special sentinel token at end of list */
-inserted = 0224 /* sentinel to mark translations of inserts */
-qualifier = 0225 /* introduces an explicit namespace qualifier */
+const (
+	math_rel rune = 0244
+	big_cancel rune = 0245 /* like |cancel|, also overrides spaces */
+	cancel rune = 0246/* overrides |backup|, |break_space|, |force|, |big_force| */
+	indent rune = 0247 /* one more tab (\.{\\1}) */
+	outdent rune = 0250 /* one less tab (\.{\\2}) */
+	opt rune = 0251 /* optional break in mid-statement (\.{\\3}) */
+	backup rune = 0252 /* stick out one unit to the left (\.{\\4}) */
+	break_space rune = 0253 /* optional break between statements (\.{\\5}) */
+	force rune = 0254 /* forced break between statements (\.{\\6}) */
+	big_force rune = 0255 /* forced break with additional space (\.{\\7}) */
+	quoted_char rune = 0256 /* introduces a character token in the range |0200|--|0377| */
+	end_translation rune = 0257 /* special sentinel token at end of list */
+	inserted rune = 0260 /* sentinel to mark translations of inserts */
+)
 
 @ The raw input is converted into scraps according to the following table,
 which gives category codes followed by the translations.
@@ -1954,110 +2143,10 @@ An identifier |c| of length 1 is translated as \.{\\\v c} instead of
 as \.{\\\\\{c\}}. An identifier \.{CAPS} in all caps is translated as
 \.{\\.\{CAPS\}} instead of as \.{\\\\\{CAPS\}}. An identifier that has
 become a reserved word via |typedef| is translated with \.{\\\&} replacing
-\.{\\\\} and |raw_int| replacing |exp|.
+\.{\\\\} and |int_type| replacing |exp|.
 
 A string of length greater than 20 is broken into pieces of size at most~20
 with discretionary breaks in between.
-
-\yskip\halign{\quad#\hfil&\quad#\hfil&\quad\hfil#\hfil\cr
-\.{!=}&|binop|: \.{\\I}&yes\cr
-\.{<=}&|binop|: \.{\\Z}&yes\cr
-\.{>=}&|binop|: \.{\\G}&yes\cr
-\.{==}&|binop|: \.{\\E}&yes\cr
-\.{\&\&}&|binop|: \.{\\W}&yes\cr
-\.{\v\v}&|binop|: \.{\\V}&yes\cr
-\.{++}&|unop|: \.{\\PP}&yes\cr
-\.{--}&|unop|: \.{\\MM}&yes\cr
-\.{>>}&|binop|: \.{\\GG}&yes\cr
-\.{<<}&|binop|: \.{\\LL}&yes\cr
-\.{...}&|raw_int|: \.{\\,\\ldots\\,}&yes\cr
-\."string\."&|exp|: \.{\\.\{}string with special characters quoted\.\}&maybe\cr
-\.{@@=}string\.{@@>}&|exp|: \.{\\vb\{}string with special characters
-	quoted\.\}&maybe\cr
-\.{@@'7'}&|exp|: \.{\\.\{@@'7'\}}&maybe\cr
-\.{077} or \.{\\77}&|exp|: \.{\\T\{\\\~77\}}&maybe\cr
-\.{0x7f}&|exp|: \.{\\T\{\\\^7f\}}&maybe\cr
-\.{77}&|exp|: \.{\\T\{77\}}&maybe\cr
-\.{77L}&|exp|: \.{\\T\{77\\\$L\}}&maybe\cr
-\.{0.1E5}&|exp|: \.{\\T\{0.1\\\_5\}}&maybe\cr
-\.+&|ubinop|: \.+&yes\cr
-\.-&|ubinop|: \.-&yes\cr
-\.*&|raw_ubin|: \.*&yes\cr
-\./&|binop|: \./&yes\cr
-\.<&|prelangle|: \.{\\langle}&yes\cr
-\.=&|binop|: \.{\\K}&yes\cr
-\.>&|prerangle|: \.{\\rangle}&yes\cr
-\..&|binop|: \..&yes\cr
-\.{\v}&|binop|: \.{\\OR}&yes\cr
-\.\^&|binop|: \.{\\XOR}&yes\cr
-\.\%&|binop|: \.{\\MOD}&yes\cr
-\.!&|unop|: \.{\\R}&yes\cr
-\.\~&|unop|: \.{\\CM}&yes\cr
-\.\&&|raw_ubin|: \.{\\AND}&yes\cr
-\.(&|lpar|: \.(&maybe\cr
-\.[&|lpar|: \.[&maybe\cr
-\.)&|rpar|: \.)&maybe\cr
-\.]&|rpar|: \.]&maybe\cr
-\.\{&|lbrace|: \.\{&yes\cr
-\.\}&|lbrace|: \.\}&yes\cr
-\.,&|comma|: \.,&yes\cr
-\.;&|semi|: \.;&maybe\cr
-\.:&|colon|: \.:&no\cr
-identifier&|exp|: \.{\\\\\{}identifier with underlines and
-					   dollar signs quoted\.\}&maybe\cr
-\.{and}&|alfop|: \stars&yes\cr
-\.{and\_eq}&|alfop|: \stars&yes\cr
-\.{auto}&|int_like|: \stars&maybe\cr
-\.{bitand}&|alfop|: \stars&yes\cr
-\.{bitor}&|alfop|: \stars&yes\cr
-\.{bool}&|raw_int|: \stars&maybe\cr
-\.{break}&|case_like|: \stars&maybe\cr
-\.{case}&|case_like|: \stars&maybe\cr
-\.{compl}&|alfop|: \stars&yes\cr
-\.{const}&|const_like|: \stars&maybe\cr
-\.{continue}&|case_like|: \stars&maybe\cr
-\.{default}&|case_like|: \stars&maybe\cr
-\.{else}&|else_like|: \stars&maybe\cr
-\.{error}&|if_like|: \stars&maybe\cr
-\.{float}&|raw_int|: \stars&maybe\cr
-\.{for}&|for_like|: \stars&maybe\cr
-\.{goto}&|case_like|: \stars&maybe\cr
-\.{if}&|if_like|: \stars&maybe\cr
-\.{int}&|raw_int|: \stars&maybe\cr
-\.{line}&|if_like|: \stars&maybe\cr
-\.{new}&|new_like|: \stars&maybe\cr
-\.{not}&|alfop|: \stars&yes\cr
-\.{not\_eq}&|alfop|: \stars&yes\cr
-\.{nil}&|exp|: \.{\\NULL}&yes\cr
-\.{or}&|alfop|: \stars&yes\cr
-\.{or\_eq}&|alfop|: \stars&yes\cr
-\.{return}&|case_like|: \stars&maybe\cr
-\.{short}&|raw_int|: \stars&maybe\cr
-\.{struct}&|struct_like|: \stars&maybe\cr
-\.{switch}&|for_like|: \stars&maybe\cr
-\.{TeX}&|exp|: \.{\\TeX}&yes\cr
-\.{type}&|type_like|: \stars&maybe\cr
-\.{xor}&|alfop|: \stars&yes\cr
-\.{xor\_eq}&|alfop|: \stars&yes\cr
-\.{@@,}&|insert|: \.{\\,}&maybe\cr
-\.{@@\v}&|insert|:  |opt| \.0&maybe\cr
-\.{@@/}&|insert|:  |force|&no\cr
-\.{@@\#}&|insert|:  |big_force|&no\cr
-\.{@@+}&|insert|:  |big_cancel| \.{\{\}} |break_space|
-	\.{\{\}} |big_cancel|&no\cr
-\.{@@;}&|semi|: &maybe\cr
-\.{@@\&}&|insert|: \.{\\J}&maybe\cr
-\.{@@h}&|insert|: |force| \.{\\ATH} |force|&no\cr
-\.{@@<}\thinspace section name\thinspace\.{@@>}&|section_scrap|:
- \.{\\X}$n$\.:translated section name\.{\\X}&maybe\cr
-\.{@@(@q)@>}\thinspace section name\thinspace\.{@@>}&|section_scrap|:
- \.{\\X}$n$\.{:\\.\{}section name with special characters
-			quoted\.{\ \}\\X}&maybe\cr
-\.{/*}comment\.{*/}&|insert|: |cancel|
-			\.{\\C\{}translated comment\.\} |force|&no\cr
-\.{//}comment&|insert|: |cancel|
-			\.{\\SHC\{}translated comment\.\} |force|&no\cr
-}
 
 \smallskip
 The construction \.{@@t}\thinspace stuff\/\thinspace\.{@@>} contributes
@@ -2067,58 +2156,32 @@ The construction \.{@@t}\thinspace stuff\/\thinspace\.{@@>} contributes
 
 @* Implementing the productions.
 More specifically, a scrap is a structure consisting of a category
-|cat| and a |trans|, which points to the translation in
-|tok_start|.  When \GO/ text is to be processed with the grammar above,
+|cat| and a |trans|, which contains the translation.
+When \GO/ text is to be processed with the grammar above,
 we form an array |scrap_info| containing the initial scraps.
-Our production rules have the nice property that the right-hand side is never
-longer than the left-hand side. Therefore it is convenient to use sequential
-allocation for the current sequence of scraps. Five pointers are used to
-manage the parsing:
 
-\yskip\hang |pp| is a pointer into |scrap_info|.  We will try to match
-the category codes |scrap_info[pp].cat,@,@,scrap_info[pp+1].cat|$,\,\,\ldots\,$
-to the left-hand sides of productions.
-
-\yskip\hang |scrap_base|, |lo_ptr|, |hi_ptr|, and |scrap_ptr| are such that
-the current sequence of scraps appears in positions |scrap_base| through
-|lo_ptr| and |hi_ptr| through |scrap_ptr|, inclusive, in the |cat| and
-|trans| arrays. Scraps located between |scrap_base| and |lo_ptr| have
-been examined, while those in positions |>=hi_ptr| have not yet been
-looked at by the parsing process.
-
-\yskip\noindent Initially |scrap_ptr| is set to the position of the final
-scrap to be parsed, and it doesn't change its value. The parsing process
-makes sure that |lo_ptr>=pp+3|, since productions have as many as four terms,
-by moving scraps from |hi_ptr| to |lo_ptr|. If there are
-fewer than |pp+3| scraps left, the positions up to |pp+3| are filled with
-blanks that will not match in any productions. Parsing stops when
-|pp==lo_ptr+1| and |hi_ptr==scrap_ptr+1|.
-
+@ Here different types of token are defined
 @<Type...@>=
-type trans struct {
-	Trans int32
-	@<Rest of |trans| struct@>
-}
-
 type scrap struct {
 	cat int32
 	mathness int32
-	trans_plus trans
+	trans []interface{}
+	@<Rest of |scrap| struct@>
 }
 
-@ @<Global...@>=
-var scrap_info [max_scraps]scrap /* memory array for scraps */
-var pp int32 /* current position for reducing productions */
-var scrap_base int32 /* beginning of the current scrap sequence */
-var scrap_ptr int32 /* ending of the current scrap sequence */
-var lo_ptr int32 /* last scrap that has been examined */
-var hi_ptr int32 /* first scrap that has not been examined */
-var max_scr_ptr int32 /* largest value assumed by |scrap_ptr| */
+type id_token int 
 
-@ @<Set init...@>=
-scrap_base=1
-max_scr_ptr=0
-scrap_ptr=0
+type res_token int
+
+type section_token int32
+
+type list_token []interface{}
+
+type inner_list_token []interface{}
+
+
+@ @<Global...@>=
+var scrap_info []scrap /* memory array for scraps */
 
 @ Token lists in |@!tok_mem| are composed of the following kinds of
 items for \TEX/ output.
@@ -2138,16 +2201,23 @@ items for \TEX/ output.
 translated without line-break controls.
 
 @<Constants@>=
-id_flag rune = unicode.UpperLower /* signifies an identifier */
-res_flag rune = 2*id_flag /* signifies a reserved word */
-section_flag rune = 4*id_flag /* signifies a section name */
-tok_flag rune = 6*id_flag /* signifies a token list */
-inner_tok_flag rune = 8*id_flag /* signifies a token list in `\pb' */
+//const (
+//	id_flag rune = unicode.UpperLower /* signifies an identifier */
+//	res_flag rune = 2*id_flag /* signifies a reserved word */
+//	section_flag rune = 4*id_flag /* signifies a section name */
+//	tok_flag rune = 6*id_flag /* signifies a token list */
+//	inner_tok_flag rune = 8*id_flag /* signifies a token list in `\pb' */
+//)
+
+
+
+
+
 
 @ The production rules listed above are embedded directly into \.{GOWEAVE},
 since it is easier to do this than to write an interpretive system
-that would handle production systems in general. Several macros are defined
-here so that the program for each production is fairly short.
+that would handle production systems in general. Several helper functions
+are defined here so that the program for each production is fairly short.
 
 All of our productions conform to the general notion that some |k|
 consecutive scraps starting at some position |j| are to be replaced by a
@@ -2177,8 +2247,8 @@ Before calling |reduce|, the program should have appended the tokens of
 the new translation to the |tok_mem| array. We commonly want to append
 copies of several existing translations, and few functions are defined to
 simplify these common cases. For example, \\{app2}|(pp)| will append the
-translations of two consecutive scraps, |scrap_info[pp].trans_plus.Trans| 
-and |scrap_info[pp+1].trans_plus.Trans|, to
+translations of two consecutive scraps, |scrap_info[pp].trans| 
+and |scrap_info[pp+1].trans|, to
 the current token list. If the entire new translation is formed in this
 way, we write `|squash(j,k,c,d,n)|' instead of `|reduce(j,k,c,d,n)|'. For
 example, `|squash(pp,3,exp,-2,3)|' is an abbreviation for `\\{app3}|(pp);
@@ -2215,32 +2285,34 @@ understanding the format by comparing the code with the symbolic
 productions as they were listed earlier.
 
 @<Constants@>=
-no_math rune = 2 /* should be in horizontal mode */
-yes_math rune = 1 /* should be in math mode */
-maybe_math rune = 0 /* works in either horizontal or math mode */
+const (
+	no_math rune = 2 /* should be in horizontal mode */
+	yes_math rune = 1 /* should be in math mode */
+	maybe_math rune = 0 /* works in either horizontal or math mode */
+)
 
 @ @c 
-func big_app2(a rune) {
+func big_app2(a int) {
 	big_app1(a)
 	big_app1(a+1)
 }
 
-func big_app3(a rune) {
+func big_app3(a int) {
 	big_app2(a)
 	big_app1(a+2)
 }
 
-func big_app4(a rune) {
+func big_app4(a int) {
 	big_app3(a)
 	big_app1(a+3)
 }
 
-func app(a rune) {
+func app(a interface{}) {
 	tok_mem = append(tok_mem, a)
 }
 
-func app1(a int32) {
-	tok_mem = append(tok_mem, tok_flag+scrap_info[a].trans_plus.Trans)
+func app1(a int) {
+	tok_mem = append(tok_mem, scrap_info[a].trans)
 }
 
 @ @<Global...@>=
@@ -2250,7 +2322,7 @@ var init_mathness int32
 @ @c
 func app_str(s string) {
 	for _, v := range s {
-		app_tok(v)
+		app(v)
 	}
 }
 
@@ -2273,7 +2345,7 @@ func big_app(a rune) {
 	app(a)
 }
 
-func big_app1(a int32) {
+func big_app1(a int) {
 	switch scrap_info[a].mathness % 4 { /* left boundary */
 	case no_math:
 		if cur_mathness==maybe_math {
@@ -2298,11 +2370,188 @@ func big_app1(a int32) {
 the |scrap_info| and a corresponding scrap has the specified category |cat|
 
 @c
-func isCat(i int32, cat int32) bool {
-	if i < 0 || i >=int32(len(scrap_info)) {
+func isCat(pp int, cat int32) bool {
+	if pp < 0 || pp >=len(scrap_info) {
+		if (tracing & 4) == 4 {
+			fmt.Fprintf(os.Stdout, "%v; is out of range of the scrap_info\n", pp)
+		}
 		return false
 	}
-	return scrap_info[i].cat == cat
+	if (tracing & 4) == 4 {
+		fmt.Fprintf(os.Stdout, "%v; looking for a category %q\n", pp, cat_name[cat])
+	}
+	if scrap_info[pp].cat==cat {
+		if (tracing & 4) == 4 {
+			fmt.Fprintf(os.Stdout, "%v; +category %q has been found\n", pp, cat_name[cat])
+		}
+		return true
+	}
+	@<Making copy of |scrap_info| and |rollback| function@>
+	reduced_cat=-1
+	switch cat {
+		case ConstDecl: @<Cases for |ConstDecl|@> 
+		case TypeDecl: @<Cases for |TypeDecl|@> 
+		case VarDecl: @<Cases for |VarDecl|@>
+		case FunctionDecl: @<Cases for |FunctionDecl|@>
+		case MethodDecl: @<Cases for |MethodDecl|@>
+		case Receiver: @<Cases for |Receiver|@>
+		case ConstSpec: @<Cases for |ConstSpec|@> 
+		case TypeSpec: @<Cases for |TypeSpec|@>
+		case VarSpec: @<Cases for |VarSpec|@>
+		case ImportSpec: @<Cases for |ImportSpec|@>
+		case FieldDecl: @<Cases for |FieldDecl|@>
+		case AnonymousField: @<Cases for |AnonymousField|@>
+		case Type: @<Cases for |Type|@>
+		case ArrayType: @<Cases for |ArrayType|@>
+		case StructType: @<Cases for |StructType|@>
+		case PointerType: @<Cases for |PointerType|@>
+		case Signature: @<Cases for |Signature|@>
+		case Parameters: @<Cases for |Parameters|@>
+		case ParameterList: @<Cases for |ParameterList|@>
+		case ParameterDecl: @<Cases for |ParameterDecl|@>
+		case InterfaceType: @<Cases for |InterfaceType|@>
+		case MethodSpec: @<Cases for |MethodSpec|@>
+		case SliceType: @<Cases for |SliceType|@>
+		case MapType: @<Cases for |MapType|@>
+		case ChannelType: @<Cases for |ChannelType|@>
+		case IdentifierList: @<Cases for |IdentifierList|@>
+		case ExpressionList: @<Cases for |ExpressionList|@>
+		case Expression: @<Cases for |Expression|@> 
+		case UnaryExpr: @<Cases for |UnaryExpr|@>
+		case binary_op: @<Cases for |binary_op|@>
+		case PrimaryExpr: @<Cases for |PrimaryExpr|@>
+		case Operand: @<Cases for |Operand|@>
+		case CompositeLit: @<Cases for |CompositeLit|@>
+		case LiteralType: @<Cases for |LiteralType|@>
+		case LiteralValue: @<Cases for |LiteralValue|@>
+		case ElementList: @<Cases for |ElementList|@>
+		case Element: @<Cases for |Element|@>
+		case FunctionLit: @<Cases for |FunctionLit|@>
+		case FunctionType: @<Cases for |FunctionType|@>
+		case Block: @<Cases for |Block|@>
+		case Statement: @<Cases for |Statement|@>
+		case LabeledStmt: @<Cases for |LabeledStmt|@>
+		case SimpleStmt: @<Cases for |SimpleStmt|@>
+		case GoStmt: @<Cases for |GoStmt|@>
+		case ReturnStmt: @<Cases for |ReturnStmt|@>
+		case BreakStmt: @<Cases for |BreakStmt|@>
+		case ContinueStmt: @<Cases for |ContinueStmt|@>
+		case GotoStmt: @<Cases for |GotoStmt|@>
+		case IfStmt: @<Cases for |IfStmt|@>
+		case ExprSwitchStmt: @<Cases for |ExprSwitchStmt|@>
+		case ExprCaseClause: @<Cases for |ExprCaseClause|@>
+		case TypeSwitchStmt: @<Cases for |TypeSwitchStmt|@>
+		case TypeSwitchGuard: @<Cases for |TypeSwitchGuard|@>
+		case TypeCaseClause: @<Cases for |TypeCaseClause|@>
+		case TypeSwitchCase: @<Cases for |TypeSwitchCase|@>
+		case SelectStmt: @<Cases for |SelectStmt|@>
+		case CommClause: @<Cases for |CommClause|@>
+		case CommCase: @<Cases for |CommCase|@>
+		case RecvStmt: @<Cases for |RecvStmt|@>
+		case SendStmt: @<Cases for |SendStmt|@>
+		case ForStmt: @<Cases for |ForStmt|@>
+		case ForClause: @<Cases for |ForClause|@>
+		case RangeClause: @<Cases for |RangeClause|@>
+		case DeferStmt: @<Cases for |DeferStmt|@>
+		case IncDecStmt: @<Cases for |IncDecStmt|@>
+		case Assignment: @<Cases for |Assignment|@>
+		case assign_op: @<Cases for |assign_op|@> 
+		case ShortVarDecl: @<Cases for |ShortVarDecl|@>
+		case QualifiedIdent: @<Cases for |QualifiedIdent|@>
+		case MethodExpr: @<Cases for |MethodExpr|@>
+		case ReceiverType: @<Cases for |ReceiverType|@>
+		case Conversion: @<Cases for |Conversion|@>
+		case BuiltinCall: @<Cases for |BuiltinCall|@>
+		case BuiltinArgs: @<Cases for |BuiltinArgs|@>
+		case Selector: @<Cases for |Selector|@> 
+		case Index: @<Cases for |Index|@>
+		case Slice: @<Cases for |Slice|@>
+		case TypeAssertion: @<Cases for |TypeAssertion|@>
+		case Call: @<Cases for |Call|@>
+		case unary_op: @<Cases for |unary_op|@> 
+		default:
+			if (tracing & 4) == 4 {
+				fmt.Fprintf(os.Stdout, "%v; -category %q hasn't been found\n", pp, cat_name[cat])
+			}
+			rollback()
+			return false
+	}
+	if reduced_cat==cat {
+		if (tracing & 4) == 4 {
+			fmt.Fprintf(os.Stdout, "%v; +category %q has been found\n", pp, cat_name[cat])
+		}
+	} else { 
+		if (tracing & 4) == 4 {
+			fmt.Fprintf(os.Stdout, "%v; -category %q hasn't been found\n", pp, cat_name[cat])
+		}
+		rollback()
+	}
+	return reduced_cat==cat
+}
+
+@ The function |isCats| checks if the specified index |pp| is inside 
+the |scrap_info| and a corresponding scraps have the specified sequence of categories |cats|.
+Some of the catigories |cats| can be optional.
+
+@<Typedef declarations@>=
+type cat_pair struct {
+	cat int32
+	mand bool
+}
+
+@ @c
+func isCats(pp int, c *int, cats ...cat_pair) bool {
+	*c=0
+	res:=false
+	exit:=false
+	for !exit && pp<len(scrap_info) {
+		r:=false
+		for _,v:=range cats {
+			if isCat(pp,v.cat) {
+				r=true
+				*c++
+				pp++
+			} else if v.mand {
+				exit=true
+				break
+			}
+		}
+		if !res {
+			res=r
+		}
+		if !r {
+			exit=true
+		}
+ 	}
+	return res
+}
+
+
+@ The function |isNotCat| checks if the specified index |i| is outside 
+the |scrap_info| or a corresponding scrap hasn't the specified category |cat|
+
+
+@c
+func isNotCat(i int, cat int32) bool {
+	if i < 0 || i >=len(scrap_info) {
+		return false
+	}
+	return scrap_info[i].cat != cat
+}
+
+@ @<Making copy of |scrap_info| and |rollback| function@>=
+scraps_copy:=append([]scrap{},scrap_info[pp:]...)
+reduced_copy:=reduced
+reduced=false
+rollback:=func(){
+	if reduced {
+		n:=pp
+		scrap_info=scrap_info[:pp]
+		scrap_info=append(scrap_info,scraps_copy...)
+		f := "rollback"
+		@<Print a snapshot of the scrap list if debugging @>
+	}
+	reduced=reduced_copy
 }
 
 
@@ -2311,52 +2560,41 @@ at its context. We want to design the program so that this switch
 works, so we might as well not keep ourselves in suspense about exactly what
 code needs to be provided with a proper environment.
 
-@<Match a production at |pp|, or increase |pp| if there is no match@>= {
+@ @<Match a production at |pp|, or increase |pp| if there is no match@>= {
 	/* not a production with left side length 1 */	
 	if isCat(pp+1,insert) { 
 		squash(pp,2,scrap_info[pp].cat,-2,0)
+		pp--
 	} else if isCat(pp+2,insert) { 
 		squash(pp+1,2,scrap_info[pp+1].cat,-1,0)
+		pp--
 	} else if isCat(pp+3,insert) { 
 		squash(pp+2,2,scrap_info[pp+2].cat,0,0)
+		pp--
 	} else {
 		switch scrap_info[pp].cat {
-			case exp: @<Cases for |exp|@>
-			case lpar: @<Cases for |lpar|@>
-			case unop: @<Cases for |unop|@>
-			case ubinop: @<Cases for |ubinop|@>
-			case binop: @<Cases for |binop|@>
-			case cast: @<Cases for |cast|@>
-			case int_like: @<Cases for |int_like|@>
-			case decl_head: @<Cases for |decl_head|@>
-			case decl: @<Cases for |decl|@>
-			case base: @<Cases for |base|@>
-			case struct_like: @<Cases for |struct_like|@>
-			case struct_head: @<Cases for |struct_head|@>
-			case fn_decl: @<Cases for |fn_decl|@>
-			case function: @<Cases for |function|@>
-			case lbrace: @<Cases for |lbrace|@>
-			case if_like: @<Cases for |if_like|@>
-			case else_like: @<Cases for |else_like|@>
-			case else_head: @<Cases for |else_head|@>
-			case if_clause: @<Cases for |if_clause|@>
-			case if_head: @<Cases for |if_head|@>
-			case case_like: @<Cases for |case_like|@>
-			case tag: @<Cases for |tag|@>
-			case stmt: @<Cases for |stmt|@>
-			case semi: @<Cases for |semi|@>
-			case section_scrap: @<Cases for |section_scrap|@>
-			case insert: @<Cases for |insert|@>
-			case prelangle: @<Cases for |prelangle|@>
-			case prerangle: @<Cases for |prerangle|@>
-			case langle: @<Cases for |langle|@>
-			case new_like: @<Cases for |new_like|@>
-			case new_exp: @<Cases for |new_exp|@>
-			case for_like: @<Cases for |for_like|@>
-			case raw_ubin: @<Cases for |raw_ubin|@>
-			case const_like: @<Cases for |const_like|@>
-			case raw_int: @<Cases for |raw_int|@>
-			case type_like: @<Cases for |type_like|@>
+			case insert: 
+				@<Cases for |insert|@>
+			case package_token:
+				@<Cases for |PackageClause|@>
+			case import_token:
+				@<Cases for |ImportDecl|@>
+			case struct_token:
+				@<Cases for |StructType|@>
+			case interface_token:
+				@<Cases for |InterfaceType|@>
+			case func_token:
+				@<Cases for |FunctionDecl|@> 
+				if reduced_cat == FunctionDecl {
+					break
+				}
+				@<Cases for |MethodDecl|@>
+				if reduced_cat == MethodDecl {
+					break
+				}
+				@<Cases for |FunctionType|@>
+			default:
+				@<Cases for |Statement|@>	
 		}
 	}
 	pp++ /* if no match was found, we move to the right */
@@ -2376,39 +2614,31 @@ If the first identifier found is a keyword like `\&{case}', we
 return the special value |case_found|; this prevents underlining
 of identifiers in case labels.
 
-@<Constants@>=
-no_ident_found int32 = -2 /* distinct from any identifier token */
-case_found int32 = -1 /* likewise */
-
 @ @c
-func find_first_ident(p int32) int32 {
-	for j:=tok_start[p]; j<tok_start[p+1]; j++ {
-		r:=tok_mem[j]%id_flag /* remainder of token after the flag has been stripped off */
-		switch tok_mem[j]/id_flag {
-			case 2: /* |res_flag| */
-				if name_dir[r].ilk==case_like {
-					return case_found
+func find_first_ident(p []interface{}) []interface{} {
+	for i, j:= range p {
+		switch r := j.(type) {
+			case res_token: /* |res_flag| */
+				if name_dir[r].ilk==case_token {
+					return nil
 				}
-				if name_dir[r].ilk!=raw_int {
+				if name_dir[r].ilk!=Type {
 					break
 				}
-				fallthrough
-			case 1: 
-				return j
-			case 6, 8: /* |tok_flag| or |inner_tok_flag| */
-				if q:=find_first_ident(r); q!=no_ident_found {
+				return p[i:i+1]
+			case id_token: 
+				return p[i:i+1]
+			case list_token, inner_list_token: /* |tok_flag| or |inner_tok_flag| */
+				if q:=find_first_ident(r.([]interface{})); q!=nil {
 					return q
 				}
-				fallthrough
-			default:  /* char, |section_flag|, fallthru: move on to next token */
-				if tok_mem[j]==inserted {
-					return no_ident_found /* ignore inserts */
-				} else if tok_mem[j]==qualifier { 
-					j++ /* bypass namespace qualifier */
+			case rune:  /* char, |section_token|, fallthru: move on to next token */
+				if r==inserted {
+					return nil /* ignore inserts */
 				}
 		}
 	}
-	return no_ident_found
+	return nil
 }
 
 @ The scraps currently being parsed must be inspected for any
@@ -2416,28 +2646,14 @@ occurrence of the identifier that we're making reserved; hence
 the |for| loop below.
 
 @c
-/* make the first identifier in |scrap_info[p].trans_plus.Trans| like |int| */
-func make_reserved(p int32) {
-	tok_loc:=find_first_ident(scrap_info[p].trans_plus.Trans)/* pointer to |tok_value| */
-	if tok_loc<=case_found {
+/* make the first identifier in |scrap_info[p].trans| like |c| */
+func make_reserved(p int, c rune) {
+	tok_ptr:=find_first_ident(scrap_info[p].trans)
+	if tok_ptr==nil {
 		return /* this should not happen */
 	}
-	tok_value:=tok_mem[tok_loc] /* the name of this identifier, plus its flag*/
-	for p<=scrap_ptr {
-		if scrap_info[p].cat==exp {
-			if tok_mem[tok_start[scrap_info[p].trans_plus.Trans]]==tok_value {
-				scrap_info[p].cat=raw_int
-				tok_mem[tok_start[scrap_info[p].trans_plus.Trans]]=tok_value%id_flag+res_flag
-			}
-		}
-		if p==lo_ptr {
-			p=hi_ptr 
-		} else {
-			p++
-		}
-	}
-	name_dir[tok_value%id_flag].ilk=raw_int
-	tok_mem[tok_loc]=tok_value%id_flag+res_flag
+	name_dir[tok_ptr[0].(id_token)].ilk=c
+	tok_ptr[0]=res_token(tok_ptr[0].(id_token))
 }
 
 @ In the following situations we want to mark the occurrence of
@@ -2450,14 +2666,14 @@ of a function, we find out that the identifier is being defined only after
 it has been swallowed up by an |exp|.
 
 @c
-/* underline the entry for the first identifier in |scrap_info[p].trans_plus.Trans| */
-func make_underlined(p int32) {
-	var tok_loc int32/* where the first identifier appears */
-	if tok_loc=find_first_ident(scrap_info[p].trans_plus.Trans); tok_loc<=case_found {
+/* underline the entry for the first identifier in |scrap_info[p].trans| */
+func make_underlined(p int) {
+	tok_ptr:=find_first_ident(scrap_info[p].trans)
+	if tok_ptr==nil {
 		return /* this happens, for example, in |case found:| */
 	}
 	xref_switch=def_flag
-	underline_xref(tok_mem[tok_loc]%id_flag)
+	underline_xref(tok_ptr[0].(id_token))
 }
 
 @ We cannot use |new_xref| to underline a cross-reference at this point
@@ -2466,7 +2682,7 @@ We actually have to search through the list for the existing
 cross-reference.
 
 @ @c
-func underline_xref(p int32) {
+func underline_xref(p id_token) {
 	q:=name_dir[p].xref /* pointer to cross-reference being examined */
 	if flags['x']==false {
 		return
@@ -2510,721 +2726,1385 @@ with a particular type of scrap. Whenever a match is discovered,
 the |squash| or |reduce| funcs will cause the appropriate action
 to be performed, followed by |goto found|.
 
-@ @<Cases for |exp|@>=
-if isCat(pp+1,lbrace) || 
-	isCat(pp+1,int_like) || 
-	isCat(pp+1,decl) {
-	make_underlined(pp)
-	big_app1(pp)
-	big_app(indent)
-	app(indent)
-	reduce(pp,1,fn_decl,0,1)
-} else if isCat(pp+1,unop) { 
-	squash(pp,2,exp,-2,2) 
-} else if (isCat(pp+1,binop) || 
-		isCat(pp+1,ubinop)) && 
-		isCat(pp+2,exp) {
-	squash(pp,3,exp,-2,3)
-} else if isCat(pp+1,comma) && 
-		isCat(pp+2,exp) {
-	big_app2(pp)
-	app(opt)
-	app('9')
-	big_app1(pp+2)
-	reduce(pp,3,exp,-2,4)
-} else if isCat(pp+1,lpar) && 
-		isCat(pp+2,rpar) && 
-		isCat(pp+3,colon) {
-	squash(pp+3,1,base,0,5)
-} else if isCat(pp+1,cast) && 
-		isCat(pp+2,colon) {
-	squash(pp+2,1,base,0,5)
-} else if isCat(pp+1,semi) {
-	squash(pp,2,stmt,-1,6)
-} else if isCat(pp+1,colon) {
-	make_underlined (pp)
-	squash(pp,2,tag,-1,7)
-} else if isCat(pp+1,rbrace) {
-	squash(pp,1,stmt,-1,8)
-} else if isCat(pp+1,lpar) && 
-		isCat(pp+2,rpar) && 
-		(isCat(pp+3,const_like) || 
-		isCat(pp+3,case_like)) {
-	big_app1(pp+2)
-	big_app(' ')
-	big_app1(pp+3)
-	reduce(pp+2,2,rpar,0,9)
-} else if isCat(pp+1,cast) && 
-		(isCat(pp+2,const_like) || 
-		isCat(pp+2,case_like)) {
-	big_app1(pp+1)
-	big_app(' ')
-	big_app1(pp+2)
-	reduce(pp+1,2,cast,0,9)
-} else if isCat(pp+1,exp) || 
-		isCat(pp+1,cast) {
-	squash(pp,2,exp,-2,10)
-}
-
-@ @<Cases for |lpar|@>=
-if (isCat(pp+1,exp) ||
-	isCat(pp+1,ubinop)) && 
-	isCat(pp+2,rpar) {
-	squash(pp,3,exp,-2,11)
-} else if isCat(pp+1,rpar) {
-	big_app1(pp)
-	app('\\')
-	app(',')
-	big_app1(pp+1)
-@.\\,@>
-	reduce(pp,2,exp,-2,12)
-} else if (isCat(pp+1,decl_head) || 
-		isCat(pp+1,int_like) || 
-		isCat(pp+1,cast)) && 
-		isCat(pp+2,rpar) {
-	squash(pp,3,cast,-2,13)
-} else if (isCat(pp+1,decl_head) || 
-		isCat(pp+1,int_like) || 
-		isCat(pp+1,exp)) && 
-		isCat(pp+2,comma) {
-	big_app3(pp)
-	app(opt)
-	app('9')
-	reduce(pp,3,lpar,-1,14)
-} else if isCat(pp+1,stmt) || 
-		isCat(pp+1,decl) {
-	big_app2(pp)
-	big_app(' ')
-	reduce(pp,2,lpar,-1,15)
-}
-
-@ @<Cases for |unop|@>=
-if isCat(pp+1,exp) || 
-	isCat(pp+1,int_like) {
-	squash(pp,2,exp,-2,16)
-}
-
-@ @<Cases for |ubinop|@>=
-if isCat(pp+1,cast) && 
-	isCat(pp+2,rpar) {
-	big_app('{')
-	big_app1(pp)
-	big_app('}')
-	big_app1(pp+1)
-	reduce(pp,2,cast,-2,17)
-} else if isCat(pp+1,exp) || 
-		isCat(pp+1,int_like) {
-	big_app('{')
-	big_app1(pp)
-	big_app('}')
-	big_app1(pp+1)
-	reduce(pp,2,scrap_info[pp+1].cat,-2,18)
-} else if isCat(pp+1,binop) {
-	big_app(math_rel)
-	big_app1(pp)
-	big_app('{')
-	big_app1(pp+1)
-	big_app('}')
-	big_app('}')
-	reduce(pp,2,binop,-1,19)
-}
-
-@ @<Cases for |binop|@>=
-if isCat(pp+1,binop) {
-	big_app(math_rel)
-	big_app('{')
-	big_app1(pp)
-	big_app('}')
-	big_app('{')
-	big_app1(pp+1)
-	big_app('}')
-	big_app('}')
-	reduce(pp,2,binop,-1,20)
-}
-
-@ @<Cases for |cast|@>=
-if isCat(pp+1,lpar) {
-	squash(pp,2,lpar,-1,21)
-} else if isCat(pp+1,exp) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,exp,-2,21)
-} else if isCat(pp+1,semi) {
-	squash(pp,1,exp,-2,22)
-}
-
-@ @<Cases for |int_like|@>=
-if isCat(pp+1,int_like) || 
-	isCat(pp+1,struct_like) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,scrap_info[pp+1].cat,-2,25)
-} else if isCat(pp+1,exp) && 
-		(isCat(pp+2,raw_int) ||
-		isCat(pp+2,struct_like)) {
-	squash(pp,2,int_like,-2,26)
-} else if isCat(pp+1,exp) || 
-		isCat(pp+1,ubinop) || 
-		isCat(pp+1,colon) {
-	big_app1(pp)
-	big_app(' ')
-	reduce(pp,1,decl_head,-1,27)
-} else if isCat(pp+1,semi) || 
-		isCat(pp+1,binop) {
-	squash(pp,1,decl_head,0,28)
-}
-
-@ @<Cases for |decl_head|@>=
-if isCat(pp+1,comma) {
-	big_app2(pp)
-	big_app(' ')
-	reduce(pp,2,decl_head,-1,33)
-} else if isCat(pp+1,ubinop) {
-	big_app1(pp)
-	big_app('{')
-	big_app1(pp+1)
-	big_app('}')
-	reduce(pp,2,decl_head,-1,34)
-} else if isCat(pp+1,exp) && 
-		scrap_info[pp+2].cat!=lpar && 
-		scrap_info[pp+2].cat!=exp && 
-		scrap_info[pp+2].cat!=cast {
-	make_underlined(pp+1)
-	squash(pp,2,decl_head,-1,35)
-} else if (isCat(pp+1,binop) ||
-		isCat(pp+1,colon)) && 
-		isCat(pp+2,exp) && 
-		(isCat(pp+3,comma) ||
-		isCat(pp+3,semi) || 
-		isCat(pp+3,rpar)) {
-	squash(pp,3,decl_head,-1,36)
-} else if isCat(pp+1,cast) {
-	squash(pp,2,decl_head,-1,37)
-} else if isCat(pp+1,lbrace) || 
-		isCat(pp+1,int_like) || 
-		isCat(pp+1,decl) {
-	big_app1(pp)
-	big_app(indent)
-	app(indent)
-	reduce(pp,1,fn_decl,0,38)
-} else if isCat(pp+1,semi) {
-	squash(pp,2,decl,-1,39)
-}
-
-@ @<Cases for |decl|@>=
-if isCat(pp+1,decl) {
-	big_app1(pp)
-	big_app(force)
-	big_app1(pp+1)
-	reduce(pp,2,decl,-1,40)
-} else if isCat(pp+1,stmt) || 
-		isCat(pp+1,function) {
-	big_app1(pp)
-	big_app(big_force)
-	big_app1(pp+1)
-	reduce(pp,2,scrap_info[pp+1].cat,-1,41)
-}
-
-@ @<Cases for |base|@>=
-if isCat(pp+1,int_like) || 
-	isCat(pp+1,exp) {
-	if isCat(pp+2,comma) {
-		big_app1(pp)
-		big_app(' ')
-		big_app2(pp+1)
-		app(opt)
-		app('9')
-		reduce(pp,3,base,0,42)
-	} else if isCat(pp+2,lbrace) {
-		big_app1(pp)
-		big_app(' ')
-		big_app1(pp+1)
-		big_app(' ')
-		big_app1(pp+2)
-		reduce(pp,3,lbrace,-2,43)
-	}
-}
-
-@ @<Cases for |struct_like|@>=
-if isCat(pp+1,lbrace) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,struct_head,0,44)
-} else if isCat(pp+1,exp) ||
-		isCat(pp+1,int_like) {
-	if isCat(pp+2,lbrace) || 
-		isCat(pp+2,semi) {
-		make_underlined(pp+1)
-		make_reserved(pp+1)
-		big_app1(pp)
-		big_app(' ')
-		big_app1(pp+1)
-		if isCat(pp+2,semi) {
-			reduce(pp,2,decl_head,0,45)
-		} else {
-			big_app(' ')
-			big_app1(pp+2)
-			reduce(pp,3,struct_head,0,46)
-		}
-	} else if isCat(pp+2,colon) {
-		squash(pp+2,1,base,2,47)
-	} else if scrap_info[pp+2].cat!=base {
-		big_app1(pp)
-		big_app(' ')
-		big_app1(pp+1)
-		reduce(pp,2,int_like,-2,48)
-	}
-}
-
-@ @<Cases for |struct_head|@>=
-if (isCat(pp+1,decl) || 
-	isCat(pp+1,stmt) || 
-	isCat(pp+1,function)) && 
-	isCat(pp+2,rbrace) {
-	big_app1(pp)
-	big_app(indent)
-	big_app(force)
-	big_app1(pp+1)
-	big_app(outdent); big_app(force)
-	big_app1(pp+2)
-	reduce(pp,3,int_like,-2,49)
-} else if isCat(pp+1,rbrace) {
-	big_app1(pp)
-	app_str("\\,")
-	big_app1(pp+1)
-@.\\,@>
-	reduce(pp,2,int_like,-2,50)
-}
-
-@ @<Cases for |fn_decl|@>=
-if isCat(pp+1,decl) {
-	big_app1(pp)
-	big_app(force)
-	big_app1(pp+1)
-	reduce(pp,2,fn_decl,0,51)
-} else if isCat(pp+1,stmt) {
-	big_app1(pp)
-	app(outdent)
-	app(outdent)
-	big_app(force)
-	big_app1(pp+1)
-	reduce(pp,2,function,-1,52)
-}
-
-@ @<Cases for |function|@>=
-if isCat(pp+1,function) || 
-	isCat(pp+1,decl) || 
-	isCat(pp+1,stmt) {
-	big_app1(pp)
-	big_app(big_force)
-	big_app1(pp+1)
-	reduce(pp,2,scrap_info[pp+1].cat,-1,53)
-}
-
-@ @<Cases for |lbrace|@>=
-if isCat(pp+1,rbrace) {
-	big_app1(pp)
-	app('\\')
-	app(',')
-	big_app1(pp+1)
-@.\\,@>
-	reduce(pp,2,stmt,-1,54)
-} else if (isCat(pp+1,stmt) ||
-		isCat(pp+1,decl) ||
-		isCat(pp+1,function)) && 
-		isCat(pp+2,rbrace) {
-	big_app(force)
-	big_app1(pp)
-	big_app(indent)
-	big_app(force)
-	big_app1(pp+1)
-	big_app(force)
-	big_app(backup)
-	big_app1(pp+2)
-	big_app(outdent)
-	big_app(force)
-	reduce(pp,3,stmt,-1,55)
-} else if isCat(pp+1,exp) {
-	if isCat(pp+2,rbrace) {
-		squash(pp,3,exp,-2,56)
-	} else if isCat(pp+2,comma) && 
-				isCat(pp+3,rbrace) {
-		squash(pp,4,exp,-2,56)
-	}
-}
-
-@ @<Cases for |if_like|@>=
-if isCat(pp+1,exp) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,if_clause,0,57)
-}
-
-@ @<Cases for |else_like|@>=
-if isCat(pp+1,colon) {
-	squash(pp+1,1,base,1,58)
-} else if isCat(pp+1,lbrace) {
-	squash(pp,1,else_head,0,59)
-} else if isCat(pp+1,stmt) {
-	big_app(force)
-	big_app1(pp)
-	big_app(indent)
-	big_app(break_space)
-	big_app1(pp+1)
-	big_app(outdent)
-	big_app(force)
-	reduce(pp,2,stmt,-1,60)
-}
-
-@ @<Cases for |else_head|@>=
-if isCat(pp+1,stmt) || 
-	isCat(pp+1,exp) {
-	big_app(force)
-	big_app1(pp)
-	big_app(break_space)
-	app(noop)
-	big_app(cancel)
-	big_app1(pp+1)
-	big_app(force)
-	reduce(pp,2,stmt,-1,61)
-}
-
-@ @<Cases for |if_clause|@>=
-if isCat(pp+1,lbrace) {
-	squash(pp,1,if_head,0,62)
-} else if isCat(pp+1,stmt) {
-	if isCat(pp+2,else_like) {
-		big_app(force)
-		big_app1(pp)
-		big_app(indent)
-		big_app(break_space)
-		big_app1(pp+1)
-		big_app(outdent)
-		big_app(force)
-		big_app1(pp+2)
-		if isCat(pp+3,if_like) {
-			big_app(' ')
-			big_app1(pp+3)
-			reduce(pp,4,if_like,0,63)
-		}@+else {
-			reduce(pp,3,else_like,0,64)
-		}
-	} else {
-		squash(pp,1,else_like,0,65)
-	}
-}
-
-@ @<Cases for |if_head|@>=
-if isCat(pp+1,stmt) || 
-	isCat(pp+1,exp) {
-	if isCat(pp+2,else_like) {
-		big_app(force)
-		big_app1(pp)
-		big_app(break_space)
-		app(noop)
-		big_app(cancel)
-		big_app1(pp+1)
-		big_app(force)
-		big_app1(pp+2)
-		if isCat(pp+3,if_like) {
-			big_app(' ')
-			big_app1(pp+3)
-			reduce(pp,4,if_like,0,66)
-		}@+else {
-			reduce(pp,3,else_like,0,67)
-		}
-	} else {
-		squash(pp,1,else_head,0,68)
-	}
-}
-
-@ @<Cases for |case_like|@>=
-if isCat(pp+1,semi) {
-	squash(pp,2,stmt,-1,70)
-} else if isCat(pp+1,colon) {
-	squash(pp,2,tag,-1,71)
-} else if isCat(pp+1,exp) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,exp,-2,72)
-}
-
-@ @<Cases for |tag|@>=
-if isCat(pp+1,tag) {
-	big_app1(pp)
-	big_app(break_space)
-	big_app1(pp+1)
-	reduce(pp,2,tag,-1,74)
-} else if isCat(pp+1,stmt) ||
-		isCat(pp+1,decl) ||
-		isCat(pp+1,function) {
-	big_app(force)
-	big_app(backup)
-	big_app1(pp)
-	big_app(break_space)
-	big_app1(pp+1)
-	reduce(pp,2,scrap_info[pp+1].cat,-1,75)
-}
-
-@ The user can decide at run-time whether short statements should be
-grouped together on the same line.
-
-@<Cases for |stmt|@>=
-if isCat(pp+1,stmt) ||
-	isCat(pp+1,decl) ||
-	isCat(pp+1,function) {
-	big_app1(pp)
-	if isCat(pp+1,function) {
-		big_app(big_force)
-	} else if isCat(pp+1,decl) {
-		big_app(big_force)
-	} else if flags['f'] {
-		big_app(force)
-	} else {
-		big_app(break_space)
-	}
-	big_app1(pp+1)
-	reduce(pp,2,scrap_info[pp+1].cat,-1,76)
-}
-
-@ @<Cases for |semi|@>=
-big_app(' ')
-big_app1(pp)
-reduce(pp,1,stmt,-1,77)
-
-@ @<Cases for |section_scrap|@>=
-if isCat(pp+1,semi) {
-	big_app2(pp)
-	big_app(force)
-	reduce(pp,2,stmt,-2,81)
-} else {
-	squash(pp,1,exp,-2,82)
-}
-
 @ @<Cases for |insert|@>=
-if scrap_info[pp+1].cat != 0 {
-	squash(pp,2,scrap_info[pp+1].cat,0,83)
+if isNotCat(pp+1,0) {
+	squash(pp,2,scrap_info[pp+1].cat,0,0)
 }
 
-@ @<Cases for |prelangle|@>=
-init_mathness=yes_math
-cur_mathness=yes_math
-app('<')
-reduce(pp,1,binop,-2,84)
+@ @<Cases for |PackageClause|@>=
+if isCat(pp,package_token)  && isCat(pp+1,identifier) {
+	app1(pp)
+	app(break_space)
+	app1(pp+1)
+	make_reserved(pp+1,PackageName)
+	app(big_force)
+	reduce(pp,2,PackageClause,1,1)
+}
 
-@ @<Cases for |prerangle|@>=
-init_mathness=yes_math
-cur_mathness=yes_math
-app('>')
-reduce(pp,1,binop,-2,85)
+@ Test for |package|
+@(tests/package.w@>=
+@@
+@@2
+@@c
+package main
 
-@ @<Cases for |langle|@>=
-if isCat(pp+1,prerangle) {
-	big_app1(pp)
-	app('\\')
-	app(',')
-	big_app1(pp+1)
-@.\\,@>
-	reduce(pp,2,cast,-1,86)
-} else if isCat(pp+1,decl_head) || 
-		isCat(pp+1,int_like) || 
-		isCat(pp+1,exp) {
-	if isCat(pp+2,prerangle) {
-		squash(pp,3,cast,-1,87)
-	} else if isCat(pp+2,comma) {
-		big_app3(pp)
-		app(opt)
-		app('9')
-		reduce(pp,3,langle,0,88)
+@ @<Cases for |ConstDecl|@>= 
+if isCat(pp,const_token) {
+	if isCat(pp+1,ConstSpec) {
+		app1(pp)
+		app(break_space)
+		app1(pp+1)
+		app(big_force)
+		reduce(pp,2,ConstDecl,0,2)
+	} else if rollback(); isCat(pp+1,lpar) {
+		c:=0
+		isCats(pp+2,&c,cat_pair{cat:ConstSpec,mand:true},cat_pair{cat:semi,mand:false})	
+		if isCat(pp+2+c,rpar) {
+			app1(pp)
+			app(break_space)
+			app1(pp+1)
+			app(force)
+			app(indent)
+			app1(pp+2)
+			app(force)
+			app(outdent)
+			app1(pp+3)
+			app(big_force)
+			reduce(pp,3+c,ConstDecl,0,2)
+		}	
 	}
 }
 
-@ @<Cases for |new_like|@>=
-if isCat(pp+1,lpar) && 
-	isCat(pp+2,exp) && 
-	isCat(pp+3,rpar) {
-	squash(pp,4,new_like,0,92)
-} else if isCat(pp+1,cast) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,exp,-2,93)
-} else if scrap_info[pp+1].cat!=lpar {
-	squash(pp,1,new_exp,0,94)
+@ Tests for |const|
+@(tests/const.w@>=
+@@
+@@2
+@@c
+const Pi float64 = 3.14159265358979323846
+@@
+@@c
+const zero = 0.0 
+@@
+@@c
+const (
+	size int64 = 1024
+	eof        = -1
+)
+@@
+@@c
+const a, b, c = 3, 4, "foo"
+@@
+@@c
+const u, v float32 = 0, 3
+
+@ @<Cases for |TypeDecl|@>= 
+if isCat(pp,type_token) {
+	@<Making copy...@>
+	if isCat(pp+1,TypeSpec) {
+		app1(pp)
+		app(break_space)
+		app1(pp+1)
+		app(big_force)
+		reduce(pp,2,TypeDecl,0,3)
+	} else if rollback(); isCat(pp+1,lpar) {
+		c:=0
+		isCats(pp+2,&c,cat_pair{cat:TypeSpec,mand:true},cat_pair{cat:semi,mand:false})
+		if isCat(pp+2+c,rpar) {
+			app1(pp)
+			app(break_space)
+			app1(pp+1)
+			app(force)
+			app(indent)
+			app1(pp+2)
+			app(force)
+			app(outdent)
+			app1(pp+3)
+			app(big_force)
+			reduce(pp,3+c,TypeDecl,0,3)
+		}
+	} 
 }
 
-@ @<Cases for |new_exp|@>=
-if isCat(pp+1,int_like) || 
-	isCat(pp+1,const_like) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,new_exp,0,95)
-} else if isCat(pp+1,struct_like) && 
-		(isCat(pp+2,exp) || 
-		isCat(pp+2,int_like)) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	big_app(' ')
-	big_app1(pp+2)
-	reduce(pp,3,new_exp,0,96)
-} else if isCat(pp+1,raw_ubin) {
-	big_app1(pp)
-	big_app('{')
-	big_app1(pp+1)
-	big_app('}')
-	reduce(pp,2,new_exp,0,97)
-} else if isCat(pp+1,lpar) {
-	squash(pp,1,exp,-2,98)
-} else if (isCat(pp+1,exp)) {
-	big_app1(pp)
-	big_app(' ')
-	reduce(pp,1,exp,-2,98)
-} else if scrap_info[pp+1].cat!=raw_int && 
-		scrap_info[pp+1].cat!=struct_like {
-	squash(pp,1,exp,-2,99)
+@ Tests for |type|
+@(tests/type.w@>=
+@@
+@@2
+@@c
+type IntArray [16]int
+@@
+@@c
+type (
+	Point struct{ x, y float64 }
+	Polar Point
+)
+@@
+@@c
+type TreeNode struct {
+	left, right *TreeNode
+	value *Comparable
+}
+@@
+@@c
+type Block interface {
+	BlockSize() int
+	Encrypt(src, dst []byte)
+	Decrypt(src, dst []byte)
 }
 
-@ @<Cases for |for_like|@>=
-if isCat(pp+1,exp) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,else_like,-2,102)
+@ @<Cases for |VarDecl|@>=
+if isCat(pp,var_token) {
+	@<Making copy...@>
+	if isCat(pp+1,VarSpec) {
+		app1(pp)
+		app(break_space)
+		app1(pp+1)
+		app(big_force)
+		reduce(pp,2,VarDecl,0,4)
+	} else if rollback(); isCat(pp+1,lpar) {
+		c:=0
+		isCats(pp+2,&c,cat_pair{cat:VarSpec,mand:true},cat_pair{cat:semi,mand:false}) 
+		if isCat(pp+2+c,rpar) {
+			app1(pp)
+			app(break_space)
+			app1(pp+1)
+			app(force)
+			app(indent)
+			app1(pp+2)
+			app(force)
+			app(outdent)
+			app1(pp+3)
+			app(big_force)
+			reduce(pp,3+c,VarDecl,0,4)
+		}
+	} 
 }
 
-@ @<Cases for |raw_ubin|@>=
-if isCat(pp+1,const_like) {
-	big_app2(pp)
-	app_str("\\ ")
-	reduce(pp,2,raw_ubin,0,103)
-@.\\\ @>
+@ Tests for |var|
+@(tests/var.w@>=
+@@
+@@2
+@@c
+var i int
+@@
+@@c
+var U, V, W float64
+@@
+@@c
+var k = 0
+@@
+@@c
+var x, y float32 = -1, -2
+@@
+@@c
+var (
+	i       int
+	u, v, s = 2.0, 3.0, "bar"
+)
+@@
+@@c
+var re, im = complexSqrt(-1)
+@@
+@@c
+var _, found = entries[name]
+
+@ @<Cases for |ImportDecl|@>=
+if isCat(pp,import_token) {
+	@<Making copy...@>
+	if isCat(pp+1,ImportSpec) {
+		app1(pp)
+		app(break_space)
+		app1(pp+1)
+		app(big_force)
+		reduce(pp,2,ImportDecl,0,5)
+	} else if rollback(); isCat(pp+1,lpar) {
+		c:=0
+		isCats(pp+2,&c,cat_pair{cat:ImportSpec,mand:true},cat_pair{cat:semi,mand:false})
+		if isCat(pp+2+c,rpar) {
+			app1(pp)
+			app(break_space)
+			app1(pp+1)
+			app(force)
+			app(indent)
+			app1(pp+2)
+			app(force)
+			app(outdent)
+			app1(pp+3)
+			app(big_force)
+			reduce(pp,3+c,ImportDecl,0,5)	
+		} 
+	}
+}
+
+@ Tests for |import|
+@(tests/import.w@>=
+@@
+@@2
+@@c
+import "im1" 
+@@
+@@c
+import _ "im2"; /*im2*/
+@@
+@@c
+import . "im3" //im3
+@@
+@@c
+import IM "im4"
+@@
+@@c
+import(
+	"nim1" 
+	. "nim2"; // nim2
+	_ "nim3" /*nim3*/
+	NIM "nim4"
+)
+
+
+@ @<Cases for |FunctionDecl|@>=
+if isCat(pp,func_token) && isCat(pp+1,identifier) && isCat(pp+2,Signature){
+	p:=pp+3
+	if isCat(p,Block) {
+		p++
+	}
+	squash(pp,p-pp,FunctionDecl,0,6)
+}
+
+@ Tests for |func|
+@(tests/func.w@>=
+@@
+@@2
+@@c
+func min(x int, y int) int {
+        if x < y {
+                return x
+        }
+        return y
+}
+@@
+@@c
+func flushICache(begin, end uintptr)
+
+@ @<Cases for |MethodDecl|@>=
+if isCat(pp,func_token) && isCat(pp+1,Receiver) && isCat(pp+2,identifier) && isCat(pp+3,Signature) {
+	p:=pp+4
+	if isCat(p,Block) {
+		p++
+	}
+	squash(pp,p-pp,MethodDecl,0,7)
+}
+
+@ Tests for |method|
+@(tests/method.w@>=
+@@
+@@2
+@@c
+func (p *Point) Length() float64 {
+	return math.Sqrt(p.x * p.x + p.y * p.y)
+}
+@@
+@@c
+func (p *Point) Scale(factor float64) {
+	p.x *= factor
+	p.y *= factor
+}
+
+
+@ @<Cases for |Receiver|@>=
+if isCat(pp,lpar) {
+	@<Making copy...@>
+	if isCat(pp+1,identifier) {
+		pp++
+		@<Making copy...@>
+		pp--
+		if isCat(pp+2,asterisk) && isCat(pp+3,identifier) && isCat(pp+4,rpar){
+			squash(pp,5,Receiver,0,8)
+		} else if rollback(); isCat(pp+2,identifier) && isCat(pp+3,rpar) {
+			squash(pp,4,Receiver,0,8)
+		} else if rollback(); isCat(pp+2,rpar) {
+			squash(pp,3,Receiver,0,8)
+		}
+	} else if rollback(); isCat(pp+1,asterisk) && isCat(pp+2,identifier) && isCat(pp+3,rpar) {
+			squash(pp,4,Receiver,0,8)
+	}
+}
+
+@ @<Cases for |ConstSpec|@>= 
+if isCat(pp,IdentifierList) {
+	pp++
+	@<Making copy...@>
+	pp--
+	if isCat(pp+1,Type) && isCat(pp+2,eq) && isCat(pp+3,ExpressionList) {
+		squash(pp,4,ConstSpec,0,9)
+	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
+		squash(pp,3,ConstSpec,0,9)
+	}
+} else if rollback(); isCat(pp, section_scrap) {
+	squash(pp,1,ConstSpec,0,9)
+}
+
+@ @<Cases for |TypeSpec|@>=
+if isCat(pp,identifier) && isCat(pp+1,Type) {
+	squash(pp,2,TypeSpec,0,10)
+} else if rollback(); isCat(pp, section_scrap) {
+	squash(pp,1,TypeSpec,0,10)
+}
+
+@ @<Cases for |VarSpec|@>=
+if isCat(pp,IdentifierList) {
+	pp++
+	@<Making copy...@>
+	pp--
+	if isCat(pp+1,Type) {
+		p:=pp+2
+		if isCat(p,eq) && isCat(p+1,ExpressionList) {
+			p+=2
+		}
+		squash(pp,p-pp,VarSpec,0,11)
+	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
+		squash(pp,3,VarSpec,0,11)
+	}
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,VarSpec,0,11)
+	
+}
+
+@ @<Cases for |ImportSpec|@>=
+if (isCat(pp,dot) || isCat(pp,identifier)) && isCat(pp+1,str) {
+	squash(pp,2,ImportSpec,0,12)
+} else if isCat(pp,str) {
+	squash(pp,1,ImportSpec,0,12)
+} else if isCat(pp,section_scrap) {
+	squash(pp,1,ImportSpec,0,12)
+}
+
+@ @<Cases for |FieldDecl|@>=
+if isCat(pp,IdentifierList) && isCat(pp+1,Type) {
+	p:=pp+2
+	if isCat(p,str) {
+		p++
+	}
+	squash(pp,p-pp,FieldDecl,0,13)
+} else if rollback(); isCat(pp,AnonymousField) {
+	p:=pp+1
+	if isCat(p,str) {
+		p++
+	}
+	squash(pp,p-pp,FieldDecl,0,13)
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,FieldDecl,0,13)
+}
+
+@ @<Cases for |AnonymousField|@>=
+if isCat(pp,asterisk) && isCat(pp+1,Type) {
+	squash(pp,2,AnonymousField,0,14)
+} else if rollback(); isCat(pp,Type) {
+	squash(pp,1,AnonymousField,0,14)
+}
+
+@ @<Cases for |Type|@>=
+if  isCat(pp,ArrayType) || isCat(pp,StructType) || isCat(pp,PointerType) || 
+	isCat(pp,FunctionType) || isCat(pp,InterfaceType) || isCat(pp,SliceType) || 
+	isCat(pp,MapType) || isCat(pp,ChannelType) || isCat(pp,QualifiedIdent) {
+	squash(pp,1,Type,0,15)
+}
+
+@ @<Cases for |ArrayType|@>=
+if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
+	squash(pp,4,ArrayType,0,16)
+}
+
+@ @<Cases for |StructType|@>=
+if isCat(pp,struct_token) && isCat(pp+1,lbrace) {
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:FieldDecl,mand:true},cat_pair{cat:semi,mand:false})
+	if isCat(pp+2+c,rbrace) {
+		squash(pp,3+c,StructType,0,17)
+	}
+}
+
+@ Tests for |struct|
+@(tests/struct.w@>=
+@@
+@@2
+@@c
+struct {}
+@@
+@@c
+struct {
+	x, y int
+	u float32
+	_ float32
+	A *[]int
+	F func()
+}
+@@
+@@c
+struct {
+	T1
+	*T2
+	P.T3
+	*P.T4
+	x, y int
+}
+@@
+@@c
+struct {
+	microsec  uint64 "field 1"
+	serverIP6 uint64 "field 2"
+	process   string "field 3"
+}
+
+@ @<Cases for |PointerType|@>=
+if isCat(pp,asterisk) && isCat(pp+1,Type) {
+	squash(pp,2,PointerType,0,18)
+}
+
+@ @<Cases for |Signature|@>=
+if isCat(pp,Parameters) {
+	p:=pp+1
+	if isCat(p,Type) || isCat(p,Parameters) {
+		p++
+	}
+	squash(pp,p-pp,Signature,0,19)
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,Signature,0,19)
+}
+
+@ @<Cases for |Parameters|@>=
+if isCat(pp,lpar) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:ParameterList,mand:true},cat_pair{cat:comma,mand:false})
+ 	if isCat(pp+1+c,rpar) {
+		squash(pp,2+c,Parameters,0,20)
+	}
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,Signature,0,20)
+}
+
+@ @<Cases for |ParameterList|@>=
+if isCat(pp,ParameterDecl) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ParameterDecl,mand:true})
+	squash(pp,1+c,ParameterList,0,21)
+}
+
+@ @<Cases for |ParameterDecl|@>=
+if isCat(pp,IdentifierList) { 
+	pp++
+	@<Making copy...@>
+	pp--
+	if isCat(pp,dot_dot_dot) && isCat(pp+2,Type){
+		squash(pp,3,ParameterDecl,0,22)
+		break
+	} else if rollback(); isCat(pp+1,Type) {
+		squash(pp,2,ParameterDecl,0,22)
+		break
+	}
+} 
+if rollback(); isCat(pp,dot_dot_dot) && isCat(pp+1,Type) {
+	squash(pp,3,ParameterDecl,0,22)
+} else if rollback(); isCat(pp,Type) {
+	squash(pp,1,ParameterDecl,0,22)
+}
+
+@ @<Cases for |InterfaceType|@>=
+if isCat(pp,interface_token) && isCat(pp+1,lbrace) {
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:MethodSpec,mand:true},cat_pair{cat:semi,mand:false})
+	if isCat(pp+2+c,rbrace) {
+		squash(pp,3+c,InterfaceType,0,23)
+	}
+}
+
+@ @<Cases for |MethodSpec|@>=
+if isCat(pp,identifier) && isCat(pp+1,Signature) {
+	squash(pp,2,MethodSpec,0,24)
+} else if rollback(); isCat(pp,Type) {
+	squash(pp,1,MethodSpec,0,24)	
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,MethodSpec,0,24)	
+}
+
+@ @<Cases for |SliceType|@>=
+if isCat(pp,lbracket) && isCat(pp+1,rbracket) && isCat(pp+2,Type) {
+	squash(pp,3,SliceType,0,25)
+}
+
+@ @<Cases for |MapType|@>=
+if isCat(pp,map_token) && isCat(pp+1,lbracket) && isCat(pp+2,Type) && isCat(pp+3,rbracket) && isCat(pp+4,Type) {
+	squash(pp,5,MapType,0,26)
+}
+
+@ @<Cases for |ChannelType|@>=
+p:=pp
+if isCat(pp,chan_token) {
+	pp++
+	if isCat(pp,direct) {
+		pp++
+	}
+} else if isCat(pp,direct) && isCat(pp+1,chan_token) {
+	pp+=2
 } else {
-	squash(pp,1,ubinop,-2,104)
+	break
+}
+if isCat(pp,Type) {
+		pp++
+		squash(p,pp-p,ChannelType,0,27)
+		break
+}
+pp=p
+
+
+if rollback(); isCat(pp,unary_op) && isCat(pp+1,chan_token) && isCat(pp+2,Type) {
+	squash(pp,3,ChannelType,0,27)
 }
 
-@ @<Cases for |const_like|@>=
-squash(pp,1,int_like,-2,105)
+@ @<Cases for |IdentifierList|@>=
+if isCat(pp,identifier) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:identifier,mand:true}) 
+	squash(pp,1+c,IdentifierList,0,28)
+} 
 
-@ @<Cases for |raw_int|@>=
-if isCat(pp+1,prelangle) { 
-	squash(pp+1,1,langle,1,106)
-} else if isCat(pp+1,cast) {
-	squash(pp,2,raw_int,0,108)
-} else if isCat(pp+1,lpar) {
-	squash(pp,1,exp,-2,109)
-} else if scrap_info[pp+1].cat!=langle {
-	squash(pp,1,int_like,-3,110)
+@ @<Cases for |ExpressionList|@>=
+if isCat(pp,Expression) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})	
+	squash(pp,1+c,ExpressionList,0,29)
 }
 
-@ @<Cases for |type_like|@>=
-if (isCat(pp+1,int_like) || 
-		isCat(pp+1,cast)) && 
-		(isCat(pp+2,comma) || 
-		isCat(pp+2,semi)) {
-	squash(pp+1,1,exp,-1,115)
-} else if isCat(pp+1,int_like) {
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,type_like,0,116)
-} else if isCat(pp+1,exp) && 
-		scrap_info[pp+2].cat!=lpar && 
-		scrap_info[pp+2].cat!=exp && 
-		scrap_info[pp+2].cat!=cast {
-	make_underlined(pp+1)
-	make_reserved(pp+1)
-	big_app1(pp)
-	big_app(' ')
-	big_app1(pp+1)
-	reduce(pp,2,type_like,0,117)
-} else if isCat(pp+1,comma) {
-	big_app2(pp)
-	big_app(' ')
-	reduce(pp,2,type_like,0,118)
-} else if isCat(pp+1,semi) {
-	squash(pp,2,decl,-1,119)
-} else if isCat(pp+1,ubinop) && 
-		(isCat(pp+2,ubinop) || 
-		isCat(pp+2,cast)) {
-	big_app('{')
-	big_app1(pp+1)
-	big_app('}')
-	big_app1(pp+2)
-	reduce(pp+1,2,scrap_info[pp+2].cat,0,120)
+@ @<Cases for |Expression|@>= 
+if isCat(pp,UnaryExpr) && isCat(pp+1,binary_op) && isCat(pp+2,UnaryExpr) {
+	squash(pp,3,Expression,0,30)
+} else if rollback(); isCat(pp,UnaryExpr) {
+	squash(pp,1,Expression,0,30)
 }
+
+@ @<Cases for |UnaryExpr|@>=
+if isCat(pp,unary_op) && isCat(pp+1, UnaryExpr) {
+	squash(pp,2,UnaryExpr,0,31)
+} else if isCat(pp,PrimaryExpr) {
+	squash(pp,1,UnaryExpr,0,31)
+}
+
+@ @<Cases for |binary_op|@>=
+if isCat(pp,rel_op) || isCat(pp,add_op) || isCat(pp,mul_op) || isCat(pp,asterisk)  {
+	squash(pp,1,binary_op,0,32)
+}
+
+@ @<Cases for |PrimaryExpr|@>=
+if isCat(pp,BuiltinCall) || isCat(pp,Conversion) || isCat(pp,Operand) {
+	pp++
+	@<Making copy...@>
+	pp--
+	if isCat(pp+1,Selector) || isCat(pp+1,Index) || isCat(pp+1,Slice) || isCat(pp+1,TypeAssertion) || isCat(pp+1,Call) {
+		squash(pp,2,PrimaryExpr,0,33)
+	} else {
+		rollback()
+		squash(pp,1,PrimaryExpr,0,33)
+	}
+}
+
+@ @<Cases for |Operand|@>=
+if isCat(pp,str) || isCat(pp,constant) || isCat(pp,QualifiedIdent) || isCat(pp,CompositeLit) || isCat(pp,FunctionLit)  || isCat(pp,MethodExpr) {
+	squash(pp,1,Operand,0,34)
+} else if rollback(); isCat(pp,lpar) && isCat(pp+1,Expression) && isCat(pp+2,rpar) {
+	squash(pp,3,Operand,0,34)
+}
+
+@ @<Cases for |CompositeLit|@>=
+if isCat(pp,LiteralType) && isCat(pp+1,LiteralValue) {
+	squash(pp,2,CompositeLit,0,35)
+}
+
+@ @<Cases for |LiteralType|@>=
+if isCat(pp,Type) {
+	squash(pp,1,LiteralType,0,36)
+} else if rollback(); isCat(pp,lbracket) && isCat(pp+1,dot_dot_dot) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
+	squash(pp,5,LiteralType,0,36)
+}
+@ @<Cases for |LiteralValue|@>=
+if isCat(pp,lbrace) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:ElementList,mand:true},cat_pair{cat:comma,mand:true})
+	if isCat(pp+1+c,rbrace) {
+		squash(pp,2+c,LiteralValue,0,37)
+	}
+}
+
+@ @<Cases for |ElementList|@>=
+if isCat(pp,Element) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Element,mand:true})
+	squash(pp,1+c,ElementList,0,38)
+}
+
+@ @<Cases for |Element|@>=
+if (isCat(pp,identifier) || isCat(pp,Expression)) && isCat(pp+1,colon) {
+	pp+=2
+	@<Making copy...@>
+	pp-=2
+	if isCat(pp+2,Expression) {
+		squash(pp,3,Element,0,39)
+	} else if rollback(); isCat(pp+2,LiteralValue) {
+		squash(pp,3,Element,0,39)
+	}
+} else if isCat(pp,Expression) || isCat(pp,LiteralValue) {
+	squash(pp,1,Element,0,39)
+}
+
+@ @<Cases for |FunctionLit|@>=
+if isCat(pp,FunctionType) && isCat(pp+1,Block) {
+	squash(pp,2,FunctionLit,0,40)
+}
+
+@ @<Cases for |FunctionType|@>=
+if isCat(pp,func_token) && isCat(pp+1,Signature) {
+	reduce(pp,2,FunctionType,0,42)
+}
+
+@ @<Cases for |Block|@>=
+if isCat(pp,lbrace) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
+	if isCat(pp+1+c,rbrace) {
+		squash(pp,2+c,Block,0,43)
+	}
+}
+
+@ Tests for |block|
+@(tests/block.w@>=
+@@
+@@2
+@@c
+{
+	a:=b
+}
+
+@ @<Cases for |Statement|@>=
+if isCat(pp,ConstDecl) || isCat(pp,VarDecl) || isCat(pp,TypeDecl) ||
+	isCat(pp,LabeledStmt) || isCat(pp,SimpleStmt) ||
+	isCat(pp,GoStmt) || isCat(pp,ReturnStmt) || isCat(pp,BreakStmt) || isCat(pp,ContinueStmt) || 
+	isCat(pp,GotoStmt) || isCat(pp,fallthrough_token) || isCat(pp,Block) || isCat(pp,IfStmt) || 
+	isCat(pp,ExprSwitchStmt) || isCat(pp,TypeSwitchStmt) || isCat(pp,SelectStmt) || 
+	isCat(pp,ForStmt) || isCat(pp,DeferStmt) {
+	squash(pp,1,Statement,0,44)
+}
+
+@ @<Cases for |LabeledStmt|@>=
+if isCat(pp,identifier) && isCat(pp+1,colon) && isCat(pp+2,Statement) {
+	squash(pp,3,LabeledStmt,0,45)
+}
+
+
+@ Tests for |label|
+@(tests/label.w@>=
+@@
+@@2
+@@c
+Error: log.Panic("error encountered")
+
+@ @<Cases for |SimpleStmt|@>=
+if isCat(pp,SendStmt) || isCat(pp,IncDecStmt) || isCat(pp,Assignment) || isCat(pp,ShortVarDecl) || isCat(pp,Expression) {
+	squash(pp,1,SimpleStmt,0,46)
+} 
+
+@ @<Cases for |GoStmt|@>=
+if isCat(pp,go_token) && isCat(pp+1,Expression) {
+	squash(pp,2,GoStmt,0,47)
+}
+
+@ Tests for |go|
+@(tests/go.w@>=
+@@
+@@2
+@@c
+go Server()
+@@
+@@c
+go func(ch chan<- bool) { for { sleep(10); ch <- true; }} (c)
+
+
+@ @<Cases for |ReturnStmt|@>=
+if isCat(pp,return_token) && isCat(pp+1,ExpressionList) {
+	squash(pp,2,ReturnStmt,0,48)
+} else if rollback();  isCat(pp,return_token) {
+	squash(pp,1,ReturnStmt,0,48)
+}
+
+@ Tests for |return|
+@(tests/return.w@>=
+@@
+@@2
+@@c
+return
+@@
+@@c
+return -7.0, -4.0
+@@
+@@c
+return complexF1()
+
+
+@ @<Cases for |BreakStmt|@>=
+if isCat(pp,break_token) {
+	if isCat(pp+1,identifier) {
+		squash(pp,2,BreakStmt,0,49)
+	} else {
+		squash(pp,1,BreakStmt,0,49)
+	}
+}
+
+@ Tests for |break|
+@(tests/break.w@>=
+@@
+@@2
+@@c
+for i < n {
+	switch i {
+	case 5:
+	break
+	}
+}@@
+@@c
+L:
+for i < n {
+	switch i {
+	case 5:
+	break L
+	}
+}
+
+
+@ @<Cases for |ContinueStmt|@>=
+if isCat(pp,continue_token) && isCat(pp+1,identifier) {
+	squash(pp,2,ContinueStmt,0,50)
+} else if rollback(); isCat(pp,continue_token) {
+	squash(pp,1,ContinueStmt,0,50)
+}
+
+@ Tests for |continue|
+@(tests/continue.w@>=
+@@
+@@2
+@@c
+for i < n {
+	switch i {
+	case 5:
+	continue
+	}
+}
+@@
+@@c
+L:
+for i < n {
+	switch i {
+	case 5:
+	continue L
+	}
+}
+
+@ @<Cases for |GotoStmt|@>=
+if isCat(pp,goto_token) && isCat(pp+1,identifier) {
+	squash(pp,2,GotoStmt,0,51)
+}
+
+@ Tests for |goto|
+@(tests/goto.w@>=
+@@
+@@2
+@@c
+goto Label
+
+@ @<Cases for |IfStmt|@>=
+if isCat(pp,if_token) {
+	p:=pp
+	pp++
+	@<Making copy...@>
+	if isCat(pp,SimpleStmt) && isCat(pp+1,semi) {
+		pp+=2
+	} else {
+		rollback()
+	}
+	if isCat(pp,Expression) && isCat(pp+1,Block) {
+		pp+=2
+		@<Making copy...@>
+		if isCat(pp,else_token) && isCat(pp+1,IfStmt) {
+			pp+=2
+		} else if rollback(); isCat(pp,else_token) && isCat(pp+1,Block) {
+			pp+=2	
+		}
+		squash(p,pp-p,IfStmt,0,52)
+	} 
+	pp=p
+}
+
+@ Tests for |if|
+@(tests/if.w@>=
+@@
+@@2
+@@c
+if x > max {
+	x = max
+}
+@@
+@@c
+if x := f(); x < y {
+	return x
+} else if x > z {
+	return z
+} else {
+	return y
+}
+
+
+@ @<Cases for |ExprSwitchStmt|@>=
+if isCat(pp,switch_token) {
+	p:=pp
+	pp++
+	{
+		@<Making copy...@>
+		if isCat(pp,SimpleStmt) && isCat(pp+1,semi) {
+			pp+=2
+		} else {
+			rollback()
+		}
+	}
+	{
+		@<Making copy...@>
+		if isCat(pp,Expression) {
+			pp++
+		} else {
+			rollback()
+		}
+	}
+	if isCat(pp,lbrace) {
+	 	c:=0
+		isCats(pp+1,&c,cat_pair{cat:ExprCaseClause,mand:false})
+		if isCat(pp+1+c,rbrace) {
+			pp=pp+2+c
+			squash(p,pp-p,ExprSwitchStmt,0,53)
+		}
+	}
+	pp=p
+} 
+
+@ @<Cases for |ExprCaseClause|@>=
+if isCat(pp,case_token) && isCat(pp+1,ExpressionList) && isCat(pp+2,colon) {
+	c:=0
+	isCats(pp+3,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
+	squash(pp,3+c,ExprCaseClause,0,54)
+} else if rollback(); isCat(pp,default_token) && isCat(pp+1,colon) {
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
+	squash(pp,2+c,ExprCaseClause,0,54)
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,ExprCaseClause,0,54)
+}
+
+@ @<Cases for |TypeSwitchStmt|@>=
+if isCat(pp,switch_token) {
+	p:=pp
+	pp++
+	{
+		@<Making copy...@>
+		if isCat(pp,SimpleStmt) && isCat(pp+1,semi) {
+			pp+=2
+		} else {
+			rollback()
+		}
+	}
+	if isCat(pp,TypeSwitchGuard) && isCat(pp+1,lbrace) {
+	 	c:=0
+		isCats(pp+2,&c,cat_pair{cat:TypeCaseClause,mand:true})
+		if isCat(pp+2+c,rbrace) {
+			pp=pp+3+c
+			squash(p,pp-p,TypeSwitchStmt,0,55)
+		}
+	}
+	pp=p
+}
+
+@ @<Cases for |TypeSwitchGuard|@>=
+p:=pp
+if isCat(pp,identifier) && isCat(pp+1,col_eq) {
+	pp+=2
+}
+if isCat(pp,PrimaryExpr) && isCat(pp+1,dot) && isCat(pp+2,lpar) && isCat(pp+3,type_token) && isCat(pp+4,rpar) {
+	pp+=5
+	squash(p,pp-p,TypeSwitchGuard,0,56)
+}
+pp=p
+
+@ @<Cases for |TypeCaseClause|@>=
+if isCat(pp,TypeSwitchCase) && isCat(pp+1,colon) {
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
+	squash(pp,2+c,TypeCaseClause,0,57)
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,TypeCaseClause,0,57)
+}
+
+@ @<Cases for |TypeSwitchCase|@>=
+if isCat(pp,case_token) && isCat(pp+1,Type) {
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Type,mand:true})
+	squash(pp,2+c,TypeSwitchCase,0,58)
+} else if rollback(); isCat(pp,default_token) {
+	squash(pp,1,TypeSwitchCase,0,58)
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,TypeSwitchCase,0,58)
+}
+
+@ Tests for |switch|
+@(tests/switch.w@>=
+@@
+@@2
+@@c
+switch tag {
+	default: s3()
+	case 0, 1, 2, 3: s1()
+	case 4, 5, 6, 7: s2()
+}
+@@
+@@c
+switch x := f(); {
+	case x < 0: return -x
+	default: return x
+}
+@@
+@@c
+switch {
+	case x < y: f1()
+	case x < z: f2()
+	case x == 4: f3()
+}
+@@
+@@c
+switch i := x.(type) {
+case nil:
+	printString("x is nil")
+case int:
+	printInt(i)
+case float64:
+	printFloat64(i)
+case func(int) float64:
+	printFunction(i)
+case bool, string:
+	printString("type is bool or string")
+default:
+	printString("don't know the type")
+}
+
+@ @<Cases for |SelectStmt|@>=
+if isCat(pp,select_token) && isCat(pp+1,lbrace){
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:CommClause,mand:false})
+	if isCat(pp+2+c,rbrace) {
+		squash(pp,3+c,SelectStmt,0,59)
+	}
+}
+
+@ @<Cases for |CommClause|@>=
+if isCat(pp,CommCase) && isCat(pp+1,colon) {
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
+	squash(pp,2+c,CommClause,0,60)
+}
+
+@ @<Cases for |CommCase|@>=
+if isCat(pp,case_token) {
+	if isCat(pp+1,SendStmt) { 
+		squash(pp,2,CommCase,0,61)
+	} else if rollback(); isCat(pp+1,RecvStmt) {
+		squash(pp,2,CommCase,0,61)
+	}
+} else if rollback(); isCat(pp,default_token) {
+	squash(pp,1,CommCase,0,61)
+} else if rollback(); isCat(pp,section_scrap) {
+	squash(pp,1,CommCase,0,61)
+}
+
+@ @<Cases for |RecvStmt|@>=
+p:=pp
+if isCat(pp,Expression) {
+	c:=0
+	pp++
+ 	isCats(pp,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})
+	pp+=c
+	if (isCat(pp,eq) || isCat(pp,col_eq)) && isCat(pp+1,Expression) {
+		pp+=2
+	}
+	squash(p,pp-p,RecvStmt,0,62)
+}
+pp=p
+
+@ @<Cases for |SendStmt|@>=
+if isCat(pp,Expression) && isCat(pp+1,direct) && isCat(pp+2,Expression) {
+	squash(pp,3,SendStmt,0,63)
+}
+
+@ Tests for |send|
+@(tests/send.w@>=
+@@
+@@2
+@@c
+ch <- 3
+
+@ Tests for |select|
+@(tests/select.w@>=
+@@
+@@2
+@@c
+select {
+case i1 = <-c1:
+	print("received ", i1, " from c1\n")
+case c2 <- i2:
+	print("sent ", i2, " to c2\n")
+case i3, ok := (<-c3):  // same as: i3, ok := <-c3
+	if ok {
+		print("received ", i3, " from c3\n")
+	} else {
+		print("c3 is closed\n")
+	}
+default:
+	print("no communication\n")
+}
+@@
+@@2
+@@c
+select {
+	case c <- 0:  // note: no statement, no fallthrough, no folding of cases
+	case c <- 1:
+}
+@@
+@@2
+@@c
+select {}
+
+@ @<Cases for |ForStmt|@>=
+if isCat(pp,for_token) {
+	@<Making copy...@>
+	if isCat(pp+1,Expression) && isCat(pp+2,Block) {
+		squash(pp,3,ForStmt,0,64)	
+	} else if rollback(); isCat(pp+1,ForClause) && isCat(pp+2,Block) {
+		squash(pp,3,ForStmt,0,64)	
+	} else if rollback(); isCat(pp+1,RangeClause) && isCat(pp+2,Block) {
+		squash(pp,3,ForStmt,0,64)	
+	} else if rollback(); isCat(pp+1,Block) {
+		squash(pp,2,ForStmt,0,64)	
+	}   
+}
+
+@ @<Cases for |ForClause|@>=
+p:=pp
+if isCat(pp,SimpleStmt) {
+	pp++
+} else {
+	rollback()
+}
+if isCat(pp,semi) {
+	pp++
+	@<Making copy...@>
+	if isCat(pp,Expression) {
+		pp++
+	} else {
+		rollback()
+	}
+	if isCat(pp,semi) {
+		pp++
+		@<Making copy...@>
+		if isCat(pp,SimpleStmt) {
+			pp++
+		} else {
+			rollback()
+		}
+		squash(p,pp-p,ForClause,0,65)
+	}
+}
+pp=p
+
+@ @<Cases for |RangeClause|@>=
+if isCat(pp,ExpressionList) {
+	p:=pp+1
+	c:=0
+	isCats(p,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})
+	p+=c
+	if (isCat(p,eq) || isCat(p,col_eq)) && isCat(p+1,range_token) && isCat(p+2,Expression) {
+		p+=3
+		squash(pp,p-pp,RangeClause,0,66)
+	}
+}
+
+@ Tests for |for|
+@(tests/for.w@>=
+@@
+@@2
+@@c
+for a < b {
+	a *= 2
+}
+@@
+@@c
+for i := 0; i < 10; i++ {
+	f(i)
+}
+@@
+@@c
+for i, _ := range testdata.a {
+	f(i)
+}
+@@
+@@c
+for i, s := range a {
+	g(i, s)
+}
+
+
+@ @<Cases for |DeferStmt|@>=
+if isCat(pp,defer_token) && isCat(pp+1,Expression) {
+	squash(pp,2,DeferStmt,0,67)
+}
+
+@ Tests for |defer|
+@(tests/defer.w@>=
+@@
+@@2
+@@c
+defer unlock(l) 
+@@
+@@c
+defer func() {
+                result++
+        }()
+
+
+@ @<Cases for |IncDecStmt|@>=
+if isCat(pp,Expression) && (isCat(pp+1,plus_plus) || isCat(pp+1,minus_minus)) {
+	squash(pp,2,IncDecStmt,0,68)
+}
+
+@ Tests for |incdec|
+@(tests/incdec.w@>=
+@@
+@@2
+@@c
+i++
+@@
+@@c
+j--
+
+@ @<Cases for |Assignment|@>=
+if isCat(pp,ExpressionList) && isCat(pp+1,assign_op) && isCat(pp+2,ExpressionList) {
+	squash(pp,3,Assignment,0,69)
+}
+
+@ Tests for assignments
+@(tests/assign.w@>=
+@@
+@@2
+@@c 
+x = 1
+@@
+@@c
+*p = f()
+@@
+@@c
+a[i] = 23
+@@
+@@c
+(k) = <-ch
+@@
+@@c
+a[i] <<= 2
+@@
+@@c
+i &^= 1<<n
+@@
+@@c
+x, y = f()
+@@
+@@c
+x, _ = f()
+@@
+@@c
+a, b = b, a
+@@
+@@c
+i, x[i] = 1, 2
+@@
+@@c
+i = 0
+@@
+@@c
+x[i], i = 2, 1
+@@
+@@c
+x[0], x[0] = 1, 2
+@@
+@@c
+x[1], x[3] = 4, 5 
+@@
+@@c
+x[2], p.x = 6, 7
+@@
+@@c
+i = 2
+@@
+@@c
+x = []int{3, 5, 7}
+
+@ @<Cases for |assign_op|@>=
+if (isCat(pp,unary_op) || isCat(pp,mul_op) || isCat(pp,asterisk)) && isCat(pp+1,eq) {
+	squash(pp,2,assign_op,0,70)
+} else if rollback(); isCat(pp,eq) {
+	squash(pp,1,assign_op,0,70)
+}
+
+@ @<Cases for |ShortVarDecl|@>=
+if isCat(pp, IdentifierList) && isCat(pp+1,col_eq) && isCat(pp+2,ExpressionList) {
+	squash(pp,3,ShortVarDecl,0,71)
+}
+
+@ Tests for short var declarations
+@(tests/shortvar.w@>=
+@@
+@@2
+@@c
+i, j := 0, 10
+@@
+@@c
+f := func() int { return 7 }
+@@
+@@c
+ch := make(chan int)
+@@
+@@c
+r, w := os.Pipe(fd) 
+@@
+@@c
+_, y, _ := coord(p)
+
+@ @<Cases for |QualifiedIdent|@>=
+if (isCat(pp,identifier) || isCat(pp,PackageName)) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
+	squash(pp,3,QualifiedIdent,0,72)
+} else if rollback(); isCat(pp,identifier) {
+	squash(pp,1,QualifiedIdent,0,72)
+}
+
+@ @<Cases for |MethodExpr|@>=
+if isCat(pp,ReceiverType) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
+	squash(pp,3,MethodExpr,0,73)
+}
+
+@ @<Cases for |ReceiverType|@>=
+if isCat(pp,Type) {
+	squash(pp,1,ReceiverType,0,74)
+} else if rollback(); isCat(pp,lpar) && isCat(pp+1,asterisk) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
+	squash(pp,4,ReceiverType,0,74)
+}
+
+@ @<Cases for |Conversion|@>=
+if isCat(pp,Type) && isCat(pp+1,lpar) && isCat(pp+2,Expression) && isCat(pp+3,rpar) {
+	squash(pp,4,Conversion,0,75)
+}
+
+@ @<Cases for |BuiltinCall|@>=
+if isCat(pp,identifier) && isCat(pp+1,lpar) {
+	c:=0
+	isCats(pp+2,&c,cat_pair{cat:BuiltinArgs,mand:true},cat_pair{cat:comma,mand:false}) 
+	if isCat(pp+2+c,rpar) {
+		squash(pp,3+c,BuiltinCall,0,76)
+	}
+}
+
+@ @<Cases for |BuiltinArgs|@>=
+if isCat(pp,Type) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ExpressionList,mand:true})	
+	squash(pp,1+c,BuiltinArgs,0,77)	
+} else if rollback(); isCat(pp,ExpressionList) {
+	squash(pp,1,BuiltinArgs,0,77)	
+}
+
+@ @<Cases for |Selector|@>= 
+if isCat(pp,dot) && isCat(pp+1,identifier) {
+	squash(pp,2,Selector,0,78)
+}
+
+@ @<Cases for |Index|@>=
+if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) {
+	squash(pp,3,Index,0,79)
+}
+
+@ @<Cases for |Slice|@>=
+if isCat(pp,lbracket) {
+	c1:=0
+	isCats(pp+1,&c1, cat_pair{cat:Expression,mand:false})
+	if isCat(pp+1+c1,colon) {
+		c2 := 0
+		isCats(pp+2+c1,&c2, cat_pair{cat:Expression,mand:false})
+		if isCat(pp+2+c1+c2,rbracket) {
+			squash(pp,3+c1+c2,Slice,0,80)
+		}
+	}
+}
+
+@ @<Cases for |TypeAssertion|@>=
+if isCat(pp,dot) && isCat(pp+1,lpar) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
+	squash(pp,4,TypeAssertion,0,81)
+}
+
+@ @<Cases for |Call|@>=
+if isCat(pp,lpar) {
+	c:=0
+	isCats(pp+1,&c,cat_pair{cat:ExpressionList,mand:false}, cat_pair{cat:dot_dot_dot,mand:false})
+	if isCat(pp+1+c,rpar) {
+		squash(pp,2+c,Call,0,82)
+	}	
+}
+
+@ @<Cases for |unary_op|@>=
+if isCat(pp,asterisk) || isCat(pp,direct) || isCat(pp,add_op)  {
+	squash(pp,1,unary_op,0,83)
+}
+
 
 @ Now here's the |reduce| procedure used in our code for productions.
 
-The `|freeze_text|' function is used to give official status to a token list.
-Before saying |freeze_text|, items are appended to the current token list,
-and we know that the eventual number of this token list will be the current
-value of |len(tok_mem)|. But no list of that number really exists as yet,
-because no ending point for the current list has been
-stored in the |tok_start| array. After saying |freeze_text|, the
-old current token list becomes legitimate, and the new
-current token list is empty and ready to be appended to.
-
 @c
-func freeze_text() {
-	tok_start = append(tok_start, int32(len(tok_mem)))
-}
-
-@ @c
-func reduce(j int32, k int32, c rune, d int32, n int32) {
-	scrap_info[j].cat=c
-	scrap_info[j].trans_plus.Trans=int32(len(tok_start)-1)
-	scrap_info[j].mathness=4*cur_mathness+init_mathness
-	freeze_text()
-	if k>1 {
-		i:=j+k
-		i1:=j+1
-		for i<=lo_ptr {
-			scrap_info[i1].cat=scrap_info[i].cat
-			scrap_info[i1].trans_plus.Trans=scrap_info[i].trans_plus.Trans
-			scrap_info[i1].mathness=scrap_info[i].mathness
-			i++
-			i1++
-		}
-		lo_ptr=lo_ptr-k+1
-	}
-	if pp+d<scrap_base {
-		pp = scrap_base
-	} else { 
-		pp=pp+d
+func reduce(pp int, k int, c rune, d int, n int) {
+	reduced=true
+	reduced_cat=c
+	t_mem:=tok_mem
+	tok_mem=nil
+	scrap_info[pp] = scrap{cat: c, trans: t_mem, mathness: 4*cur_mathness+init_mathness,}
+	if k==1 {
+		scrap_info[pp].cat=c
+	} else {
+		copy(scrap_info[pp+1:len(scrap_info)-1],scrap_info[pp+k:])
+		scrap_info = scrap_info[:len(scrap_info)-k+1]
 	}
 	f := "reduce"
 	@<Print a snapshot of the scrap list if debugging @>
-	pp-- /* we next say |pp++| */
 }
 
 @ Here's the |squash| procedure, which
 takes advantage of the simplification that occurs when |k==1|.
 
 @c
-func squash(j int32, k int32, c rune,d int32, n int32) {
+func squash(pp int, k int, c rune,d int, n int) {
 	if k==1 {
-		scrap_info[j].cat=c
-		if pp+d<scrap_base {
-			pp = scrap_base
-		} else { 
-			pp=pp+d
-		}
+		reduced=true
+		reduced_cat=c
+		scrap_info[pp].cat=c
 		f := "squash"
 		@<Print a snapshot...@>
-		pp-- /* we next say |pp++| */
-		return
 	}
-	for i:=j; i<j+k; i++ {
+	for i:=pp; i<pp+k; i++ {
 		big_app1(i)
 	}
-	reduce(j,k,c,d,n)
+	reduce(pp,k,c,d,n)
 }
 
 @ And here now is the code that applies productions as long as possible.
@@ -3236,32 +4116,30 @@ conservative test; it's more important to make sure the program
 will still work if we change the production rules (within reason)
 than to squeeze the last bit of space from the memory arrays.
 
-@<Reduce the scraps using the productions until no more rules apply@>=
-for true {
-	@<Make sure the entries |pp| through |pp+3| of |cat| are defined@>
-	if pp>lo_ptr {
+@ A variable |reduced_cat| is a category was applied.
+@<Global...@>=
+var reduced_cat rune = -1
+
+@ A variable |reduced| is a flag of reducing was made.
+@<Global...@>=
+var reduced bool = false
+
+@ @<Reduce the scraps using the productions until no more rules apply@>=
+for  {
+//	for {
+		if pp>=len(scrap_info) {
+			break
+		}
+		init_mathness=maybe_math
+		cur_mathness=maybe_math
+		@<Match a production...@>
+/*	}
+	if !reduced {
 		break
 	}
-	init_mathness=maybe_math
-	cur_mathness=maybe_math
-	@<Match a production...@>
-}
-
-@ If we get to the end of the scrap list, category codes equal to zero are
-stored, since zero does not match anything in a production.
-
-@<Make sure the entries...@>=
-if lo_ptr<pp+3 {
-	for hi_ptr<=scrap_ptr && lo_ptr!=pp+3 {
-		lo_ptr++
-		scrap_info[lo_ptr].cat=scrap_info[hi_ptr].cat
-		scrap_info[lo_ptr].mathness=scrap_info[hi_ptr].mathness
-		scrap_info[lo_ptr].trans_plus.Trans=scrap_info[hi_ptr].trans_plus.Trans
-		hi_ptr++
-	}
-	for i:=lo_ptr+1;i<=pp+3;i++ {
-		scrap_info[i].cat=0
-	}
+	reduced=false
+	pp = 0
+*/
 }
 
 @ If \.{GOWEAVE} is being run in debugging mode, the production numbers and
@@ -3274,44 +4152,40 @@ var tracing int32  /* can be used to show parsing details */
 
 @ @<Print a snapsh...@>=
 { 
-	if tracing==2 {
-		fmt.Printf("\n%s %d:", f, n)
-		for k:=scrap_base; k<=lo_ptr; k++ {
+	if (tracing & 2) == 2 {
+		fmt.Printf("%s %d:", f, n)
+		for k, v:=range scrap_info {
 			if k==pp {
 				fmt.Print("*") 
 			} else {
 				fmt.Print(" ")
 			}
-			if scrap_info[k].mathness %4 == yes_math {
+			if v.mathness %4 == yes_math {
 				fmt.Print("+")
 			} else if scrap_info[k].mathness %4 == no_math {
 				fmt.Print("-")
 			}
-			print_cat(scrap_info[k].cat)
-			if scrap_info[k].mathness /4 == yes_math {
+			print_cat(v.cat)
+			if v.mathness /4 == yes_math {
 				fmt.Print("+")
-			} else if scrap_info[k].mathness /4 == no_math {
+			} else if v.mathness /4 == no_math {
 				fmt.Print("-")
 			}
 		}
-		if hi_ptr<=scrap_ptr {
-			 fmt.Print("...") /* indicate that more is coming */
-		}
+		fmt.Println()
 	}
 }
 
 @ The |translate| function assumes that scraps have been stored in
-positions |scrap_base| through |scrap_ptr| of |cat| and |trans_plus.Trans|. It
+|scrap_info| of |cat| and |trans|. It
 applies productions as much as
 possible. The result is a token list containing the translation of
 the given sequence of scraps.
 
 @c 
 /* converts a sequence of scraps */
-func translate() int32 {
-	pp=scrap_base
-	lo_ptr=pp-1
-	hi_ptr=pp
+func translate() []interface{} {
+	pp:=0
 	@<If tracing, print an indication of where we are@>
 	@<Reduce the scraps...@>
 	@<Combine the irreducible scraps that remain@>
@@ -3324,35 +4198,36 @@ where appropriate.
 
 @<Combine the irreducible...@>= {
 	@<If semi-tracing, show the irreducible scraps@>
-	for j:=scrap_base; j<=lo_ptr; j++ {
-		if j!=scrap_base {
+	for i,j:=range scrap_info {
+		if i!=0 {
 			app(' ')
 		}
-		if scrap_info[j].mathness % 4 == yes_math {
+		if j.mathness % 4 == yes_math {
 			app('$')
 		}
-		app1(j)
-		if scrap_info[j].mathness / 4 == yes_math {
+		app1(i)
+		if j.mathness / 4 == yes_math {
 			app('$')
 		}
 	}
-	freeze_text()
-	return int32(len(tok_start)-2)
+	res := tok_mem
+	tok_mem=nil
+	return res
 }
 
 @ @<If semi-tracing, show the irreducible scraps@>=
-if lo_ptr>scrap_base && tracing==1 {
+if len(scrap_info)>0 && tracing==1 {
 	fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count)
 @.Irreducible scrap sequence...@>
 	mark_harmless()
-	for j:=scrap_base; j<=lo_ptr; j++ {
+	for i,_:=range scrap_info {
 		fmt.Printf(" ")
-		print_cat(scrap_info[j].cat)
+		print_cat(scrap_info[i].cat)
 	}
 }
 
 @ @<If tracing,...@>=
-if tracing==2 {
+if (tracing & 2) == 2 {
 	fmt.Printf("\nTracing after l. %d:\n",line[include_depth])
 	mark_harmless()
 @.Tracing after...@>
@@ -3370,7 +4245,7 @@ Like |Go_xref|, the |Go_parse| procedure starts with the current
 value of |next_control| and it uses the operation |next_control=get_next()|
 repeatedly to read \GO/ text until encountering the next `\.{\v}' or
 `\.{/*}', or until |next_control>=format_code|. The scraps corresponding to
-what it reads are appended into the |cat| and |trans_plus.Trans| arrays, and |scrap_ptr|
+what it reads are appended into the |cat| and |trans| arrays, and |scrap_ptr|
 is advanced.
 
 @c
@@ -3391,94 +4266,119 @@ been appended:
 
 @c
 func app_scrap(c int32, b int32) {
-	scrap_ptr++
-	scrap_info[scrap_ptr].cat=c
-	scrap_info[scrap_ptr].trans_plus.Trans=int32(len(tok_start)-1)
-	scrap_info[scrap_ptr].mathness=5*(b) /* no no, yes yes, or maybe maybe */
-	freeze_text()
+	scrap_info = append(scrap_info, scrap{cat:c, trans: tok_mem, mathness:5*b,})
+	tok_mem=nil
 }
 
 @ @<Append the scr...@>=
 switch (next_control) {
 	case section_name:
-		app(section_flag+cur_section)
+		app(section_token(cur_section))
 		app_scrap(section_scrap,maybe_math)
-		app_scrap(exp,yes_math)
+		app_scrap(Expression,yes_math)
 	case str,constant,verbatim:
 		@<Append a string or constant@>
 	case identifier: 
 		app_cur_id(true)
 	case TeX_string:
 		@<Append a \TEX/ string, without forming a scrap@>
-	case '/', '.':
+	case '/':
 		app(next_control)
-		app_scrap(binop,yes_math)
+		next_control=mul_op
+		app_scrap(mul_op,yes_math)
+	case '.':
+		app(next_control)
+		next_control=dot
+		app_scrap(dot,yes_math)
+	case '_':
+		app_str("\\_")
+		next_control=identifier
+		app_scrap(identifier,maybe_math)
 	case '<': 
 		app_str("\\langle")
-		@+app_scrap(prelangle,yes_math)
-@.\\langle@>
+		next_control=rel_op
+		@+app_scrap(rel_op,yes_math)
 	case '>': 
 		app_str("\\rangle")
-		@+app_scrap(prerangle,yes_math)
-@.\\rangle@>
+		next_control=rel_op
+		@+app_scrap(rel_op,yes_math)
 	case '=': 
 		app_str("\\K")
-		app_scrap(binop,yes_math)
+		next_control=eq
+		app_scrap(eq,yes_math)
 @.\\K@>
 	case '|': 
 		app_str("\\OR")
-		app_scrap(binop,yes_math)
+		next_control=add_op
+		app_scrap(add_op,yes_math)
 @.\\OR@>
 	case '^': 
 		app_str("\\XOR")
-		app_scrap(ubinop,yes_math)
+		next_control=add_op
+		app_scrap(add_op,yes_math)
 @.\\XOR@>
 	case '%': 
 		app_str("\\MOD")
-		app_scrap(binop,yes_math)
+		next_control=mul_op
+		app_scrap(mul_op,yes_math)
 @.\\MOD@>
 	case '!': 
 		app_str("\\R")
-		app_scrap(unop,yes_math)
+		next_control=unary_op
+		app_scrap(unary_op,yes_math)
 @.\\R@>
-	case '~': 
-		app_str("\\CM")
-		app_scrap(unop,yes_math)
-@.\\CM@>
 	case '+', '-':
 		app(next_control)
-		app_scrap(ubinop,yes_math)
+		next_control=add_op
+		app_scrap(add_op,yes_math)
 	case '*': 
 		app(next_control)
-		app_scrap(ubinop,yes_math)
+		next_control=asterisk
+		app_scrap(asterisk,yes_math)
 	case '&': 
 		app_str("\\AND")
-		app_scrap(ubinop,yes_math)
+		next_control=mul_op
+		app_scrap(mul_op,yes_math)
 @.\\AND@>
 	case ignore, xref_roman, xref_wildcard, xref_typewriter, noop:
 		@+break
-	case '(', '[': 
+	case '(' : 
 		app(next_control)
+		next_control=lpar
 		app_scrap(lpar,maybe_math)
-	case ')', ']': 
+	case ')' : 
 		app(next_control)
+		next_control=rpar
 		app_scrap(rpar,maybe_math)
+	case '[': 
+		app(next_control)
+		next_control=lbracket
+		app_scrap(lbracket,maybe_math)
+	case ']': 
+		app(next_control)
+		next_control=rbracket
+		app_scrap(rbracket,maybe_math)
 	case '{': 
 		app_str("\\{"@q}@>)
+		next_control=lbrace
 		app_scrap(lbrace,yes_math)
 @.\\\{@>@q}@>
 	case '}': 
 		app_str(@q{@>"\\}")
+		next_control=rbrace
 		app_scrap(rbrace,yes_math)
 @q{@>@.\\\}@>
 	case ',': 
 		app(',')
+		next_control=comma
 		app_scrap(comma,yes_math)
 	case ';': 
 		app(';')
+		next_control=semi
 		app_scrap(semi,maybe_math)
 	case ':': 
 		app(':')
+		next_control=colon
 		app_scrap(colon,no_math)@/
 	@t\4@>  @<Cases involving nonstandard characters@>
 	case thin_space: 
@@ -3488,12 +4388,15 @@ switch (next_control) {
 	case math_break: 
 		app(opt)
 		app_str("0")
+		next_control=insert
 		app_scrap(insert,maybe_math)
 	case line_break: 
 		app(force)
+		next_control=insert
 		app_scrap(insert,no_math)
 	case big_line_break: 
 		app(big_force)
+		next_control=insert
 		app_scrap(insert,no_math)
 	case no_line_break: 
 		app(big_cancel)
@@ -3501,16 +4404,20 @@ switch (next_control) {
 		app(break_space)
 		app(noop)
 		app(big_cancel)
+		next_control=insert
 		app_scrap(insert,no_math)
 	case pseudo_semi: 
+		next_control=semi
 		app_scrap(semi,maybe_math)
 	case join: 
 		app_str("\\J")
+		next_control=insert
 		app_scrap(insert,no_math)
 @.\\J@>
 	default: 
 		app(inserted)
 		app(next_control)
+		next_control=insert
 		app_scrap(insert,maybe_math)
 }
 
@@ -3521,92 +4428,59 @@ possible to keep \.{GOWEAVE} from outputting unusual |rune| codes.
 @<Cases involving nonstandard...@>=
 case not_eq: 
 	app_str("\\I")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(rel_op,yes_math)
 @.\\I@>
 case lt_eq: 
 	app_str("\\Z")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(rel_op,yes_math)
 @.\\Z@>
 case gt_eq: 
 	app_str("\\G")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(rel_op,yes_math)
 @.\\G@>
 case eq_eq: 
 	app_str("\\E")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(rel_op,yes_math)
 @.\\E@>
 case and_and: 
 	app_str("\\W")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(binary_op,yes_math)
 @.\\W@>
 case or_or: 
 	app_str("\\V")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(binary_op,yes_math)
 @.\\V@>
 case plus_plus: 
 	app_str("\\PP")
-	@+app_scrap(unop,yes_math)
+	@+app_scrap(plus_plus,yes_math)
 @.\\PP@>
 case minus_minus: 
 	app_str("\\MM")
-	@+app_scrap(unop,yes_math)
+	@+app_scrap(minus_minus,yes_math)
 @.\\MM@>
 case gt_gt: 
 	app_str("\\GG")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(mul_op,yes_math)
 @.\\GG@>
 case lt_lt: 
 	app_str("\\LL")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(mul_op,yes_math)
 @.\\LL@>
 case dot_dot_dot: 
 	app_str("\\,\\ldots\\,")
-	@+app_scrap(raw_int,yes_math)
+	@+app_scrap(dot_dot_dot,yes_math)
 @.\\,@>
 @.\\ldots@>
 case col_eq: 
 	app_str("\\K")
-	@+app_scrap(binop,yes_math)
-@.\\E@>
-case div_eq:
-	app_str("/=")
-	@+app_scrap(binop,yes_math)
-case plus_eq:
-	app_str("+=")
-	@+app_scrap(binop,yes_math)
-case minus_eq:
-	app_str("-=")
-	@+app_scrap(binop,yes_math)
-case rshift_eq:
-	app_str(">>=")
-	@+app_scrap(binop,yes_math)
-case lshift_eq:
-	app_str("<<=")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(col_eq,yes_math)
 case direct:
 	app_str("<-")
-	@+app_scrap(unop,maybe_math)
-case and_eq:
-	app_str("&=")
-	@+app_scrap(binop,yes_math)
-case and_not_eq:
-	app_str("&^=")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(direct,maybe_math)
 case and_not:
 	app_str("&^")
-	@+app_scrap(binop,yes_math)
-case or_eq:
-	app_str("|=")
-	@+app_scrap(binop,yes_math)
-case mul_eq:
-	app_str("*=")
-	@+app_scrap(binop,yes_math)
-case xor_eq:
-	app_str("^=")
-	@+app_scrap(binop,yes_math)
-case mod_eq:
-	app_str("%=")
-	@+app_scrap(binop,yes_math)
+	@+app_scrap(mul_op,yes_math)
+
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
 \TEX/ will print them properly.
@@ -3653,27 +4527,17 @@ for i:=0; i < len(id); {
 			}
 @.Double @@ should be used...@>
 	}
-	app_tok(id[i])
+	app(id[i])
 	i++
 	count--
 }
 app(@q{@>'}')
-app_scrap(exp,maybe_math)
+app_scrap(next_control,maybe_math)
 
 @ We do not make the \TEX/ string into a scrap, because there is no
 telling what the user will be putting into it; instead we leave it
 open, to be picked up by the next scrap. If it comes at the end of a
 section, it will be made into a scrap when |finish_Go| is called.
-
-There's a known bug here, in cases where an adjacent scrap is
-|prelangle| or |prerangle|. Then the \TEX/ string can disappear
-when the \.{\\langle} or \.{\\rangle} becomes \.{<} or \.{>}.
-For example, if the user writes \.{\v x<@@ty@@>\v}, the \TEX/ string
-\.{\\hbox\{y\}} eventually becomes part of an |insert| scrap, which is combined
-with a |prelangle| scrap and eventually lost. The best way to work around
-this bug is probably to enclose the \.{@@t...@@>} in \.{@@[...@@]} so that
-the \TEX/ string is treated as an expression.
-@^bug, known@>
 
 @<Append a \TEX/ string, without forming a scrap@>=
 app_str("\\hbox{"@q}@>)
@@ -3681,7 +4545,7 @@ for i:=0; i < len(id);{
 	if id[i]=='@@' {
 		i++
 	}
-	app_tok(id[i])
+	app(id[i])
 	i++
 }
 app(@q{@>'}')
@@ -3693,9 +4557,9 @@ token list; it also builds a new scrap if |scrapping==true|.
 func app_cur_id(scrapping bool) {
 	p:=id_lookup(id,normal)
 	if name_dir[p].ilk<=custom { /* not a reserved word */
-		app(id_flag+p)
+		app(id_token(p))
 		if scrapping {
-			a1 := exp
+			a1 := identifier
 			a2 := maybe_math
 			if name_dir[p].ilk==custom {
 				a2 = yes_math
@@ -3704,10 +4568,13 @@ func app_cur_id(scrapping bool) {
 		}
 @.\\NULL@>
 	} else {
-		app(res_flag+p)
+		app(res_token(p))
 		if scrapping {
-			if name_dir[p].ilk==alfop {
-				app_scrap(ubinop,yes_math)
+			if name_dir[p].ilk==binary_op || 
+				name_dir[p].ilk==rel_op || 
+				name_dir[p].ilk==add_op ||
+				name_dir[p].ilk==mul_op {
+				app_scrap(name_dir[p].ilk,yes_math)
 			} else {
 				app_scrap(name_dir[p].ilk,maybe_math)
 			}
@@ -3721,23 +4588,19 @@ that text. If scraps exist in |scrap_info|, they are
 unaffected by this translation process.
 
 @c
-func Go_translate() int32 {
-	save_base:=scrap_base /* holds original value of |scrap_base| */
-	scrap_base=scrap_ptr+1
+func Go_translate() []interface{} {
+	save_scraps:=scrap_info /* holds original value of |scrap_info| */
+	scrap_info=nil
 	Go_parse(section_name) /* get the scraps together */
 	if next_control!='|' {
 		err_print("! Missing '|' after Go text")
 @.Missing '|'...@>
 	}
-	app_tok(cancel)
+	app(cancel)
 	app_scrap(insert,maybe_math)
 				/* place a |cancel| token as a final ``comment'' */
 	p:=translate() /* make the translation */
-	if scrap_ptr>max_scr_ptr {
-		max_scr_ptr=scrap_ptr
-	}
-	scrap_ptr=scrap_base-1
-	scrap_base=save_base /* scrap the scraps */
+	scrap_info=save_scraps /* scrap the scraps */
 	return p
 }
 
@@ -3771,17 +4634,17 @@ func outer_parse() {
 			bal:=copy_comment(is_long_comment,1)  /* brace level in comment */
 			next_control=ignore
 			for bal>0 {
-				p:=int32(len(tok_start)-1)
-				freeze_text()
+				p:=tok_mem
+				tok_mem=nil
 				q:=Go_translate()/* partial comments */
-				app(tok_flag+p)
+				app(list_token(p))
 				if flags['e'] {
 					app_str("\\PB{")
 @.\\PB@>
 				}
-				app(inner_tok_flag+q)
+				app(inner_list_token(q))
 				if flags['e'] {
-					app_tok('}') 
+					app('}') 
 				}
 				if next_control=='|' {
 					bal=copy_comment(is_long_comment,bal)
@@ -3839,32 +4702,25 @@ output process.
 @c type mode int
 
 @ @<Constants@>=
-inner mode = 0 /* value of |mode| for \GO/ texts within \TEX/ texts */
-outer mode = 1 /* value of |mode| for \GO/ texts in sections */
+const (
+	inner mode = 0 /* value of |mode| for \GO/ texts within \TEX/ texts */
+	outer mode = 1 /* value of |mode| for \GO/ texts in sections */
+)
 
 @ @<Typed...@>= 
 type output_state struct {
-	end_field int32/* ending location of token list */
-	tok_field int32 /* present location within token list */
+	tok_field []interface{} /* present location of token list */
 	mode_field mode /* interpretation of control tokens */
 }
-type stack_pointer int32
 
 @ @c func init_stack() {
-	stack_ptr=0
+	stack=make([]output_state, 0, 100)
 	cur_state.mode_field=outer
 }
 
 @ @<Global...@>=
-var cur_state output_state /* |cur_state.end_field|, 
-	|cur_state.tok_field|, |cur_state.mode_field| */
-var stack[stack_size]output_state /* info for non-current levels */
-var stack_ptr stack_pointer /* first unused location in the output state stack */
-var stack_end stack_pointer=stack_size-1 /* end of |stack| */
-var max_stack_ptr stack_pointer /* largest value assumed by |stack_ptr| */
-
-@ @<Set init...@>=
-max_stack_ptr=0
+var cur_state output_state /* |cur_state.tok_field|, |cur_state.mode_field| */
+var stack[]output_state /* info for non-current levels */
 
 @ To insert token-list |p| into the output, the |push_level| subroutine
 is called; it saves the old level of output and gets a new one going.
@@ -3872,21 +4728,9 @@ The value of |cur_state.mode_field| is not changed.
 
 @c
  /* suspends the current level */
-func push_level(p int32) {
-	if stack_ptr==stack_end {
-		overflow("stack")
-	}
-	if stack_ptr>0 { /* save current state */
-		stack[stack_ptr].end_field=cur_state.end_field
-		stack[stack_ptr].tok_field=cur_state.tok_field
-		stack[stack_ptr].mode_field=cur_state.mode_field
-	}
-	stack_ptr++
-	if stack_ptr>max_stack_ptr {
-		max_stack_ptr=stack_ptr
-	}
-	cur_state.tok_field=tok_start[p]
-	cur_state.end_field=tok_start[p+1]
+func push_level(tokens []interface{}) {
+	stack = append(stack, output_state{tok_field:cur_state.tok_field, mode_field:cur_state.mode_field,})
+	cur_state.tok_field=tokens
 }
 
 @ Conversely, the |pop_level| routine restores the conditions that were in
@@ -3894,11 +4738,14 @@ force when the current level was begun. This subroutine will never be
 called when |stack_ptr==1|.
 
 @c
-func pop_level() {
-	stack_ptr--
-	cur_state.end_field=stack[stack_ptr].end_field
-	cur_state.tok_field=stack[stack_ptr].tok_field
-	cur_state.mode_field=stack[stack_ptr].mode_field
+func pop_level() bool {
+	if len(stack) == 0 {
+		return false
+	}
+	p := len(stack) - 1
+	cur_state=stack[p]
+	stack=stack[:p]	
+	return true
 }
 
 @ The |get_output| function returns the next byte of output that is not a
@@ -3913,39 +4760,46 @@ question.
 var cur_name int32 = -1
 
 @ @<Constants@>=
-res_word = 0201 /* returned by |get_output| for reserved words */
-section_code = 0200 /* returned by |get_output| for section names */
+const (
+	res_word rune = 0242 /* returned by |get_output| for reserved words */
+	section_code rune = 0243 /* returned by |get_output| for section names */
+)
 
 @ @c
 /* returns the next token of output */
 func get_output() rune {
 restart: 
-	for cur_state.tok_field==cur_state.end_field {
-		pop_level()
+	for len(cur_state.tok_field)==0 {
+		if !pop_level() {
+			return -1
+		} 
 	}
-	idx:=cur_state.tok_field
-	a:=tok_mem[idx]/* current item read from |tok_mem| */
-	cur_state.tok_field++
-	if a>=0400 {
-		cur_name=a % id_flag
-		switch a / id_flag {
-			case 2: 
-				return res_word /* |a==res_flag+cur_name| */
-			case 4: 
-				return section_code /* |a==section_flag+cur_name| */
-			case 6: 
-				push_level(a % id_flag)
-				goto restart /* |a==tok_flag+cur_name| */
-			case 8: 
-				push_level(a % id_flag)
-				cur_state.mode_field=inner
-				goto restart
-				/* |a==inner_tok_flag+cur_name| */
-			default: 
-				return identifier /* |a==id_flag+cur_name| */
-		}
+	val:=cur_state.tok_field[0]
+	cur_state.tok_field = cur_state.tok_field[1:]
+	switch tok := val.(type) {
+		case id_token:
+			cur_name = int32(tok)
+			return identifier/* |a==id_flag+cur_name| */
+		case res_token: 
+			cur_name = int32(tok)
+			return res_word /* |a==res_flag+cur_name| */
+		case section_token: 
+			cur_name = int32(tok)
+			return section_code /* |a==section_flag+cur_name| */
+		case inner_list_token: 	/* |a==inner_tok_flag+cur_name| */
+			cur_state.mode_field=inner
+			push_level(tok)
+			goto restart
+		case list_token: /* |a==tok_flag+cur_name| */
+			push_level(tok)
+			goto restart
+		case rune: 
+			return tok
+		case []interface{}:
+			push_level(tok)
+			goto restart
 	}
-	return a
+	panic(fmt.Sprintf( "Invalid type of scrap: %T", val))
 }
 
 @ The real work associated with token output is done by |make_output|.
@@ -3966,12 +4820,11 @@ while outputting the name of a section.
 @c
 /* outputs the current token list */
 func output_Go() {
-	save_tok_ptr:=len(tok_mem)
-	save_text_ptr:=len(tok_start)
+	save_tokens:=tok_mem
 	save_next_control:=next_control/* values to be restored */
 	next_control=ignore
 	p:=Go_translate()/* translation of the \GO/ text */
-	app(inner_tok_flag+p)
+	app(inner_list_token(p))
 	if flags['e'] {
 		out_str("\\PB{")
 		make_output()
@@ -3980,14 +4833,10 @@ func output_Go() {
 	}@+else {
 		make_output() /* output the list */
 	}
-	if len(tok_start)>max_text_ptr {
-		max_text_ptr=len(tok_start)
-	}
 	if len(tok_mem)>max_tok_ptr {
 		max_tok_ptr=len(tok_mem)
 	}
-	tok_start = tok_start[:save_text_ptr]
-	tok_mem = tok_mem[:save_tok_ptr]/* forget the tokens */
+	tok_mem = save_tokens/* forget the tokens */
 	next_control=save_next_control /* restore |next_control| to original state */
 }
 
@@ -3998,10 +4847,10 @@ func output_Go() {
 func make_output() {
 	var c int /* count of |indent| and |outdent| tokens */
 	app(end_translation) /* append a sentinel */
-	freeze_text()
-	push_level(int32(len(tok_start)-2))
+	push_level(tok_mem)
+	tok_mem=nil
 	var b rune
-	for true {
+	for {
 		a:=get_output()/* current output byte */
 reswitch: 
 		switch a {
@@ -4019,7 +4868,7 @@ reswitch:
 			case cancel, big_cancel: 
 				c=0
 				b=a
-				for true {
+				for {
 					a=get_output()
 					if a==inserted {
 						continue
@@ -4042,9 +4891,8 @@ reswitch:
 					@<Output a control,
 				look ahead in case of line breaks, possibly |goto reswitch|@>
 			case quoted_char: 
-				out(tok_mem[cur_state.tok_field])
-				cur_state.tok_field++
-			case qualifier:
+				out(cur_state.tok_field[0].(rune))
+				cur_state.tok_field = cur_state.tok_field[1:]
 			default: 
 				out(a) /* otherwise |a| is an ordinary character */
 		}
@@ -4076,9 +4924,6 @@ if a==identifier {
 	}
 @.\\\\@>
 @.\\.@>
-}@+else if name_dir[cur_name].ilk==alfop {
-	out('X')
-	@<Custom out@>
 }@+else {
 	out('&') /* |a==res_word| */
 }
@@ -4140,7 +4985,7 @@ is suppressed (i.e., a line break that follows `\.{\\Y\\B}').
 	b=a
 	save_mode:=cur_state.mode_field /* value of |cur_state.mode_field| before a sequence of breaks */
 	c=0
-	for true {
+	for {
 		a=get_output()
 		if a==inserted {
 			continue
@@ -4295,7 +5140,7 @@ equals the delimiter that began the string being copied.
 
 @<Copy the \GO/ text into...@>=
 var delim rune
-for true {
+for {
 	if i>=len(scratch) {
 		fmt.Print("\n! Go text in section name didn't end: <")
 @.Go text...didn't end@>
@@ -4442,7 +5287,7 @@ out_str("}")
 index entries are not copied and \GO/ text within \pb\ is translated.
 
 @<Translate the \T...@>= 
-for true {
+for {
 	next_control=copy_TeX()
 	switch next_control {
 		case '|': 
@@ -4498,11 +5343,12 @@ takes place, so that the translation will normally end with \.{\\6} or
 func finish_Go(visible bool) {
 	if visible {
 		out_str("\\B")
-		app_tok(force)
+		app(force)
 		app_scrap(insert,no_math)
 		p:=translate() /* translation of the scraps */
 @.\\B@>
-		app(tok_flag+p)
+		app(list_token(p))
+		scrap_info=nil
 		make_output() /* output the list */
 		if out_ptr>1 {
 			if out_buf[out_ptr-1]=='\\' {
@@ -4519,19 +5365,10 @@ func finish_Go(visible bool) {
 		out_str("\\par")
 		finish_line()
 	}
-	if len(tok_start)>max_text_ptr {
-		max_text_ptr=len(tok_start)
-	}
 	if len(tok_mem)>max_tok_ptr {
 		max_tok_ptr=len(tok_mem) 
 	}
-	if scrap_ptr>max_scr_ptr {
-		max_scr_ptr=scrap_ptr
-	}
 	tok_mem=tok_mem[:0]
-	tok_start=tok_start[:1]
-	scrap_ptr=0
-		/* forget the tokens and the scraps */
 }
 
 @ @<Start a format...@>= {
@@ -4547,18 +5384,18 @@ func finish_Go(visible bool) {
 @.\\F@>
 	next_control=get_next()
 	if next_control==identifier {
-		app(id_flag+id_lookup(id,normal))
+		app(id_token(id_lookup(id,normal)))
 		app(' ')
 		app(break_space) /* this is syntactically separate from what follows */
 		next_control=get_next()
 		if next_control==identifier {
-			app(id_flag+id_lookup(id,normal))
-			app_scrap(exp,maybe_math)
+			app(id_token(id_lookup(id,normal)))
+			app_scrap(Expression,maybe_math)
 			app_scrap(semi,maybe_math)
 			next_control=get_next()
 		}
 	}
-	if scrap_ptr!=2 {
+	if len(scrap_info)!=2 {
 		err_print("! Improper format definition")
 @.Improper format definition@>
 	}
@@ -4594,7 +5431,7 @@ if next_control<=section_name {
 into a scrap that should not take part in the parsing.
 
 @<Check that '='...@>=
-for true {
+for {
 	next_control=get_next()
 	if next_control!='+' {
 		break
@@ -4611,7 +5448,7 @@ if out_ptr>1 && out_buf[out_ptr]=='Y' && out_buf[out_ptr-1]=='\\' {
 }
 		/* the section name will be flush left */
 @.\\Y@>
-app(section_flag+this_section)
+app(section_token(this_section))
 cur_xref=name_dir[this_section].xref
 if xmem[cur_xref].num==file_flag {
 	cur_xref=xmem[cur_xref].xlink
@@ -4634,7 +5471,7 @@ if next_control<section_name {
 @.You can't do that...@>
 	next_control=get_next()
 } else if next_control==section_name {
-	app(section_flag+cur_section)
+	app(section_token(cur_section))
 	app_scrap(section_scrap,maybe_math)
 	next_control=get_next()
 }
@@ -4703,7 +5540,7 @@ q:=cur_xref /* cross-reference pointer variable */
 if xmem[xmem[q].xlink].num>flag {
 	out('s') /* plural */
 }
-for true {
+for {
 	out_section(xmem[cur_xref].num-flag)
 	cur_xref=xmem[cur_xref].xlink /* point to the next cross-reference to output */
 	if xmem[cur_xref].num<=flag {
@@ -4854,7 +5691,7 @@ for _, next_name := range hash {
 }
 }
 
-@ During the sorting phase we shall use the |cat| and |trans_plus.Trans| arrays from
+@ During the sorting phase we shall use the |cat| and |trans| arrays from
 \.{GOWEAVE}'s parsing algorithm and rename them |depth| and |head|. They now
 represent a stack of identifier lists for all the index entries that have
 not yet been output. The variable |sort_ptr| tells how many such lists are
@@ -4863,14 +5700,11 @@ present; the lists are output in reverse order (first |sort_ptr|, then
 |k| characters of all entries on this list are known to be equal we have
 |depth[j]==k|.
 
-@ @<Rest of |trans| struct@>=
-Head int32
+@ @<Rest of |scrap| struct@>=
+head int32
 
 @ @<Type...@>=
 type sort_pointer int32
-
-@ @<Constants@>=
-max_sorts = max_scraps /* ditto */
 
 @ @f sort_pointer int
 
@@ -4923,7 +5757,7 @@ Any two sequences that agree in their first 255 character positions are
 regarded as identical.
 
 @<Constants@>=
-infinity = -1  /* $\infty$ (approximately) */
+const infinity = -1  /* $\infty$ (approximately) */
 
 @ @c
 /* empties buckets having depth |d| */
@@ -4934,6 +5768,7 @@ func unbucket(d int32) {
 		if bucket[collate[c]] != -1 {
 @^high-bit character handling@>
 			sort_ptr++
+			scrap_info = append(scrap_info, scrap{})
 			if sort_ptr>max_sort_ptr {
 				max_sort_ptr=sort_ptr
 			}
@@ -4942,7 +5777,7 @@ func unbucket(d int32) {
 			} else {
 				scrap_info[sort_ptr].cat=d
 			}
-			scrap_info[sort_ptr].trans_plus.Head=bucket[collate[c]]
+			scrap_info[sort_ptr].head=bucket[collate[c]]
 			bucket[collate[c]]=-1
 		}
 	}
@@ -4950,10 +5785,11 @@ func unbucket(d int32) {
 
 @ @<Sort and output...@>=
 sort_ptr=0
+scrap_info = append(scrap_info, scrap{})
 unbucket(1)
 for sort_ptr>0 {
 	cur_depth=scrap_info[sort_ptr].cat
-	if blink[scrap_info[sort_ptr].trans_plus.Head]==-1 || cur_depth==infinity {
+	if blink[scrap_info[sort_ptr].head]==-1 || cur_depth==infinity {
 		@<Output index entries for the list at |sort_ptr|@>
 	} else {
 		@<Split the list at |sort_ptr| into further lists@> 
@@ -4961,8 +5797,8 @@ for sort_ptr>0 {
 }
 
 @ @<Split the list...@>= {
-	next_name:=scrap_info[sort_ptr].trans_plus.Head
-	for true {
+	next_name:=scrap_info[sort_ptr].head
+	for {
 		var c rune
 		cur_name=next_name
 		next_name=blink[cur_name]
@@ -4986,8 +5822,8 @@ for sort_ptr>0 {
 }
 
 @ @<Output index...@>= {
-	cur_name=scrap_info[sort_ptr].trans_plus.Head
-	for true {
+	cur_name=scrap_info[sort_ptr].head
+	for {
 		out_str("\\I")
 @.\\I@>
 		@<Output the name at |cur_name|@>
@@ -5058,7 +5894,7 @@ name_done:@
 
 @<Output the cross-references...@>=
 @<Invert the cross-reference list at |cur_name|, making |cur_xref| the head@>
-for true {
+for {
 	out_str(", ")
 	cur_val=xmem[cur_xref].num
 	if cur_val<def_flag {
@@ -5088,7 +5924,7 @@ var this_xref int32
 @ @<Invert the cross-reference list at |cur_name|, making |cur_xref| the head@>=
 this_xref=name_dir[cur_name].xref
 cur_xref=0
-for true {
+for {
 	next_xref=xmem[this_xref].xlink
 	xmem[this_xref].xlink=cur_xref
 	cur_xref=this_xref
@@ -5110,10 +5946,8 @@ func section_print(p int32) {
 		out_str("\\I")
 @.\\I@>
 		tok_mem=tok_mem[:0]
-		tok_start=tok_start[:1]
-		scrap_ptr=0
 		init_stack()
-		app(p+section_flag)
+		app(section_token(p))
 		make_output()
 		footnote(cite_flag)
 		footnote(0) /* |cur_xref| was set by |make_output| */
@@ -5133,10 +5967,7 @@ func print_stats() {
 @.Memory usage statistics:@>
 	fmt.Println("%v names", len(name_dir))
 	fmt.Println("Parsing:")
-	fmt.Println("%v scraps", max_scr_ptr)
-	fmt.Println("%v texts", max_text_ptr)
 	fmt.Println("%v tokens", max_tok_ptr)
-	fmt.Println("%v levels", max_stack_ptr)
 	fmt.Println("Sorting:")
 	fmt.Println("%v levels ",max_sort_ptr)
 }
