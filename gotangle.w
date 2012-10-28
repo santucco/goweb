@@ -178,11 +178,11 @@ text_info[0].text_link=0
 @ \{GOTANGLE} operates with UTF8 encoding texts and represents a text in
 4-bytes unicode code points internally. If the first byte of a token is 
 less than |unicode.UpperLower|, this is usual character. Otherwise
-if it is equal |unicode.UpperLower+0201|, the next rune is a section number;
-if it is equal |unicode.UpperLower+0202|, the next rune is an identifier index;
-if it is equal |unicode.UpperLower+0204|, the next element is an line number;
+if it is equal |unicode.UpperLower+0211|, the next rune is a section number;
+if it is equal |unicode.UpperLower+0212|, the next rune is an identifier index;
+if it is equal |unicode.UpperLower+0214|, the next element is an line number;
 if it is equal |unicode.UpperLower+0311| and the next rune is equal 
-|unicode.UpperLower+0205|, it is a macro definition, otherwise it is 
+|unicode.UpperLower+0215|, it is a macro definition, otherwise it is 
 an index of section in which the current replacement text appears.
 
 Some of the 7-bit codes will not be present, however, so we can
@@ -289,8 +289,8 @@ if the next output is an identifier, in which case
 |cur_val| points to that identifier name.
 
 @<Constants@>=
-section_number = 0201 /* code returned by |get_output| for section numbers */
-identifier = 0202 /* code returned by |get_output| for identifiers */
+section_number = 0211 /* code returned by |get_output| for section numbers */
+identifier = 0212 /* code returned by |get_output| for identifiers */
 
 @ @<Global...@>=
 var cur_val rune /* additional information corresponding to output token */
@@ -591,44 +591,11 @@ case or_or:
 case dot_dot_dot: 
 	fmt.Fprint(go_file,"...")
 	out_state=normal
-case div_eq:
-	fmt.Fprint(go_file,"/=")
-	out_state=normal
-case plus_eq:
-	fmt.Fprint(go_file,"+=")
-	out_state=normal
-case minus_eq:
-	fmt.Fprint(go_file,"-=")
-	out_state=normal
-case rshift_eq:
-	fmt.Fprint(go_file,">>=")
-	out_state=normal
-case lshift_eq:
-	fmt.Fprint(go_file,"<<=")
-	out_state=normal
 case direct:
 	fmt.Fprint(go_file,"<-")
 	out_state=normal
-case and_eq:
-	fmt.Fprint(go_file,"&=")
-	out_state=normal
-case and_not_eq:
-	fmt.Fprint(go_file,"&^=")
-	out_state=normal
 case and_not:
 	fmt.Fprint(go_file,"&^")
-	out_state=normal
-case or_eq:
-	fmt.Fprint(go_file,"|=")
-	out_state=normal
-case mul_eq:
-	fmt.Fprint(go_file,"*=")
-	out_state=normal
-case xor_eq:
-	fmt.Fprint(go_file,"^=")
-	out_state=normal
-case mod_eq:
-	fmt.Fprint(go_file,"%=")
 	out_state=normal
 case col_eq:
 	fmt.Fprint(go_file,":=")
@@ -1204,7 +1171,7 @@ to |unicode.UpperLower| plus |line_number|; then the numeric line number; then a
 file name.
 
 @<Constants@>=
-line_number = 0204
+line_number = 0214
 
 @ @<Insert the line...@>=
 tok_mem = append(tok_mem, unicode.UpperLower + line_number)
