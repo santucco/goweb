@@ -52,7 +52,7 @@ cat int32
 mathness int32
 trans[]interface{}
 /*394:*/
-//line goweave.w:5703
+//line goweave.w:6231
 
 head int32
 
@@ -73,7 +73,7 @@ type inner_list_token[]interface{}
 
 
 /*:192*//*200:*/
-//line goweave.w:2496
+//line goweave.w:2480
 
 type cat_pair struct{
 cat int32
@@ -81,7 +81,7 @@ mand bool
 }
 
 /*:200*//*346:*/
-//line goweave.w:4710
+//line goweave.w:5239
 
 type output_state struct{
 tok_field[]interface{}
@@ -89,7 +89,7 @@ mode_field mode
 }
 
 /*:346*//*395:*/
-//line goweave.w:5706
+//line goweave.w:6234
 
 type sort_pointer int32
 
@@ -336,16 +336,16 @@ inserted rune= 0260
 
 
 /*:194*//*195:*/
-//line goweave.w:2287
+//line goweave.w:2286
 
 const(
-no_math rune= 2
-yes_math rune= 1
-maybe_math rune= 0
+maybe_math rune= iota
+yes_math rune= iota
+no_math rune= iota
 )
 
 /*:195*//*345:*/
-//line goweave.w:4704
+//line goweave.w:5233
 
 const(
 inner mode= 0
@@ -353,7 +353,7 @@ outer mode= 1
 )
 
 /*:345*//*352:*/
-//line goweave.w:4762
+//line goweave.w:5291
 
 const(
 res_word rune= 0242
@@ -361,7 +361,7 @@ section_code rune= 0243
 )
 
 /*:352*//*401:*/
-//line goweave.w:5759
+//line goweave.w:6287
 
 const infinity= -1
 
@@ -439,39 +439,39 @@ var cat_name[256]string
 var scrap_info[]scrap
 
 /*:193*//*197:*/
-//line goweave.w:2318
+//line goweave.w:2302
 
 var cur_mathness int32
 var init_mathness int32
 
 /*:197*//*324:*/
-//line goweave.w:4120
+//line goweave.w:4656
 
 var reduced_cat rune= -1
 
 /*:324*//*325:*/
-//line goweave.w:4124
+//line goweave.w:4660
 
 var reduced bool= false
 
 /*:325*//*327:*/
-//line goweave.w:4150
+//line goweave.w:4678
 
 var tracing int32
 
 /*:327*//*348:*/
-//line goweave.w:4721
+//line goweave.w:5250
 
 var cur_state output_state
 var stack[]output_state
 
 /*:348*//*351:*/
-//line goweave.w:4759
+//line goweave.w:5288
 
 var cur_name int32= -1
 
 /*:351*//*370:*/
-//line goweave.w:5224
+//line goweave.w:5752
 
 var save_line int
 var save_place int32
@@ -482,18 +482,18 @@ var doing_format bool= false
 var group_found bool= false
 
 /*:370*//*378:*/
-//line goweave.w:5408
+//line goweave.w:5936
 
 var this_section int32
 
 /*:378*//*391:*/
-//line goweave.w:5667
+//line goweave.w:6195
 
 var bucket[256]int32
 var blink[max_names]int32
 
 /*:391*//*397:*/
-//line goweave.w:5712
+//line goweave.w:6240
 
 var cur_depth int32
 var cur_byte int32
@@ -502,7 +502,7 @@ var max_sort_ptr int32
 var sort_ptr int32
 
 /*:397*//*399:*/
-//line goweave.w:5725
+//line goweave.w:6253
 
 
 var collate= [102+128]rune{
@@ -523,7 +523,7 @@ var collate= [102+128]rune{
 
 
 /*:399*//*409:*/
-//line goweave.w:5919
+//line goweave.w:6447
 
 var next_xref int32
 var this_xref int32
@@ -777,7 +777,7 @@ cat_name[plus_plus]= "'++'"
 cat_name[minus_minus]= "'--'"
 
 /*:186*//*398:*/
-//line goweave.w:5719
+//line goweave.w:6247
 
 max_sort_ptr= 0
 
@@ -1087,7 +1087,7 @@ flags['p']= true
 
 scan_args()
 /*416:*/
-//line goweave.w:5983
+//line goweave.w:6511
 
 if f,err:= os.OpenFile(tex_file_name,os.O_WRONLY|os.O_CREATE|os.O_TRUNC,0666);
 err!=nil{
@@ -2145,7 +2145,7 @@ found_out= true
 
 }else{
 /*415:*/
-//line goweave.w:5975
+//line goweave.w:6503
 
 {
 fatal("! Usage: goweave [options] webfile[.w] [{changefile[.ch]|-} [outfile[.tex]]]\n","")
@@ -2160,7 +2160,7 @@ fatal("! Usage: goweave [options] webfile[.w] [{changefile[.ch]|-} [outfile[.tex
 }
 if!found_web{
 /*415:*/
-//line goweave.w:5975
+//line goweave.w:6503
 
 {
 fatal("! Usage: goweave [options] webfile[.w] [{changefile[.ch]|-} [outfile[.tex]]]\n","")
@@ -3491,22 +3491,7 @@ fmt.Printf("%s(%v)",cat_name[c],c)
 }
 
 /*:187*//*196:*/
-//line goweave.w:2294
-
-func big_app2(a int){
-big_app1(a)
-big_app1(a+1)
-}
-
-func big_app3(a int){
-big_app2(a)
-big_app1(a+2)
-}
-
-func big_app4(a int){
-big_app3(a)
-big_app1(a+3)
-}
+//line goweave.w:2293
 
 func app(a interface{}){
 tok_mem= append(tok_mem,a)
@@ -3517,7 +3502,7 @@ tok_mem= append(tok_mem,scrap_info[a].trans)
 }
 
 /*:196*//*198:*/
-//line goweave.w:2322
+//line goweave.w:2306
 
 func app_str(s string){
 for _,v:= range s{
@@ -3566,7 +3551,7 @@ app1(a)
 }
 
 /*:198*//*199:*/
-//line goweave.w:2372
+//line goweave.w:2356
 
 func isCat(pp int,cat int32)bool{
 if pp<0||pp>=len(scrap_info){
@@ -3585,7 +3570,7 @@ fmt.Fprintf(os.Stdout,"%v; +category %q has been found\n",pp,cat_name[cat])
 return true
 }
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -3597,7 +3582,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -3610,7 +3595,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -3625,7 +3610,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -3633,12 +3618,12 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:2389
+//line goweave.w:2373
 
 reduced_cat= -1
 switch cat{
 case ConstDecl:/*217:*/
-//line goweave.w:2751
+//line goweave.w:2735
 
 if isCat(pp,const_token){
 if isCat(pp+1,ConstSpec){
@@ -3656,10 +3641,14 @@ app(break_space)
 app1(pp+1)
 app(force)
 app(indent)
-app1(pp+2)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,ConstSpec){
+app1(pp+2+i)
 app(force)
+}
+}
 app(outdent)
-app1(pp+3)
+app1(pp+2+c)
 app(big_force)
 reduce(pp,3+c,ConstDecl,0,2)
 }
@@ -3667,63 +3656,12 @@ reduce(pp,3+c,ConstDecl,0,2)
 }
 
 /*:217*/
-//line goweave.w:2392
+//line goweave.w:2376
 
 case TypeDecl:/*219:*/
-//line goweave.w:2800
+//line goweave.w:2788
 
 if isCat(pp,type_token){
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
-}
-}
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:2802
-
 if isCat(pp+1,TypeSpec){
 app1(pp)
 app(break_space)
@@ -3739,10 +3677,14 @@ app(break_space)
 app1(pp+1)
 app(force)
 app(indent)
-app1(pp+2)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,TypeSpec){
+app1(pp+2+i)
 app(force)
+}
+}
 app(outdent)
-app1(pp+3)
+app1(pp+2+c)
 app(big_force)
 reduce(pp,3+c,TypeDecl,0,3)
 }
@@ -3750,63 +3692,12 @@ reduce(pp,3+c,TypeDecl,0,3)
 }
 
 /*:219*/
-//line goweave.w:2393
+//line goweave.w:2377
 
 case VarDecl:/*221:*/
-//line goweave.w:2854
+//line goweave.w:2845
 
 if isCat(pp,var_token){
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
-}
-}
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:2856
-
 if isCat(pp+1,VarSpec){
 app1(pp)
 app(break_space)
@@ -3822,10 +3713,14 @@ app(break_space)
 app1(pp+1)
 app(force)
 app(indent)
-app1(pp+2)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,VarSpec){
+app1(pp+2+i)
 app(force)
+}
+}
 app(outdent)
-app1(pp+3)
+app1(pp+2+c)
 app(big_force)
 reduce(pp,3+c,VarDecl,0,4)
 }
@@ -3833,167 +3728,212 @@ reduce(pp,3+c,VarDecl,0,4)
 }
 
 /*:221*/
-//line goweave.w:2394
+//line goweave.w:2378
 
 case FunctionDecl:/*225:*/
-//line goweave.w:2963
+//line goweave.w:2961
 
 if isCat(pp,func_token)&&isCat(pp+1,identifier)&&isCat(pp+2,Signature){
-p:= pp+3
-if isCat(p,Block){
-p++
+pp+= 3
+/*203:*/
+//line goweave.w:2526
+
+scraps_copy:= append([]scrap{},scrap_info[pp:]...)
+reduced_copy:= reduced
+reduced= false
+rollback:= func(){
+if reduced{
+n:= pp
+scrap_info= scrap_info[:pp]
+scrap_info= append(scrap_info,scraps_copy...)
+f:= "rollback"
+/*328:*/
+//line goweave.w:4681
+
+{
+if(tracing&2)==2{
+fmt.Printf("%s %d:",f,n)
+for k,v:= range scrap_info{
+if k==pp{
+fmt.Print("*")
+}else{
+fmt.Print(" ")
 }
-squash(pp,p-pp,FunctionDecl,0,6)
+if v.mathness%4==yes_math{
+fmt.Print("+")
+}else if v.mathness%4==no_math{
+fmt.Print("-")
+}
+print_cat(v.cat)
+if v.mathness/4==yes_math{
+fmt.Print("+")
+}else if v.mathness/4==no_math{
+fmt.Print("-")
+}
+}
+fmt.Println()
+}
+}
+
+/*:328*/
+//line goweave.w:2536
+
+}
+reduced= reduced_copy
+}
+
+
+/*:203*/
+//line goweave.w:2964
+
+pp-= 3
+if isCat(pp+3,Block){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,FunctionDecl,0,6)
+}else{
+rollback()
+app1(pp)
+app(break_space)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,FunctionDecl,0,6)
+}
 }
 
 /*:225*/
-//line goweave.w:2395
+//line goweave.w:2379
 
 case MethodDecl:/*227:*/
-//line goweave.w:2987
+//line goweave.w:2998
 
 if isCat(pp,func_token)&&isCat(pp+1,Receiver)&&isCat(pp+2,identifier)&&isCat(pp+3,Signature){
-p:= pp+4
-if isCat(p,Block){
-p++
+pp+= 3
+/*203:*/
+//line goweave.w:2526
+
+scraps_copy:= append([]scrap{},scrap_info[pp:]...)
+reduced_copy:= reduced
+reduced= false
+rollback:= func(){
+if reduced{
+n:= pp
+scrap_info= scrap_info[:pp]
+scrap_info= append(scrap_info,scraps_copy...)
+f:= "rollback"
+/*328:*/
+//line goweave.w:4681
+
+{
+if(tracing&2)==2{
+fmt.Printf("%s %d:",f,n)
+for k,v:= range scrap_info{
+if k==pp{
+fmt.Print("*")
+}else{
+fmt.Print(" ")
 }
-squash(pp,p-pp,MethodDecl,0,7)
+if v.mathness%4==yes_math{
+fmt.Print("+")
+}else if v.mathness%4==no_math{
+fmt.Print("-")
+}
+print_cat(v.cat)
+if v.mathness/4==yes_math{
+fmt.Print("+")
+}else if v.mathness/4==no_math{
+fmt.Print("-")
+}
+}
+fmt.Println()
+}
+}
+
+/*:328*/
+//line goweave.w:2536
+
+}
+reduced= reduced_copy
+}
+
+
+/*:203*/
+//line goweave.w:3001
+
+pp-= 3
+if isCat(pp+4,Block){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+app(force)
+reduce(pp,5,MethodDecl,0,7)
+}else{
+rollback()
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,MethodDecl,0,7)
+}
 }
 
 /*:227*/
-//line goweave.w:2396
+//line goweave.w:2380
 
 case Receiver:/*229:*/
-//line goweave.w:3012
+//line goweave.w:3041
 
 if isCat(pp,lpar){
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
-}
-}
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:3014
-
 if isCat(pp+1,identifier){
-pp++
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
-}
-}
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:3017
-
-pp--
 if isCat(pp+2,asterisk)&&isCat(pp+3,identifier)&&isCat(pp+4,rpar){
-squash(pp,5,Receiver,0,8)
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+reduce(pp,5,Receiver,0,8)
 }else if rollback();isCat(pp+2,identifier)&&isCat(pp+3,rpar){
-squash(pp,4,Receiver,0,8)
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,Receiver,0,8)
 }else if rollback();isCat(pp+2,rpar){
-squash(pp,3,Receiver,0,8)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,Receiver,0,8)
 }
 }else if rollback();isCat(pp+1,asterisk)&&isCat(pp+2,identifier)&&isCat(pp+3,rpar){
-squash(pp,4,Receiver,0,8)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,Receiver,0,8)
 }
 }
 
 /*:229*/
-//line goweave.w:2397
+//line goweave.w:2381
 
 case ConstSpec:/*230:*/
-//line goweave.w:3031
+//line goweave.w:3074
 
 if isCat(pp,IdentifierList){
 pp++
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -4005,7 +3945,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -4018,7 +3958,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -4033,7 +3973,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -4041,40 +3981,57 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3034
+//line goweave.w:3077
 
 pp--
 if isCat(pp+1,Type)&&isCat(pp+2,eq)&&isCat(pp+3,ExpressionList){
-squash(pp,4,ConstSpec,0,9)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app(break_space)
+app1(pp+3)
+reduce(pp,4,ConstSpec,0,9)
 }else if rollback();isCat(pp+1,eq)&&isCat(pp+2,ExpressionList){
-squash(pp,3,ConstSpec,0,9)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,ConstSpec,0,9)
 }
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,ConstSpec,0,9)
+app1(pp)
+reduce(pp,1,ConstSpec,0,9)
 }
 
 /*:230*/
-//line goweave.w:2398
+//line goweave.w:2382
 
 case TypeSpec:/*231:*/
-//line goweave.w:3045
+//line goweave.w:3101
 
 if isCat(pp,identifier)&&isCat(pp+1,Type){
-squash(pp,2,TypeSpec,0,10)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,TypeSpec,0,10)
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,TypeSpec,0,10)
+app1(pp)
+reduce(pp,1,TypeSpec,0,10)
 }
 
 /*:231*/
-//line goweave.w:2399
+//line goweave.w:2383
 
 case VarSpec:/*232:*/
-//line goweave.w:3052
+//line goweave.w:3112
 
 if isCat(pp,IdentifierList){
 pp++
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -4086,7 +4043,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -4099,7 +4056,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -4114,7 +4071,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -4122,171 +4079,323 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3055
+//line goweave.w:3115
 
 pp--
 if isCat(pp+1,Type){
-p:= pp+2
-if isCat(p,eq)&&isCat(p+1,ExpressionList){
-p+= 2
+if isCat(pp+2,eq)&&isCat(pp+3,ExpressionList){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app(break_space)
+app1(pp+3)
+reduce(pp,4,VarSpec,0,11)
+}else{
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,VarSpec,0,11)
 }
-squash(pp,p-pp,VarSpec,0,11)
 }else if rollback();isCat(pp+1,eq)&&isCat(pp+2,ExpressionList){
-squash(pp,3,VarSpec,0,11)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,VarSpec,0,11)
 }
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,VarSpec,0,11)
-
+app1(pp)
+reduce(pp,1,VarSpec,0,11)
 }
 
 /*:232*/
-//line goweave.w:2400
+//line goweave.w:2384
 
 case ImportSpec:/*233:*/
-//line goweave.w:3071
+//line goweave.w:3146
 
-if(isCat(pp,dot)||isCat(pp,identifier))&&isCat(pp+1,str){
-squash(pp,2,ImportSpec,0,12)
+if isCat(pp,identifier)&&isCat(pp+1,str){
+c:= 0
+isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
+make_reserved(pp,PackageName)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2+c,ImportSpec,0,12)
+}else if isCat(pp,dot)&&isCat(pp+1,str){
+c:= 0
+isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2+c,ImportSpec,0,12)
 }else if isCat(pp,str){
-squash(pp,1,ImportSpec,0,12)
+app1(pp)
+c:= 0
+isCats(pp+1,&c,cat_pair{cat:semi,mand:false})
+reduce(pp,1+c,ImportSpec,0,12)
 }else if isCat(pp,section_scrap){
-squash(pp,1,ImportSpec,0,12)
+app1(pp)
+reduce(pp,1,ImportSpec,0,12)
 }
 
 /*:233*/
-//line goweave.w:2401
+//line goweave.w:2385
 
 case FieldDecl:/*234:*/
-//line goweave.w:3080
+//line goweave.w:3172
 
 if isCat(pp,IdentifierList)&&isCat(pp+1,Type){
+app1(pp)
+app(break_space)
+app1(pp+1)
 p:= pp+2
 if isCat(p,str){
+app(break_space)
+app1(p)
 p++
 }
-squash(pp,p-pp,FieldDecl,0,13)
+reduce(pp,p-pp,FieldDecl,0,13)
 }else if rollback();isCat(pp,AnonymousField){
+app1(pp)
 p:= pp+1
 if isCat(p,str){
+app(break_space)
+app1(p)
 p++
 }
-squash(pp,p-pp,FieldDecl,0,13)
+reduce(pp,p-pp,FieldDecl,0,13)
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,FieldDecl,0,13)
+app1(pp)
+reduce(pp,1,FieldDecl,0,13)
 }
 
 /*:234*/
-//line goweave.w:2402
+//line goweave.w:2386
 
 case AnonymousField:/*235:*/
-//line goweave.w:3097
+//line goweave.w:3198
 
 if isCat(pp,asterisk)&&isCat(pp+1,Type){
-squash(pp,2,AnonymousField,0,14)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,AnonymousField,0,14)
 }else if rollback();isCat(pp,Type){
-squash(pp,1,AnonymousField,0,14)
+app1(pp)
+reduce(pp,1,AnonymousField,0,14)
 }
 
 /*:235*/
-//line goweave.w:2403
+//line goweave.w:2387
 
 case Type:/*236:*/
-//line goweave.w:3104
+//line goweave.w:3208
 
 if isCat(pp,ArrayType)||isCat(pp,StructType)||isCat(pp,PointerType)||
 isCat(pp,FunctionType)||isCat(pp,InterfaceType)||isCat(pp,SliceType)||
 isCat(pp,MapType)||isCat(pp,ChannelType)||isCat(pp,QualifiedIdent){
-squash(pp,1,Type,0,15)
+app1(pp)
+reduce(pp,1,Type,0,15)
 }
 
 /*:236*/
-//line goweave.w:2404
+//line goweave.w:2388
 
 case ArrayType:/*237:*/
-//line goweave.w:3111
+//line goweave.w:3216
 
 if isCat(pp,lbracket)&&isCat(pp+1,Expression)&&isCat(pp+2,rbracket)&&isCat(pp+3,Type){
-squash(pp,4,ArrayType,0,16)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app(break_space)
+app1(pp+3)
+reduce(pp,4,ArrayType,0,16)
 }
 
 /*:237*/
-//line goweave.w:2405
+//line goweave.w:2389
 
 case StructType:/*238:*/
-//line goweave.w:3116
+//line goweave.w:3226
 
 if isCat(pp,struct_token)&&isCat(pp+1,lbrace){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:FieldDecl,mand:true},cat_pair{cat:semi,mand:false})
 if isCat(pp+2+c,rbrace){
-squash(pp,3+c,StructType,0,17)
+app1(pp)
+app1(pp+1)
+app(force)
+app(indent)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,FieldDecl){
+app1(pp+2+i)
+app(force)
+}
+}
+app(outdent)
+app1(pp+2+c)
+reduce(pp,3+c,StructType,0,17)
 }
 }
 
 /*:238*/
-//line goweave.w:2406
+//line goweave.w:2390
 
 case PointerType:/*240:*/
-//line goweave.w:3157
+//line goweave.w:3279
 
 if isCat(pp,asterisk)&&isCat(pp+1,Type){
-squash(pp,2,PointerType,0,18)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,PointerType,0,18)
 }
 
 /*:240*/
-//line goweave.w:2407
+//line goweave.w:2391
 
 case Signature:/*241:*/
-//line goweave.w:3162
+//line goweave.w:3286
 
 if isCat(pp,Parameters){
-p:= pp+1
-if isCat(p,Type)||isCat(p,Parameters){
-p++
+pp++
+/*203:*/
+//line goweave.w:2526
+
+scraps_copy:= append([]scrap{},scrap_info[pp:]...)
+reduced_copy:= reduced
+reduced= false
+rollback:= func(){
+if reduced{
+n:= pp
+scrap_info= scrap_info[:pp]
+scrap_info= append(scrap_info,scraps_copy...)
+f:= "rollback"
+/*328:*/
+//line goweave.w:4681
+
+{
+if(tracing&2)==2{
+fmt.Printf("%s %d:",f,n)
+for k,v:= range scrap_info{
+if k==pp{
+fmt.Print("*")
+}else{
+fmt.Print(" ")
 }
-squash(pp,p-pp,Signature,0,19)
+if v.mathness%4==yes_math{
+fmt.Print("+")
+}else if v.mathness%4==no_math{
+fmt.Print("-")
+}
+print_cat(v.cat)
+if v.mathness/4==yes_math{
+fmt.Print("+")
+}else if v.mathness/4==no_math{
+fmt.Print("-")
+}
+}
+fmt.Println()
+}
+}
+
+/*:328*/
+//line goweave.w:2536
+
+}
+reduced= reduced_copy
+}
+
+
+/*:203*/
+//line goweave.w:3289
+
+pp--
+if isCat(pp+1,Type)||isCat(pp+1,Parameters){
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,Signature,0,19)
+}else{
+rollback()
+app1(pp)
+reduce(pp,1,Signature,0,19)
+}
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,Signature,0,19)
+app1(pp)
+reduce(pp,1,Signature,0,19)
 }
 
 /*:241*/
-//line goweave.w:2408
+//line goweave.w:2392
 
 case Parameters:/*242:*/
-//line goweave.w:3173
+//line goweave.w:3306
 
 if isCat(pp,lpar){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:ParameterList,mand:true},cat_pair{cat:comma,mand:false})
 if isCat(pp+1+c,rpar){
-squash(pp,2+c,Parameters,0,20)
+app1(pp)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,ParameterList){
+app1(pp+1+i)
+}else if isCat(pp+1+i,comma){
+app(opt)
+app('9')
+app1(pp+1+i)
+app(break_space)
+}
+}
+reduce(pp,2+c,Parameters,0,20)
 }
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,Signature,0,20)
+app1(pp)
+reduce(pp,1,Signature,0,20)
 }
 
 /*:242*/
-//line goweave.w:2409
+//line goweave.w:2393
 
 case ParameterList:/*243:*/
-//line goweave.w:3184
+//line goweave.w:3329
 
 if isCat(pp,ParameterDecl){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ParameterDecl,mand:true})
-squash(pp,1+c,ParameterList,0,21)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,comma){
+app(opt)
+app('9')
+app1(pp+1+i)
+app(break_space)
+}else{
+app1(pp+1+i)
+}
+}
+reduce(pp,1+c,ParameterList,0,21)
 }
 
 /*:243*/
-//line goweave.w:2410
+//line goweave.w:2394
 
 case ParameterDecl:/*244:*/
-//line goweave.w:3191
+//line goweave.w:3346
 
-if isCat(pp,IdentifierList){
+if isCat(pp,dot_dot_dot)&&isCat(pp+1,Type){
+app1(pp)
+app1(pp+1)
+reduce(pp,2,ParameterDecl,0,22)
+}else if rollback();isCat(pp,Type){
+app1(pp)
+reduce(pp,1,ParameterDecl,0,22)
+}else if isCat(pp,IdentifierList){
 pp++
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -4298,7 +4407,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -4311,7 +4420,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -4326,7 +4435,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -4334,168 +4443,222 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3194
+//line goweave.w:3356
 
 pp--
-if isCat(pp,dot_dot_dot)&&isCat(pp+2,Type){
-squash(pp,3,ParameterDecl,0,22)
-break
+if isCat(pp+1,dot_dot_dot)&&isCat(pp+2,Type){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,ParameterDecl,0,22)
 }else if rollback();isCat(pp+1,Type){
-squash(pp,2,ParameterDecl,0,22)
-break
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,ParameterDecl,0,22)
 }
 }
-if rollback();isCat(pp,dot_dot_dot)&&isCat(pp+1,Type){
-squash(pp,3,ParameterDecl,0,22)
-}else if rollback();isCat(pp,Type){
-squash(pp,1,ParameterDecl,0,22)
-}
+
 
 /*:244*/
-//line goweave.w:2411
+//line goweave.w:2395
 
 case InterfaceType:/*245:*/
-//line goweave.w:3210
+//line goweave.w:3373
 
 if isCat(pp,interface_token)&&isCat(pp+1,lbrace){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:MethodSpec,mand:true},cat_pair{cat:semi,mand:false})
 if isCat(pp+2+c,rbrace){
-squash(pp,3+c,InterfaceType,0,23)
+app1(pp)
+app1(pp+1)
+app(indent)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,MethodSpec){
+app1(pp+2+i)
+app(force)
+}
+}
+app(outdent)
+app1(pp+2+c)
+reduce(pp,3+c,InterfaceType,0,23)
 }
 }
 
 /*:245*/
-//line goweave.w:2412
+//line goweave.w:2396
 
 case MethodSpec:/*246:*/
-//line goweave.w:3219
+//line goweave.w:3393
 
 if isCat(pp,identifier)&&isCat(pp+1,Signature){
-squash(pp,2,MethodSpec,0,24)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,MethodSpec,0,24)
 }else if rollback();isCat(pp,Type){
-squash(pp,1,MethodSpec,0,24)
+app1(pp)
+reduce(pp,1,MethodSpec,0,24)
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,MethodSpec,0,24)
+app1(pp)
+reduce(pp,1,MethodSpec,0,24)
 }
 
 /*:246*/
-//line goweave.w:2413
+//line goweave.w:2397
 
 case SliceType:/*247:*/
-//line goweave.w:3228
+//line goweave.w:3406
 
 if isCat(pp,lbracket)&&isCat(pp+1,rbracket)&&isCat(pp+2,Type){
-squash(pp,3,SliceType,0,25)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,SliceType,0,25)
 }
 
 /*:247*/
-//line goweave.w:2414
+//line goweave.w:2398
 
 case MapType:/*248:*/
-//line goweave.w:3233
+//line goweave.w:3414
 
 if isCat(pp,map_token)&&isCat(pp+1,lbracket)&&isCat(pp+2,Type)&&isCat(pp+3,rbracket)&&isCat(pp+4,Type){
-squash(pp,5,MapType,0,26)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+reduce(pp,5,MapType,0,26)
 }
 
 /*:248*/
-//line goweave.w:2415
+//line goweave.w:2399
 
 case ChannelType:/*249:*/
-//line goweave.w:3238
+//line goweave.w:3424
 
-p:= pp
-if isCat(pp,chan_token){
-pp++
-if isCat(pp,direct){
-pp++
+if isCat(pp,direct)&&isCat(pp+1,chan_token)&&isCat(pp+2,Type){
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,ChannelType,0,27)
+}else if rollback();isCat(pp,chan_token){
+if isCat(pp+1,direct)&&isCat(pp+2,Type){
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,ChannelType,0,27)
+}else if isCat(pp+1,Type){
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,ChannelType,0,27)
 }
-}else if isCat(pp,direct)&&isCat(pp+1,chan_token){
-pp+= 2
-}else{
-break
-}
-if isCat(pp,Type){
-pp++
-squash(p,pp-p,ChannelType,0,27)
-break
-}
-pp= p
-
-
-if rollback();isCat(pp,unary_op)&&isCat(pp+1,chan_token)&&isCat(pp+2,Type){
-squash(pp,3,ChannelType,0,27)
 }
 
 /*:249*/
-//line goweave.w:2416
+//line goweave.w:2400
 
 case IdentifierList:/*250:*/
-//line goweave.w:3262
+//line goweave.w:3446
 
 if isCat(pp,identifier){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:identifier,mand:true})
-squash(pp,1+c,IdentifierList,0,28)
+app1(pp)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,comma){
+app(opt)
+app('9')
+app1(pp+1+i)
+app(break_space)
+}else{
+app1(pp+1+i)
+}
+}
+reduce(pp,1+c,IdentifierList,0,28)
 }
 
 /*:250*/
-//line goweave.w:2417
+//line goweave.w:2401
 
 case ExpressionList:/*251:*/
-//line goweave.w:3269
+//line goweave.w:3464
 
 if isCat(pp,Expression){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})
-squash(pp,1+c,ExpressionList,0,29)
+app1(pp)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,comma){
+app(opt)
+app('9')
+app1(pp+1+i)
+app(break_space)
+}else if isCat(pp+1+i,Expression){
+app1(pp+1+i)
+}
+}
+reduce(pp,1+c,ExpressionList,0,29)
 }
 
 /*:251*/
-//line goweave.w:2418
+//line goweave.w:2402
 
 case Expression:/*252:*/
-//line goweave.w:3276
+//line goweave.w:3482
 
 if isCat(pp,UnaryExpr)&&isCat(pp+1,binary_op)&&isCat(pp+2,UnaryExpr){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
 squash(pp,3,Expression,0,30)
 }else if rollback();isCat(pp,UnaryExpr){
-squash(pp,1,Expression,0,30)
+app1(pp)
+reduce(pp,1,Expression,0,30)
 }
 
 /*:252*/
-//line goweave.w:2419
+//line goweave.w:2403
 
 case UnaryExpr:/*253:*/
-//line goweave.w:3283
+//line goweave.w:3495
 
 if isCat(pp,unary_op)&&isCat(pp+1,UnaryExpr){
-squash(pp,2,UnaryExpr,0,31)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,UnaryExpr,0,31)
 }else if isCat(pp,PrimaryExpr){
-squash(pp,1,UnaryExpr,0,31)
+app1(pp)
+reduce(pp,1,UnaryExpr,0,31)
 }
 
 /*:253*/
-//line goweave.w:2420
+//line goweave.w:2404
 
 case binary_op:/*254:*/
-//line goweave.w:3290
+//line goweave.w:3505
 
 if isCat(pp,rel_op)||isCat(pp,add_op)||isCat(pp,mul_op)||isCat(pp,asterisk){
-squash(pp,1,binary_op,0,32)
+app1(pp)
+reduce(pp,1,binary_op,0,32)
 }
 
 /*:254*/
-//line goweave.w:2421
+//line goweave.w:2405
 
 case PrimaryExpr:/*255:*/
-//line goweave.w:3295
+//line goweave.w:3511
 
 if isCat(pp,BuiltinCall)||isCat(pp,Conversion)||isCat(pp,Operand){
 pp++
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -4507,7 +4670,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -4520,7 +4683,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -4535,7 +4698,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -4543,86 +4706,125 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3298
+//line goweave.w:3514
 
 pp--
 if isCat(pp+1,Selector)||isCat(pp+1,Index)||isCat(pp+1,Slice)||isCat(pp+1,TypeAssertion)||isCat(pp+1,Call){
-squash(pp,2,PrimaryExpr,0,33)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,PrimaryExpr,0,33)
 }else{
 rollback()
-squash(pp,1,PrimaryExpr,0,33)
+app1(pp)
+reduce(pp,1,PrimaryExpr,0,33)
 }
 }
 
 /*:255*/
-//line goweave.w:2422
+//line goweave.w:2406
 
 case Operand:/*256:*/
-//line goweave.w:3308
+//line goweave.w:3527
 
 if isCat(pp,str)||isCat(pp,constant)||isCat(pp,QualifiedIdent)||isCat(pp,CompositeLit)||isCat(pp,FunctionLit)||isCat(pp,MethodExpr){
-squash(pp,1,Operand,0,34)
+app1(pp)
+reduce(pp,1,Operand,0,34)
 }else if rollback();isCat(pp,lpar)&&isCat(pp+1,Expression)&&isCat(pp+2,rpar){
-squash(pp,3,Operand,0,34)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,Operand,0,34)
 }
 
 /*:256*/
-//line goweave.w:2423
+//line goweave.w:2407
 
 case CompositeLit:/*257:*/
-//line goweave.w:3315
+//line goweave.w:3538
 
 if isCat(pp,LiteralType)&&isCat(pp+1,LiteralValue){
-squash(pp,2,CompositeLit,0,35)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,CompositeLit,0,35)
 }
 
 /*:257*/
-//line goweave.w:2424
+//line goweave.w:2408
 
 case LiteralType:/*258:*/
-//line goweave.w:3320
+//line goweave.w:3546
 
 if isCat(pp,Type){
-squash(pp,1,LiteralType,0,36)
+app1(pp)
+reduce(pp,1,LiteralType,0,36)
 }else if rollback();isCat(pp,lbracket)&&isCat(pp+1,dot_dot_dot)&&isCat(pp+2,rbracket)&&isCat(pp+3,Type){
-squash(pp,5,LiteralType,0,36)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,LiteralType,0,36)
 }
+
 /*:258*/
-//line goweave.w:2425
+//line goweave.w:2409
 
 case LiteralValue:/*259:*/
-//line goweave.w:3326
+//line goweave.w:3558
 
 if isCat(pp,lbrace){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:ElementList,mand:true},cat_pair{cat:comma,mand:true})
 if isCat(pp+1+c,rbrace){
-squash(pp,2+c,LiteralValue,0,37)
+app1(pp)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,ElementList){
+app1(pp+1+i)
+}else if isCat(pp+1+i,comma){
+app(opt)
+app('9')
+app1(pp+1+i)
+app(break_space)
+}
+}
+app1(pp+1+c)
+reduce(pp,2+c,LiteralValue,0,37)
 }
 }
 
 /*:259*/
-//line goweave.w:2426
+//line goweave.w:2410
 
 case ElementList:/*260:*/
-//line goweave.w:3335
+//line goweave.w:3579
 
 if isCat(pp,Element){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Element,mand:true})
-squash(pp,1+c,ElementList,0,38)
+app1(pp)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,comma){
+app(opt)
+app('9')
+app1(pp+1+i)
+app(break_space)
+}else if isCat(pp+1+i,Element){
+app1(pp+1+i)
+}
+}
+reduce(pp,1+c,ElementList,0,38)
 }
 
 /*:260*/
-//line goweave.w:2427
+//line goweave.w:2411
 
 case Element:/*261:*/
-//line goweave.w:3342
+//line goweave.w:3597
 
 if(isCat(pp,identifier)||isCat(pp,Expression))&&isCat(pp+1,colon){
 pp+= 2
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -4634,7 +4836,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -4647,7 +4849,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -4662,7 +4864,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -4670,57 +4872,82 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3345
+//line goweave.w:3600
 
 pp-= 2
 if isCat(pp+2,Expression){
-squash(pp,3,Element,0,39)
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,Element,0,39)
 }else if rollback();isCat(pp+2,LiteralValue){
-squash(pp,3,Element,0,39)
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,Element,0,39)
 }
 }else if isCat(pp,Expression)||isCat(pp,LiteralValue){
-squash(pp,1,Element,0,39)
+app1(pp)
+reduce(pp,1,Element,0,39)
 }
 
 /*:261*/
-//line goweave.w:2428
+//line goweave.w:2412
 
 case FunctionLit:/*262:*/
-//line goweave.w:3356
+//line goweave.w:3620
 
 if isCat(pp,FunctionType)&&isCat(pp+1,Block){
-squash(pp,2,FunctionLit,0,40)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,FunctionLit,0,40)
 }
 
 /*:262*/
-//line goweave.w:2429
+//line goweave.w:2413
 
 case FunctionType:/*263:*/
-//line goweave.w:3361
+//line goweave.w:3627
 
 if isCat(pp,func_token)&&isCat(pp+1,Signature){
+app1(pp)
+app(break_space)
+app1(pp+1)
 reduce(pp,2,FunctionType,0,42)
 }
 
 /*:263*/
-//line goweave.w:2430
+//line goweave.w:2414
 
 case Block:/*264:*/
-//line goweave.w:3366
+//line goweave.w:3635
 
 if isCat(pp,lbrace){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
 if isCat(pp+1+c,rbrace){
-squash(pp,2+c,Block,0,43)
+app1(pp)
+app(big_force)
+app(indent)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,Statement){
+app1(pp+1+i)
+app(force)
+}
+}
+app(outdent)
+app1(pp+1+c)
+reduce(pp,2+c,Block,0,43)
 }
 }
 
 /*:264*/
-//line goweave.w:2431
+//line goweave.w:2415
 
 case Statement:/*266:*/
-//line goweave.w:3384
+//line goweave.w:3664
 
 if isCat(pp,ConstDecl)||isCat(pp,VarDecl)||isCat(pp,TypeDecl)||
 isCat(pp,LabeledStmt)||isCat(pp,SimpleStmt)||
@@ -4728,576 +4955,486 @@ isCat(pp,GoStmt)||isCat(pp,ReturnStmt)||isCat(pp,BreakStmt)||isCat(pp,ContinueSt
 isCat(pp,GotoStmt)||isCat(pp,fallthrough_token)||isCat(pp,Block)||isCat(pp,IfStmt)||
 isCat(pp,ExprSwitchStmt)||isCat(pp,TypeSwitchStmt)||isCat(pp,SelectStmt)||
 isCat(pp,ForStmt)||isCat(pp,DeferStmt){
-squash(pp,1,Statement,0,44)
+app1(pp)
+reduce(pp,1,Statement,0,44)
 }
 
 /*:266*/
-//line goweave.w:2432
+//line goweave.w:2416
 
 case LabeledStmt:/*267:*/
-//line goweave.w:3394
+//line goweave.w:3675
 
 if isCat(pp,identifier)&&isCat(pp+1,colon)&&isCat(pp+2,Statement){
-squash(pp,3,LabeledStmt,0,45)
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,LabeledStmt,0,45)
 }
 
 
 /*:267*/
-//line goweave.w:2433
+//line goweave.w:2417
 
 case SimpleStmt:/*269:*/
-//line goweave.w:3407
+//line goweave.w:3692
 
 if isCat(pp,SendStmt)||isCat(pp,IncDecStmt)||isCat(pp,Assignment)||isCat(pp,ShortVarDecl)||isCat(pp,Expression){
-squash(pp,1,SimpleStmt,0,46)
+app1(pp)
+reduce(pp,1,SimpleStmt,0,46)
 }
 
 /*:269*/
-//line goweave.w:2434
+//line goweave.w:2418
 
 case GoStmt:/*270:*/
-//line goweave.w:3412
+//line goweave.w:3698
 
 if isCat(pp,go_token)&&isCat(pp+1,Expression){
-squash(pp,2,GoStmt,0,47)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,GoStmt,0,47)
 }
 
 /*:270*/
-//line goweave.w:2435
+//line goweave.w:2419
 
 case ReturnStmt:/*272:*/
-//line goweave.w:3428
+//line goweave.w:3717
 
 if isCat(pp,return_token)&&isCat(pp+1,ExpressionList){
-squash(pp,2,ReturnStmt,0,48)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,ReturnStmt,0,48)
 }else if rollback();isCat(pp,return_token){
-squash(pp,1,ReturnStmt,0,48)
+app1(pp)
+reduce(pp,1,ReturnStmt,0,48)
 }
 
 /*:272*/
-//line goweave.w:2436
+//line goweave.w:2420
 
 case BreakStmt:/*274:*/
-//line goweave.w:3449
+//line goweave.w:3742
 
 if isCat(pp,break_token){
+app1(pp)
 if isCat(pp+1,identifier){
-squash(pp,2,BreakStmt,0,49)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,BreakStmt,0,49)
 }else{
-squash(pp,1,BreakStmt,0,49)
+app1(pp)
+reduce(pp,1,BreakStmt,0,49)
 }
 }
 
 /*:274*/
-//line goweave.w:2437
+//line goweave.w:2421
 
 case ContinueStmt:/*276:*/
-//line goweave.w:3479
+//line goweave.w:3776
 
 if isCat(pp,continue_token)&&isCat(pp+1,identifier){
-squash(pp,2,ContinueStmt,0,50)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,ContinueStmt,0,50)
 }else if rollback();isCat(pp,continue_token){
-squash(pp,1,ContinueStmt,0,50)
+app1(pp)
+reduce(pp,1,ContinueStmt,0,50)
 }
 
 /*:276*/
-//line goweave.w:2438
+//line goweave.w:2422
 
 case GotoStmt:/*278:*/
-//line goweave.w:3507
+//line goweave.w:3808
 
 if isCat(pp,goto_token)&&isCat(pp+1,identifier){
-squash(pp,2,GotoStmt,0,51)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,GotoStmt,0,51)
 }
 
 /*:278*/
-//line goweave.w:2439
+//line goweave.w:2423
 
 case IfStmt:/*280:*/
-//line goweave.w:3519
+//line goweave.w:3823
 
 if isCat(pp,if_token){
-p:= pp
-pp++
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
+if isCat(pp+1,SimpleStmt)&&isCat(pp+2,semi){
+if isCat(pp+3,Expression)&&isCat(pp+4,Block){
+if isCat(pp+5,else_token)&&(isCat(pp+6,IfStmt)||isCat(pp+6,Block)){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app(break_space)
+app1(pp+3)
+app1(pp+4)
+app1(pp+5)
+app(break_space)
+app1(pp+6)
+reduce(pp,7,IfStmt,0,52)
 }else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+reduce(pp,5,IfStmt,0,52)
 }
 }
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:3523
-
-if isCat(pp,SimpleStmt)&&isCat(pp+1,semi){
-pp+= 2
+}else if rollback();isCat(pp+1,Expression)&&isCat(pp+2,Block){
+if isCat(pp+3,else_token)&&(isCat(pp+4,IfStmt)||isCat(pp+4,Block)){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+app(break_space)
+app1(pp+4)
+reduce(pp,5,IfStmt,0,52)
 }else{
-rollback()
-}
-if isCat(pp,Expression)&&isCat(pp+1,Block){
-pp+= 2
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,IfStmt,0,52)
 }
 }
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:3531
-
-if isCat(pp,else_token)&&isCat(pp+1,IfStmt){
-pp+= 2
-}else if rollback();isCat(pp,else_token)&&isCat(pp+1,Block){
-pp+= 2
-}
-squash(p,pp-p,IfStmt,0,52)
-}
-pp= p
 }
 
 /*:280*/
-//line goweave.w:2440
+//line goweave.w:2424
 
 case ExprSwitchStmt:/*282:*/
-//line goweave.w:3561
+//line goweave.w:3885
 
 if isCat(pp,switch_token){
-p:= pp
-pp++
-{
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
-}
-}
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:3566
-
-if isCat(pp,SimpleStmt)&&isCat(pp+1,semi){
-pp+= 2
-}else{
-rollback()
-}
-}
-{
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
-}
-}
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:3574
-
-if isCat(pp,Expression){
-pp++
-}else{
-rollback()
-}
-}
-if isCat(pp,lbrace){
+if isCat(pp+1,lbrace){
 c:= 0
-isCats(pp+1,&c,cat_pair{cat:ExprCaseClause,mand:false})
-if isCat(pp+1+c,rbrace){
-pp= pp+2+c
-squash(p,pp-p,ExprSwitchStmt,0,53)
+isCats(pp+2,&c,cat_pair{cat:ExprCaseClause,mand:false})
+if isCat(pp+2+c,rbrace){
+app1(pp)
+app1(pp+1)
+for i:= 0;i<c;i++{
+app1(pp+2+i)
+}
+app1(pp+2+c)
+reduce(pp,pp+3+c,ExprSwitchStmt,0,53)
+}
+}else if isCat(pp+1,SimpleStmt)&&isCat(pp+2,semi){
+if isCat(pp+3,lbrace){
+c:= 0
+isCats(pp+4,&c,cat_pair{cat:ExprCaseClause,mand:false})
+if isCat(pp+4+c,rbrace){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+for i:= 0;i<c;i++{
+app1(pp+4+i)
+}
+app1(pp+4+c)
+reduce(pp,5+c,ExprSwitchStmt,0,53)
+}
+}else if isCat(pp+3,Expression)&&isCat(pp+4,lbrace){
+c:= 0
+isCats(pp+5,&c,cat_pair{cat:ExprCaseClause,mand:false})
+if isCat(pp+5+c,rbrace){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+for i:= 0;i<c;i++{
+app1(pp+5+i)
+}
+app1(pp+5+c)
+reduce(pp,6+c,ExprSwitchStmt,0,53)
 }
 }
-pp= p
+}else if rollback();isCat(pp+1,Expression)&&isCat(pp+2,lbrace){
+c:= 0
+isCats(pp+3,&c,cat_pair{cat:ExprCaseClause,mand:false})
+if isCat(pp+3+c,rbrace){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+for i:= 0;i<c;i++{
+app1(pp+3+i)
 }
+app1(pp+3+c)
+reduce(pp,4+c,ExprSwitchStmt,0,53)
+}
+}
+}
+
 
 /*:282*/
-//line goweave.w:2441
+//line goweave.w:2425
 
 case ExprCaseClause:/*283:*/
-//line goweave.w:3592
+//line goweave.w:3947
 
 if isCat(pp,case_token)&&isCat(pp+1,ExpressionList)&&isCat(pp+2,colon){
 c:= 0
 isCats(pp+3,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-squash(pp,3+c,ExprCaseClause,0,54)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app1(pp+2)
+for i:= 0;i<c;i++{
+if isCat(pp+3+i,Statement){
+app1(pp+3+i)
+app(force)
+}
+}
+reduce(pp,3+c,ExprCaseClause,0,54)
 }else if rollback();isCat(pp,default_token)&&isCat(pp+1,colon){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-squash(pp,2+c,ExprCaseClause,0,54)
+app1(pp)
+app1(pp+1)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,Statement){
+app1(pp+2+i)
+app(force)
+}
+}
+reduce(pp,2+c,ExprCaseClause,0,54)
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,ExprCaseClause,0,54)
+app1(pp)
+reduce(pp,1,ExprCaseClause,0,54)
 }
 
 /*:283*/
-//line goweave.w:2442
+//line goweave.w:2426
 
 case TypeSwitchStmt:/*284:*/
-//line goweave.w:3605
+//line goweave.w:3979
 
 if isCat(pp,switch_token){
-p:= pp
-pp++
-{
-/*203:*/
-//line goweave.w:2542
-
-scraps_copy:= append([]scrap{},scrap_info[pp:]...)
-reduced_copy:= reduced
-reduced= false
-rollback:= func(){
-if reduced{
-n:= pp
-scrap_info= scrap_info[:pp]
-scrap_info= append(scrap_info,scraps_copy...)
-f:= "rollback"
-/*328:*/
-//line goweave.w:4153
-
-{
-if(tracing&2)==2{
-fmt.Printf("%s %d:",f,n)
-for k,v:= range scrap_info{
-if k==pp{
-fmt.Print("*")
-}else{
-fmt.Print(" ")
-}
-if v.mathness%4==yes_math{
-fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
-fmt.Print("-")
-}
-print_cat(v.cat)
-if v.mathness/4==yes_math{
-fmt.Print("+")
-}else if v.mathness/4==no_math{
-fmt.Print("-")
-}
-}
-fmt.Println()
-}
-}
-
-/*:328*/
-//line goweave.w:2552
-
-}
-reduced= reduced_copy
-}
-
-
-/*:203*/
-//line goweave.w:3610
-
-if isCat(pp,SimpleStmt)&&isCat(pp+1,semi){
-pp+= 2
-}else{
-rollback()
-}
-}
-if isCat(pp,TypeSwitchGuard)&&isCat(pp+1,lbrace){
+if isCat(pp+1,TypeSwitchGuard)&&isCat(pp+2,lbrace){
 c:= 0
-isCats(pp+2,&c,cat_pair{cat:TypeCaseClause,mand:true})
-if isCat(pp+2+c,rbrace){
-pp= pp+3+c
-squash(p,pp-p,TypeSwitchStmt,0,55)
+isCats(pp+3,&c,cat_pair{cat:TypeCaseClause,mand:true})
+if isCat(pp+3+c,rbrace){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+for i:= 0;i<c;i++{
+app1(pp+3+i)
+}
+app1(pp+3+c)
+reduce(pp,4+c,TypeSwitchStmt,0,55)
+}
+}else if rollback();isCat(pp+1,SimpleStmt)&&isCat(pp+2,semi)&&isCat(pp+3,TypeSwitchGuard)&&isCat(pp+4,lbrace){
+c:= 0
+isCats(pp+5,&c,cat_pair{cat:TypeCaseClause,mand:true})
+if isCat(pp+5+c,rbrace){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+for i:= 0;i<c;i++{
+app1(pp+5+i)
+}
+app1(pp+5+c)
+reduce(pp,6+c,TypeSwitchStmt,0,55)
 }
 }
-pp= p
 }
 
 /*:284*/
-//line goweave.w:2443
+//line goweave.w:2427
 
 case TypeSwitchGuard:/*285:*/
-//line goweave.w:3628
+//line goweave.w:4012
 
-p:= pp
-if isCat(pp,identifier)&&isCat(pp+1,col_eq){
-pp+= 2
+if isCat(pp,identifier)&&isCat(pp+1,col_eq)&&isCat(pp+2,PrimaryExpr)&&isCat(pp+3,dot)&&isCat(pp+4,lpar)&&isCat(pp+5,type_token)&&isCat(pp+6,rpar){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+app1(pp+5)
+app1(pp+6)
+reduce(pp,7,TypeSwitchGuard,0,56)
+}else if isCat(pp,PrimaryExpr)&&isCat(pp+1,dot)&&isCat(pp+2,lpar)&&isCat(pp+3,type_token)&&isCat(pp+4,rpar){
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+reduce(pp,5,TypeSwitchGuard,0,56)
 }
-if isCat(pp,PrimaryExpr)&&isCat(pp+1,dot)&&isCat(pp+2,lpar)&&isCat(pp+3,type_token)&&isCat(pp+4,rpar){
-pp+= 5
-squash(p,pp-p,TypeSwitchGuard,0,56)
-}
-pp= p
 
 /*:285*/
-//line goweave.w:2444
+//line goweave.w:2428
 
 case TypeCaseClause:/*286:*/
-//line goweave.w:3639
+//line goweave.w:4031
 
 if isCat(pp,TypeSwitchCase)&&isCat(pp+1,colon){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-squash(pp,2+c,TypeCaseClause,0,57)
+app1(pp)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,Statement){
+app1(pp+2+i)
+app(force)
+}
+}
+reduce(pp,2+c,TypeCaseClause,0,57)
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,TypeCaseClause,0,57)
+app1(pp)
+reduce(pp,1,TypeCaseClause,0,57)
 }
 
 /*:286*/
-//line goweave.w:2445
+//line goweave.w:2429
 
 case TypeSwitchCase:/*287:*/
-//line goweave.w:3648
+//line goweave.w:4048
 
 if isCat(pp,case_token)&&isCat(pp+1,Type){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Type,mand:true})
-squash(pp,2+c,TypeSwitchCase,0,58)
+app1(pp)
+app(break_space)
+app1(pp+1)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,comma){
+app(opt)
+app('9')
+app1(pp+2+i)
+app(break_space)
+}else{
+app1(pp+2+i)
+}
+}
+reduce(pp,2+c,TypeSwitchCase,0,58)
 }else if rollback();isCat(pp,default_token){
-squash(pp,1,TypeSwitchCase,0,58)
+app1(pp)
+reduce(pp,1,TypeSwitchCase,0,58)
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,TypeSwitchCase,0,58)
+app1(pp)
+reduce(pp,1,TypeSwitchCase,0,58)
 }
 
 /*:287*/
-//line goweave.w:2446
+//line goweave.w:2430
 
 case SelectStmt:/*289:*/
-//line goweave.w:3699
+//line goweave.w:4114
 
 if isCat(pp,select_token)&&isCat(pp+1,lbrace){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:CommClause,mand:false})
 if isCat(pp+2+c,rbrace){
-squash(pp,3+c,SelectStmt,0,59)
+app1(pp)
+app1(pp+1)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,CommClause){
+app1(pp+2+i)
+}
+}
+reduce(pp,3+c,SelectStmt,0,59)
 }
 }
 
 /*:289*/
-//line goweave.w:2447
+//line goweave.w:2431
 
 case CommClause:/*290:*/
-//line goweave.w:3708
+//line goweave.w:4130
 
 if isCat(pp,CommCase)&&isCat(pp+1,colon){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-squash(pp,2+c,CommClause,0,60)
+app1(pp)
+app1(pp+1)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,Statement){
+app1(pp+2+i)
+}
+}
+reduce(pp,2+c,CommClause,0,60)
 }
 
 /*:290*/
-//line goweave.w:2448
+//line goweave.w:2432
 
 case CommCase:/*291:*/
-//line goweave.w:3715
+//line goweave.w:4144
 
 if isCat(pp,case_token){
 if isCat(pp+1,SendStmt){
-squash(pp,2,CommCase,0,61)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,CommCase,0,61)
 }else if rollback();isCat(pp+1,RecvStmt){
-squash(pp,2,CommCase,0,61)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,CommCase,0,61)
 }
 }else if rollback();isCat(pp,default_token){
-squash(pp,1,CommCase,0,61)
+app1(pp)
+reduce(pp,1,CommCase,0,61)
 }else if rollback();isCat(pp,section_scrap){
-squash(pp,1,CommCase,0,61)
+app1(pp)
+reduce(pp,1,CommCase,0,61)
 }
 
 /*:291*/
-//line goweave.w:2449
+//line goweave.w:2433
 
 case RecvStmt:/*292:*/
-//line goweave.w:3728
+//line goweave.w:4165
 
-p:= pp
-if isCat(pp,Expression){
-c:= 0
-pp++
-isCats(pp,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})
-pp+= c
-if(isCat(pp,eq)||isCat(pp,col_eq))&&isCat(pp+1,Expression){
-pp+= 2
+if isCat(pp,ExpressionList)&&(isCat(pp+1,eq)||isCat(pp+1,col_eq))&&isCat(pp+2,Expression){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,RecvStmt,0,62)
+}else if isCat(pp,Expression){
+app1(pp)
+reduce(pp,1,RecvStmt,0,62)
 }
-squash(p,pp-p,RecvStmt,0,62)
-}
-pp= p
 
 /*:292*/
-//line goweave.w:2450
+//line goweave.w:2434
 
 case SendStmt:/*293:*/
-//line goweave.w:3742
+//line goweave.w:4178
 
 if isCat(pp,Expression)&&isCat(pp+1,direct)&&isCat(pp+2,Expression){
-squash(pp,3,SendStmt,0,63)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,SendStmt,0,63)
 }
 
 /*:293*/
-//line goweave.w:2451
+//line goweave.w:2435
 
 case ForStmt:/*296:*/
-//line goweave.w:3785
+//line goweave.w:4225
 
 if isCat(pp,for_token){
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -5309,7 +5446,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -5322,7 +5459,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -5337,7 +5474,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -5345,24 +5482,42 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3787
+//line goweave.w:4227
 
 if isCat(pp+1,Expression)&&isCat(pp+2,Block){
-squash(pp,3,ForStmt,0,64)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,ForStmt,0,64)
 }else if rollback();isCat(pp+1,ForClause)&&isCat(pp+2,Block){
-squash(pp,3,ForStmt,0,64)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,ForStmt,0,64)
 }else if rollback();isCat(pp+1,RangeClause)&&isCat(pp+2,Block){
-squash(pp,3,ForStmt,0,64)
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+reduce(pp,3,ForStmt,0,64)
 }else if rollback();isCat(pp+1,Block){
-squash(pp,2,ForStmt,0,64)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,ForStmt,0,64)
 }
 }
 
 /*:296*/
-//line goweave.w:2452
+//line goweave.w:2436
 
 case ForClause:/*297:*/
-//line goweave.w:3799
+//line goweave.w:4257
 
 p:= pp
 if isCat(pp,SimpleStmt){
@@ -5373,7 +5528,7 @@ rollback()
 if isCat(pp,semi){
 pp++
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -5385,7 +5540,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -5398,7 +5553,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -5413,7 +5568,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -5421,7 +5576,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3808
+//line goweave.w:4266
 
 if isCat(pp,Expression){
 pp++
@@ -5431,7 +5586,7 @@ rollback()
 if isCat(pp,semi){
 pp++
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -5443,7 +5598,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -5456,7 +5611,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -5471,7 +5626,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -5479,184 +5634,243 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3816
+//line goweave.w:4274
 
 if isCat(pp,SimpleStmt){
 pp++
 }else{
 rollback()
 }
-squash(p,pp-p,ForClause,0,65)
+reduce(p,pp-p,ForClause,0,65)
 }
 }
 pp= p
 
 /*:297*/
-//line goweave.w:2453
+//line goweave.w:2437
 
 case RangeClause:/*298:*/
-//line goweave.w:3827
+//line goweave.w:4285
 
-if isCat(pp,ExpressionList){
-p:= pp+1
-c:= 0
-isCats(p,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})
-p+= c
-if(isCat(p,eq)||isCat(p,col_eq))&&isCat(p+1,range_token)&&isCat(p+2,Expression){
-p+= 3
-squash(pp,p-pp,RangeClause,0,66)
-}
+if isCat(pp,ExpressionList)&&(isCat(pp+1,eq)||isCat(pp+1,col_eq))&&isCat(pp+2,range_token)&&isCat(pp+3,Expression){
+app1(pp)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app(break_space)
+app1(pp+3)
+reduce(pp,4,RangeClause,0,66)
 }
 
 /*:298*/
-//line goweave.w:2454
+//line goweave.w:2438
 
 case DeferStmt:/*300:*/
-//line goweave.w:3864
+//line goweave.w:4321
 
 if isCat(pp,defer_token)&&isCat(pp+1,Expression){
-squash(pp,2,DeferStmt,0,67)
+app1(pp)
+app(break_space)
+app1(pp+1)
+reduce(pp,2,DeferStmt,0,67)
 }
 
 /*:300*/
-//line goweave.w:2455
+//line goweave.w:2439
 
 case IncDecStmt:/*302:*/
-//line goweave.w:3882
+//line goweave.w:4342
 
 if isCat(pp,Expression)&&(isCat(pp+1,plus_plus)||isCat(pp+1,minus_minus)){
-squash(pp,2,IncDecStmt,0,68)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,IncDecStmt,0,68)
 }
 
 /*:302*/
-//line goweave.w:2456
+//line goweave.w:2440
 
 case Assignment:/*304:*/
-//line goweave.w:3897
+//line goweave.w:4359
 
 if isCat(pp,ExpressionList)&&isCat(pp+1,assign_op)&&isCat(pp+2,ExpressionList){
-squash(pp,3,Assignment,0,69)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,Assignment,0,69)
 }
 
 /*:304*/
-//line goweave.w:2457
+//line goweave.w:2441
 
 case assign_op:/*306:*/
-//line goweave.w:3957
+//line goweave.w:4422
 
 if(isCat(pp,unary_op)||isCat(pp,mul_op)||isCat(pp,asterisk))&&isCat(pp+1,eq){
-squash(pp,2,assign_op,0,70)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,assign_op,0,70)
 }else if rollback();isCat(pp,eq){
-squash(pp,1,assign_op,0,70)
+app1(pp)
+reduce(pp,1,assign_op,0,70)
 }
 
 /*:306*/
-//line goweave.w:2458
+//line goweave.w:2442
 
 case ShortVarDecl:/*307:*/
-//line goweave.w:3964
+//line goweave.w:4432
 
 if isCat(pp,IdentifierList)&&isCat(pp+1,col_eq)&&isCat(pp+2,ExpressionList){
-squash(pp,3,ShortVarDecl,0,71)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,ShortVarDecl,0,71)
 }
 
 /*:307*/
-//line goweave.w:2459
+//line goweave.w:2443
 
 case QualifiedIdent:/*309:*/
-//line goweave.w:3988
+//line goweave.w:4459
 
 if(isCat(pp,identifier)||isCat(pp,PackageName))&&isCat(pp+1,dot)&&isCat(pp+2,identifier){
-squash(pp,3,QualifiedIdent,0,72)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,QualifiedIdent,0,72)
 }else if rollback();isCat(pp,identifier){
-squash(pp,1,QualifiedIdent,0,72)
+app1(pp)
+reduce(pp,1,QualifiedIdent,0,72)
 }
 
 /*:309*/
-//line goweave.w:2460
+//line goweave.w:2444
 
 case MethodExpr:/*310:*/
-//line goweave.w:3995
+//line goweave.w:4470
 
 if isCat(pp,ReceiverType)&&isCat(pp+1,dot)&&isCat(pp+2,identifier){
-squash(pp,3,MethodExpr,0,73)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,MethodExpr,0,73)
 }
 
 /*:310*/
-//line goweave.w:2461
+//line goweave.w:2445
 
 case ReceiverType:/*311:*/
-//line goweave.w:4000
+//line goweave.w:4478
 
 if isCat(pp,Type){
-squash(pp,1,ReceiverType,0,74)
+app1(pp)
+reduce(pp,1,ReceiverType,0,74)
 }else if rollback();isCat(pp,lpar)&&isCat(pp+1,asterisk)&&isCat(pp+2,Type)&&isCat(pp+3,rpar){
-squash(pp,4,ReceiverType,0,74)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,ReceiverType,0,74)
 }
 
 /*:311*/
-//line goweave.w:2462
+//line goweave.w:2446
 
 case Conversion:/*312:*/
-//line goweave.w:4007
+//line goweave.w:4490
 
 if isCat(pp,Type)&&isCat(pp+1,lpar)&&isCat(pp+2,Expression)&&isCat(pp+3,rpar){
-squash(pp,4,Conversion,0,75)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,Conversion,0,75)
 }
 
 /*:312*/
-//line goweave.w:2463
+//line goweave.w:2447
 
 case BuiltinCall:/*313:*/
-//line goweave.w:4012
+//line goweave.w:4499
 
 if isCat(pp,identifier)&&isCat(pp+1,lpar){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:BuiltinArgs,mand:true},cat_pair{cat:comma,mand:false})
 if isCat(pp+2+c,rpar){
-squash(pp,3+c,BuiltinCall,0,76)
+app1(pp)
+app1(pp+1)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,comma){
+app(opt)
+app('9')
+app1(pp+2+i)
+app(break_space)
+}else{
+app1(pp+2+i)
+}
+}
+app1(pp+2+c)
+reduce(pp,3+c,BuiltinCall,0,76)
 }
 }
 
 /*:313*/
-//line goweave.w:2464
+//line goweave.w:2448
 
 case BuiltinArgs:/*314:*/
-//line goweave.w:4021
+//line goweave.w:4521
 
 if isCat(pp,Type){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ExpressionList,mand:true})
-squash(pp,1+c,BuiltinArgs,0,77)
+app1(pp)
+for i:= 0;i<c;i++{
+if isCat(pp+1+i,comma){
+app(opt)
+app('9')
+app1(pp+1+i)
+app(break_space)
+}else{
+app1(pp+1+i)
+}
+}
+reduce(pp,1+c,BuiltinArgs,0,77)
 }else if rollback();isCat(pp,ExpressionList){
-squash(pp,1,BuiltinArgs,0,77)
+app1(pp)
+reduce(pp,1,BuiltinArgs,0,77)
 }
 
 /*:314*/
-//line goweave.w:2465
+//line goweave.w:2449
 
 case Selector:/*315:*/
-//line goweave.w:4030
+//line goweave.w:4542
 
 if isCat(pp,dot)&&isCat(pp+1,identifier){
-squash(pp,2,Selector,0,78)
+app1(pp)
+app1(pp+1)
+reduce(pp,2,Selector,0,78)
 }
 
 /*:315*/
-//line goweave.w:2466
+//line goweave.w:2450
 
 case Index:/*316:*/
-//line goweave.w:4035
+//line goweave.w:4549
 
 if isCat(pp,lbracket)&&isCat(pp+1,Expression)&&isCat(pp+2,rbracket){
-squash(pp,3,Index,0,79)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,Index,0,79)
 }
 
 /*:316*/
-//line goweave.w:2467
+//line goweave.w:2451
 
 case Slice:/*317:*/
-//line goweave.w:4040
+//line goweave.w:4557
 
 if isCat(pp,lbracket){
 c1:= 0
@@ -5665,48 +5879,67 @@ if isCat(pp+1+c1,colon){
 c2:= 0
 isCats(pp+2+c1,&c2,cat_pair{cat:Expression,mand:false})
 if isCat(pp+2+c1+c2,rbracket){
-squash(pp,3+c1+c2,Slice,0,80)
+app1(pp)
+for i:= 0;i<c1;i++{
+app1(pp+1+i)
+}
+app1(pp+1+c1)
+for i:= 0;i<c2;i++{
+app1(pp+2+c1+i)
+}
+app1(pp+2+c1+c2)
+reduce(pp,3+c1+c2,Slice,0,80)
 }
 }
 }
 
 /*:317*/
-//line goweave.w:2468
+//line goweave.w:2452
 
 case TypeAssertion:/*318:*/
-//line goweave.w:4053
+//line goweave.w:4579
 
 if isCat(pp,dot)&&isCat(pp+1,lpar)&&isCat(pp+2,Type)&&isCat(pp+3,rpar){
-squash(pp,4,TypeAssertion,0,81)
+app1(pp)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,TypeAssertion,0,81)
 }
 
 /*:318*/
-//line goweave.w:2469
+//line goweave.w:2453
 
 case Call:/*319:*/
-//line goweave.w:4058
+//line goweave.w:4588
 
 if isCat(pp,lpar){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:ExpressionList,mand:false},cat_pair{cat:dot_dot_dot,mand:false})
 if isCat(pp+1+c,rpar){
-squash(pp,2+c,Call,0,82)
+app1(pp)
+for i:= 0;i<c;i++{
+app1(pp+1+i)
+}
+app1(pp+1+c)
+reduce(pp,2+c,Call,0,82)
 }
 }
 
 /*:319*/
-//line goweave.w:2470
+//line goweave.w:2454
 
 case unary_op:/*320:*/
-//line goweave.w:4067
+//line goweave.w:4602
 
 if isCat(pp,asterisk)||isCat(pp,direct)||isCat(pp,add_op){
-squash(pp,1,unary_op,0,83)
+app1(pp)
+reduce(pp,1,unary_op,0,83)
 }
 
 
 /*:320*/
-//line goweave.w:2471
+//line goweave.w:2455
 
 default:
 if(tracing&4)==4{
@@ -5729,7 +5962,7 @@ return reduced_cat==cat
 }
 
 /*:199*//*201:*/
-//line goweave.w:2502
+//line goweave.w:2486
 
 func isCats(pp int,c*int,cats...cat_pair)bool{
 *c= 0
@@ -5759,7 +5992,7 @@ return res
 
 
 /*:201*//*202:*/
-//line goweave.w:2534
+//line goweave.w:2518
 
 func isNotCat(i int,cat int32)bool{
 if i<0||i>=len(scrap_info){
@@ -5769,7 +6002,7 @@ return scrap_info[i].cat!=cat
 }
 
 /*:202*//*207:*/
-//line goweave.w:2617
+//line goweave.w:2601
 
 func find_first_ident(p[]interface{})[]interface{}{
 for i,j:= range p{
@@ -5798,7 +6031,7 @@ return nil
 }
 
 /*:207*//*208:*/
-//line goweave.w:2648
+//line goweave.w:2632
 
 
 func make_reserved(p int,c rune){
@@ -5811,7 +6044,7 @@ tok_ptr[0]= res_token(tok_ptr[0].(id_token))
 }
 
 /*:208*//*209:*/
-//line goweave.w:2668
+//line goweave.w:2652
 
 
 func make_underlined(p int){
@@ -5824,7 +6057,7 @@ underline_xref(tok_ptr[0].(id_token))
 }
 
 /*:209*//*211:*/
-//line goweave.w:2684
+//line goweave.w:2668
 
 func underline_xref(p id_token){
 q:= name_dir[p].xref
@@ -5845,7 +6078,7 @@ break
 q= xmem[q].xlink
 }
 /*212:*/
-//line goweave.w:2713
+//line goweave.w:2697
 
 append_xref(0)
 xmem[len(xmem)-1].xlink= name_dir[p].xref
@@ -5858,12 +6091,12 @@ r= xmem[r].xlink
 xmem[r].num= m
 
 /*:212*/
-//line goweave.w:2703
+//line goweave.w:2687
 
 }
 
 /*:211*//*321:*/
-//line goweave.w:4075
+//line goweave.w:4611
 
 func reduce(pp int,k int,c rune,d int,n int){
 reduced= true
@@ -5879,7 +6112,7 @@ scrap_info= scrap_info[:len(scrap_info)-k+1]
 }
 f:= "reduce"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -5892,7 +6125,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -5907,12 +6140,12 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:4089
+//line goweave.w:4625
 
 }
 
 /*:321*//*322:*/
-//line goweave.w:4095
+//line goweave.w:4631
 
 func squash(pp int,k int,c rune,d int,n int){
 if k==1{
@@ -5921,7 +6154,7 @@ reduced_cat= c
 scrap_info[pp].cat= c
 f:= "squash"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -5934,7 +6167,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -5949,7 +6182,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:4102
+//line goweave.w:4638
 
 }
 for i:= pp;i<pp+k;i++{
@@ -5959,13 +6192,13 @@ reduce(pp,k,c,d,n)
 }
 
 /*:322*//*329:*/
-//line goweave.w:4185
+//line goweave.w:4713
 
 
 func translate()[]interface{}{
 pp:= 0
 /*332:*/
-//line goweave.w:4229
+//line goweave.w:4757
 
 if(tracing&2)==2{
 fmt.Printf("\nTracing after l. %d:\n",line[include_depth])
@@ -5974,20 +6207,19 @@ mark_harmless()
 }
 
 /*:332*/
-//line goweave.w:4189
+//line goweave.w:4717
 
 /*326:*/
-//line goweave.w:4127
+//line goweave.w:4663
 
 for{
-
 if pp>=len(scrap_info){
 break
 }
 init_mathness= maybe_math
 cur_mathness= maybe_math
 /*205:*/
-//line goweave.w:2563
+//line goweave.w:2547
 {
 
 if isCat(pp+1,insert){
@@ -6003,18 +6235,18 @@ pp--
 switch scrap_info[pp].cat{
 case insert:
 /*214:*/
-//line goweave.w:2729
+//line goweave.w:2713
 
-if isNotCat(pp+1,0){
+if isNotCat(pp+1,zero){
 squash(pp,2,scrap_info[pp+1].cat,0,0)
 }
 
 /*:214*/
-//line goweave.w:2577
+//line goweave.w:2561
 
 case package_token:
 /*215:*/
-//line goweave.w:2734
+//line goweave.w:2718
 
 if isCat(pp,package_token)&&isCat(pp+1,identifier){
 app1(pp)
@@ -6026,15 +6258,15 @@ reduce(pp,2,PackageClause,1,1)
 }
 
 /*:215*/
-//line goweave.w:2579
+//line goweave.w:2563
 
 case import_token:
 /*223:*/
-//line goweave.w:2910
+//line goweave.w:2904
 
 if isCat(pp,import_token){
 /*203:*/
-//line goweave.w:2542
+//line goweave.w:2526
 
 scraps_copy:= append([]scrap{},scrap_info[pp:]...)
 reduced_copy:= reduced
@@ -6046,7 +6278,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4153
+//line goweave.w:4681
 
 {
 if(tracing&2)==2{
@@ -6059,7 +6291,7 @@ fmt.Print(" ")
 }
 if v.mathness%4==yes_math{
 fmt.Print("+")
-}else if scrap_info[k].mathness%4==no_math{
+}else if v.mathness%4==no_math{
 fmt.Print("-")
 }
 print_cat(v.cat)
@@ -6074,7 +6306,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:2552
+//line goweave.w:2536
 
 }
 reduced= reduced_copy
@@ -6082,7 +6314,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:2912
+//line goweave.w:2906
 
 if isCat(pp+1,ImportSpec){
 app1(pp)
@@ -6099,10 +6331,14 @@ app(break_space)
 app1(pp+1)
 app(force)
 app(indent)
-app1(pp+2)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,ImportSpec){
+app1(pp+2+i)
 app(force)
+}
+}
 app(outdent)
-app1(pp+3)
+app1(pp+2+c)
 app(big_force)
 reduce(pp,3+c,ImportDecl,0,5)
 }
@@ -6110,86 +6346,243 @@ reduce(pp,3+c,ImportDecl,0,5)
 }
 
 /*:223*/
-//line goweave.w:2581
+//line goweave.w:2565
 
 case struct_token:
 /*238:*/
-//line goweave.w:3116
+//line goweave.w:3226
 
 if isCat(pp,struct_token)&&isCat(pp+1,lbrace){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:FieldDecl,mand:true},cat_pair{cat:semi,mand:false})
 if isCat(pp+2+c,rbrace){
-squash(pp,3+c,StructType,0,17)
+app1(pp)
+app1(pp+1)
+app(force)
+app(indent)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,FieldDecl){
+app1(pp+2+i)
+app(force)
+}
+}
+app(outdent)
+app1(pp+2+c)
+reduce(pp,3+c,StructType,0,17)
 }
 }
 
 /*:238*/
-//line goweave.w:2583
+//line goweave.w:2567
 
 case interface_token:
 /*245:*/
-//line goweave.w:3210
+//line goweave.w:3373
 
 if isCat(pp,interface_token)&&isCat(pp+1,lbrace){
 c:= 0
 isCats(pp+2,&c,cat_pair{cat:MethodSpec,mand:true},cat_pair{cat:semi,mand:false})
 if isCat(pp+2+c,rbrace){
-squash(pp,3+c,InterfaceType,0,23)
+app1(pp)
+app1(pp+1)
+app(indent)
+for i:= 0;i<c;i++{
+if isCat(pp+2+i,MethodSpec){
+app1(pp+2+i)
+app(force)
+}
+}
+app(outdent)
+app1(pp+2+c)
+reduce(pp,3+c,InterfaceType,0,23)
 }
 }
 
 /*:245*/
-//line goweave.w:2585
+//line goweave.w:2569
 
 case func_token:
 /*225:*/
-//line goweave.w:2963
+//line goweave.w:2961
 
 if isCat(pp,func_token)&&isCat(pp+1,identifier)&&isCat(pp+2,Signature){
-p:= pp+3
-if isCat(p,Block){
-p++
+pp+= 3
+/*203:*/
+//line goweave.w:2526
+
+scraps_copy:= append([]scrap{},scrap_info[pp:]...)
+reduced_copy:= reduced
+reduced= false
+rollback:= func(){
+if reduced{
+n:= pp
+scrap_info= scrap_info[:pp]
+scrap_info= append(scrap_info,scraps_copy...)
+f:= "rollback"
+/*328:*/
+//line goweave.w:4681
+
+{
+if(tracing&2)==2{
+fmt.Printf("%s %d:",f,n)
+for k,v:= range scrap_info{
+if k==pp{
+fmt.Print("*")
+}else{
+fmt.Print(" ")
 }
-squash(pp,p-pp,FunctionDecl,0,6)
+if v.mathness%4==yes_math{
+fmt.Print("+")
+}else if v.mathness%4==no_math{
+fmt.Print("-")
+}
+print_cat(v.cat)
+if v.mathness/4==yes_math{
+fmt.Print("+")
+}else if v.mathness/4==no_math{
+fmt.Print("-")
+}
+}
+fmt.Println()
+}
+}
+
+/*:328*/
+//line goweave.w:2536
+
+}
+reduced= reduced_copy
+}
+
+
+/*:203*/
+//line goweave.w:2964
+
+pp-= 3
+if isCat(pp+3,Block){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,FunctionDecl,0,6)
+}else{
+rollback()
+app1(pp)
+app(break_space)
+app1(pp+1)
+app1(pp+2)
+reduce(pp,3,FunctionDecl,0,6)
+}
 }
 
 /*:225*/
-//line goweave.w:2587
+//line goweave.w:2571
 
 if reduced_cat==FunctionDecl{
 break
 }
 /*227:*/
-//line goweave.w:2987
+//line goweave.w:2998
 
 if isCat(pp,func_token)&&isCat(pp+1,Receiver)&&isCat(pp+2,identifier)&&isCat(pp+3,Signature){
-p:= pp+4
-if isCat(p,Block){
-p++
+pp+= 3
+/*203:*/
+//line goweave.w:2526
+
+scraps_copy:= append([]scrap{},scrap_info[pp:]...)
+reduced_copy:= reduced
+reduced= false
+rollback:= func(){
+if reduced{
+n:= pp
+scrap_info= scrap_info[:pp]
+scrap_info= append(scrap_info,scraps_copy...)
+f:= "rollback"
+/*328:*/
+//line goweave.w:4681
+
+{
+if(tracing&2)==2{
+fmt.Printf("%s %d:",f,n)
+for k,v:= range scrap_info{
+if k==pp{
+fmt.Print("*")
+}else{
+fmt.Print(" ")
 }
-squash(pp,p-pp,MethodDecl,0,7)
+if v.mathness%4==yes_math{
+fmt.Print("+")
+}else if v.mathness%4==no_math{
+fmt.Print("-")
+}
+print_cat(v.cat)
+if v.mathness/4==yes_math{
+fmt.Print("+")
+}else if v.mathness/4==no_math{
+fmt.Print("-")
+}
+}
+fmt.Println()
+}
+}
+
+/*:328*/
+//line goweave.w:2536
+
+}
+reduced= reduced_copy
+}
+
+
+/*:203*/
+//line goweave.w:3001
+
+pp-= 3
+if isCat(pp+4,Block){
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app1(pp+3)
+app1(pp+4)
+app(force)
+reduce(pp,5,MethodDecl,0,7)
+}else{
+rollback()
+app1(pp)
+app(break_space)
+app1(pp+1)
+app(break_space)
+app1(pp+2)
+app1(pp+3)
+reduce(pp,4,MethodDecl,0,7)
+}
 }
 
 /*:227*/
-//line goweave.w:2591
+//line goweave.w:2575
 
 if reduced_cat==MethodDecl{
 break
 }
 /*263:*/
-//line goweave.w:3361
+//line goweave.w:3627
 
 if isCat(pp,func_token)&&isCat(pp+1,Signature){
+app1(pp)
+app(break_space)
+app1(pp+1)
 reduce(pp,2,FunctionType,0,42)
 }
 
 /*:263*/
-//line goweave.w:2595
+//line goweave.w:2579
 
 default:
 /*266:*/
-//line goweave.w:3384
+//line goweave.w:3664
 
 if isCat(pp,ConstDecl)||isCat(pp,VarDecl)||isCat(pp,TypeDecl)||
 isCat(pp,LabeledStmt)||isCat(pp,SimpleStmt)||
@@ -6197,11 +6590,12 @@ isCat(pp,GoStmt)||isCat(pp,ReturnStmt)||isCat(pp,BreakStmt)||isCat(pp,ContinueSt
 isCat(pp,GotoStmt)||isCat(pp,fallthrough_token)||isCat(pp,Block)||isCat(pp,IfStmt)||
 isCat(pp,ExprSwitchStmt)||isCat(pp,TypeSwitchStmt)||isCat(pp,SelectStmt)||
 isCat(pp,ForStmt)||isCat(pp,DeferStmt){
-squash(pp,1,Statement,0,44)
+app1(pp)
+reduce(pp,1,Statement,0,44)
 }
 
 /*:266*/
-//line goweave.w:2597
+//line goweave.w:2581
 
 }
 }
@@ -6209,25 +6603,18 @@ pp++
 }
 
 /*:205*/
-//line goweave.w:4135
-
-
-
-
-
-
-
+//line goweave.w:4670
 
 }
 
 /*:326*/
-//line goweave.w:4190
+//line goweave.w:4718
 
 /*330:*/
-//line goweave.w:4199
+//line goweave.w:4727
 {
 /*331:*/
-//line goweave.w:4218
+//line goweave.w:4746
 
 if len(scrap_info)> 0&&tracing==1{
 fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count)
@@ -6240,7 +6627,7 @@ print_cat(scrap_info[i].cat)
 }
 
 /*:331*/
-//line goweave.w:4200
+//line goweave.w:4728
 
 for i,j:= range scrap_info{
 if i!=0{
@@ -6260,18 +6647,18 @@ return res
 }
 
 /*:330*/
-//line goweave.w:4191
+//line goweave.w:4719
 
 }
 
 /*:329*//*333:*/
-//line goweave.w:4251
+//line goweave.w:4779
 
 
 func Go_parse(spec_ctrl rune){
 for next_control<format_code||next_control==spec_ctrl{
 /*335:*/
-//line goweave.w:4273
+//line goweave.w:4801
 
 switch(next_control){
 case section_name:
@@ -6280,7 +6667,7 @@ app_scrap(section_scrap,maybe_math)
 app_scrap(Expression,yes_math)
 case str,constant,verbatim:
 /*337:*/
-//line goweave.w:4489
+//line goweave.w:5018
 
 count:= -1
 if next_control==constant{
@@ -6330,13 +6717,13 @@ app('}')
 app_scrap(next_control,maybe_math)
 
 /*:337*/
-//line goweave.w:4280
+//line goweave.w:4808
 
 case identifier:
 app_cur_id(true)
 case TeX_string:
 /*338:*/
-//line goweave.w:4542
+//line goweave.w:5071
 
 app_str("\\hbox{")
 for i:= 0;i<len(id);{
@@ -6349,7 +6736,7 @@ i++
 app('}')
 
 /*:338*/
-//line goweave.w:4284
+//line goweave.w:4812
 
 case'/':
 app(next_control)
@@ -6450,7 +6837,7 @@ app(':')
 next_control= colon
 app_scrap(colon,no_math)
 /*336:*/
-//line goweave.w:4428
+//line goweave.w:4956
 
 case not_eq:
 app_str("\\I")
@@ -6501,7 +6888,8 @@ case col_eq:
 app_str("\\K")
 app_scrap(col_eq,yes_math)
 case direct:
-app_str("<-")
+app_str("\\langle")
+app('-')
 app_scrap(direct,maybe_math)
 case and_not:
 app_str("&^")
@@ -6509,7 +6897,7 @@ app_scrap(mul_op,yes_math)
 
 
 /*:336*/
-//line goweave.w:4383
+//line goweave.w:4911
 
 case thin_space:
 app_str("\\,")
@@ -6552,7 +6940,7 @@ app_scrap(insert,maybe_math)
 }
 
 /*:335*/
-//line goweave.w:4255
+//line goweave.w:4783
 
 next_control= get_next()
 if next_control=='|'||next_control==begin_comment||
@@ -6563,7 +6951,7 @@ return
 }
 
 /*:333*//*334:*/
-//line goweave.w:4267
+//line goweave.w:4795
 
 func app_scrap(c int32,b int32){
 scrap_info= append(scrap_info,scrap{cat:c,trans:tok_mem,mathness:5*b,})
@@ -6571,7 +6959,7 @@ tok_mem= nil
 }
 
 /*:334*//*340:*/
-//line goweave.w:4556
+//line goweave.w:5085
 
 func app_cur_id(scrapping bool){
 p:= id_lookup(id,normal)
@@ -6602,7 +6990,7 @@ app_scrap(name_dir[p].ilk,maybe_math)
 }
 
 /*:340*//*341:*/
-//line goweave.w:4590
+//line goweave.w:5119
 
 func Go_translate()[]interface{}{
 save_scraps:= scrap_info
@@ -6621,7 +7009,7 @@ return p
 }
 
 /*:341*//*342:*/
-//line goweave.w:4617
+//line goweave.w:5146
 
 
 func outer_parse(){
@@ -6669,18 +7057,18 @@ app_scrap(insert,no_math)
 }
 
 /*:342*//*344:*/
-//line goweave.w:4702
+//line goweave.w:5231
 type mode int
 
 /*:344*//*347:*/
-//line goweave.w:4716
+//line goweave.w:5245
 func init_stack(){
 stack= make([]output_state,0,100)
 cur_state.mode_field= outer
 }
 
 /*:347*//*349:*/
-//line goweave.w:4729
+//line goweave.w:5258
 
 
 func push_level(tokens[]interface{}){
@@ -6689,7 +7077,7 @@ cur_state.tok_field= tokens
 }
 
 /*:349*//*350:*/
-//line goweave.w:4740
+//line goweave.w:5269
 
 func pop_level()bool{
 if len(stack)==0{
@@ -6702,7 +7090,7 @@ return true
 }
 
 /*:350*//*353:*/
-//line goweave.w:4768
+//line goweave.w:5297
 
 
 func get_output()rune{
@@ -6741,7 +7129,7 @@ panic(fmt.Sprintf("Invalid type of scrap: %T",val))
 }
 
 /*:353*//*354:*/
-//line goweave.w:4820
+//line goweave.w:5349
 
 
 func output_Go(){
@@ -6766,7 +7154,7 @@ next_control= save_next_control
 }
 
 /*:354*//*356:*/
-//line goweave.w:4845
+//line goweave.w:5374
 
 
 func make_output(){
@@ -6783,13 +7171,13 @@ case end_translation:
 return
 case identifier,res_word:
 /*357:*/
-//line goweave.w:4907
+//line goweave.w:5435
 
 out('\\')
 if a==identifier{
 if name_dir[cur_name].ilk==custom&&!doing_format{
 /*358:*/
-//line goweave.w:4940
+//line goweave.w:5468
 
 for _,v:= range name_dir[cur_name].name{
 if v=='_'{
@@ -6801,7 +7189,7 @@ out(v)
 break
 
 /*:358*/
-//line goweave.w:4911
+//line goweave.w:5439
 
 }else if is_tiny(cur_name){
 out('|')
@@ -6832,11 +7220,11 @@ out_name(cur_name,true)
 }
 
 /*:357*/
-//line goweave.w:4860
+//line goweave.w:5389
 
 case section_code:
 /*362:*/
-//line goweave.w:5045
+//line goweave.w:5573
 {
 out_str("\\X")
 
@@ -6866,7 +7254,7 @@ out_str("\\.{")
 
 }
 /*363:*/
-//line goweave.w:5080
+//line goweave.w:5608
 
 scratch:= sprint_section_name(cur_name)
 cur_section_name:= cur_name
@@ -6875,7 +7263,7 @@ b= scratch[i]
 i++
 if b=='@'{
 /*364:*/
-//line goweave.w:5124
+//line goweave.w:5652
 
 ii:= i
 i++
@@ -6888,7 +7276,7 @@ mark_error()
 }
 
 /*:364*/
-//line goweave.w:5087
+//line goweave.w:5615
 
 }
 if an_output{
@@ -6915,7 +7303,7 @@ out(b)
 }else{
 var buf[]rune
 /*365:*/
-//line goweave.w:5141
+//line goweave.w:5669
 
 var delim rune
 for{
@@ -6931,7 +7319,7 @@ b= scratch[i]
 i++
 if b=='@'||b=='\\'&&delim!=0{
 /*366:*/
-//line goweave.w:5172
+//line goweave.w:5700
 {
 buf= append(buf,b)
 buf= append(buf,scratch[i])
@@ -6939,7 +7327,7 @@ i++
 }
 
 /*:366*/
-//line goweave.w:5155
+//line goweave.w:5683
 
 }else{
 if b=='\''||b=='"'{
@@ -6958,7 +7346,7 @@ break
 }
 
 /*:365*/
-//line goweave.w:5112
+//line goweave.w:5640
 
 save_buf:= buffer
 save_loc:= loc
@@ -6972,7 +7360,7 @@ buffer= save_buf
 }
 
 /*:363*/
-//line goweave.w:5073
+//line goweave.w:5601
 
 if an_output{
 out_str(" }")
@@ -6981,7 +7369,7 @@ out_str("\\X")
 }
 
 /*:362*/
-//line goweave.w:4862
+//line goweave.w:5391
 
 case math_rel:
 out_str("\\MRL{")
@@ -7008,7 +7396,7 @@ a= get_output()
 }
 }
 /*361:*/
-//line goweave.w:5028
+//line goweave.w:5556
 
 for;c> 0;c--{
 out_str("\\1")
@@ -7020,13 +7408,13 @@ out_str("\\2")
 }
 
 /*:361*/
-//line goweave.w:4887
+//line goweave.w:5416
 
 goto reswitch
 case indent,outdent,opt,backup,break_space,
 force,big_force:
 /*359:*/
-//line goweave.w:4953
+//line goweave.w:5481
 
 if a<break_space{
 if cur_state.mode_field==outer{
@@ -7050,7 +7438,7 @@ b= get_output()
 }
 }else{
 /*360:*/
-//line goweave.w:4984
+//line goweave.w:5512
 {
 b= a
 save_mode:= cur_state.mode_field
@@ -7062,7 +7450,7 @@ continue
 }
 if a==cancel||a==big_cancel{
 /*361:*/
-//line goweave.w:5028
+//line goweave.w:5556
 
 for;c> 0;c--{
 out_str("\\1")
@@ -7074,7 +7462,7 @@ out_str("\\2")
 }
 
 /*:361*/
-//line goweave.w:4994
+//line goweave.w:5522
 
 goto reswitch
 }
@@ -7084,7 +7472,7 @@ if out_ptr> 3&&compare_runes(out_buf[out_ptr-3:out_ptr+1],[]rune("\\Y\\B"))==0{
 goto reswitch
 }
 /*361:*/
-//line goweave.w:5028
+//line goweave.w:5556
 
 for;c> 0;c--{
 out_str("\\1")
@@ -7096,7 +7484,7 @@ out_str("\\2")
 }
 
 /*:361*/
-//line goweave.w:5002
+//line goweave.w:5530
 
 out('\\')
 out(b-cancel+'0')
@@ -7124,12 +7512,12 @@ b= a
 }
 
 /*:360*/
-//line goweave.w:4975
+//line goweave.w:5503
 
 }
 
 /*:359*/
-//line goweave.w:4892
+//line goweave.w:5420
 
 case quoted_char:
 out(cur_state.tok_field[0].(rune))
@@ -7141,7 +7529,7 @@ out(a)
 }
 
 /*:356*//*368:*/
-//line goweave.w:5185
+//line goweave.w:5713
 
 func phase_two(){
 reset_input()
@@ -7156,11 +7544,11 @@ finish_line()
 flush_buffer(0,false,false)
 for!input_has_ended{
 /*371:*/
-//line goweave.w:5233
+//line goweave.w:5761
 {
 section_count++
 /*372:*/
-//line goweave.w:5251
+//line goweave.w:5779
 
 if loc-1>=len(buffer)||buffer[loc-1]!='*'{
 out_str("\\M")
@@ -7197,11 +7585,11 @@ out_section(section_count)
 out_str("}")
 
 /*:372*/
-//line goweave.w:5235
+//line goweave.w:5763
 
 save_position()
 /*373:*/
-//line goweave.w:5289
+//line goweave.w:5817
 
 for{
 next_control= copy_TeX()
@@ -7230,16 +7618,16 @@ break
 }
 
 /*:373*/
-//line goweave.w:5237
+//line goweave.w:5765
 
 /*374:*/
-//line goweave.w:5319
+//line goweave.w:5847
 
 space_checked= false
 for next_control<=format_code{
 init_stack()
 /*377:*/
-//line goweave.w:5374
+//line goweave.w:5902
 {
 doing_format= true
 if buffer[loc-1]=='s'||buffer[loc-1]=='S'{
@@ -7271,7 +7659,7 @@ err_print("! Improper format definition")
 }
 
 /*:377*/
-//line goweave.w:5323
+//line goweave.w:5851
 
 outer_parse()
 finish_Go(format_visible)
@@ -7280,10 +7668,10 @@ doing_format= false
 }
 
 /*:374*/
-//line goweave.w:5238
+//line goweave.w:5766
 
 /*379:*/
-//line goweave.w:5411
+//line goweave.w:5939
 
 this_section= -1
 if next_control<=section_name{
@@ -7294,7 +7682,7 @@ next_control= get_next()
 }else{
 this_section= cur_section
 /*380:*/
-//line goweave.w:5433
+//line goweave.w:5961
 
 for{
 next_control= get_next()
@@ -7331,13 +7719,13 @@ app_scrap(dead,no_math)
 
 
 /*:380*/
-//line goweave.w:5421
+//line goweave.w:5949
 
 }
 for next_control<=section_name{
 outer_parse()
 /*381:*/
-//line goweave.w:5468
+//line goweave.w:5996
 
 if next_control<section_name{
 err_print("! You can't do that in Go text")
@@ -7350,17 +7738,17 @@ next_control= get_next()
 }
 
 /*:381*/
-//line goweave.w:5425
+//line goweave.w:5953
 
 }
 finish_Go(true)
 }
 
 /*:379*/
-//line goweave.w:5239
+//line goweave.w:5767
 
 /*382:*/
-//line goweave.w:5482
+//line goweave.w:6010
 
 if this_section!=-1{
 cur_xref= name_dir[this_section].xref
@@ -7379,10 +7767,10 @@ footnote(0)
 }
 
 /*:382*/
-//line goweave.w:5240
+//line goweave.w:5768
 
 /*386:*/
-//line goweave.w:5560
+//line goweave.w:6088
 
 out_str("\\fi")
 finish_line()
@@ -7390,18 +7778,18 @@ finish_line()
 flush_buffer(0,false,false)
 
 /*:386*/
-//line goweave.w:5241
+//line goweave.w:5769
 
 }
 
 /*:371*/
-//line goweave.w:5198
+//line goweave.w:5726
 
 }
 }
 
 /*:368*//*369:*/
-//line goweave.w:5210
+//line goweave.w:5738
 
 func save_position(){
 save_line= out_line
@@ -7417,7 +7805,7 @@ space_checked= true
 }
 
 /*:369*//*376:*/
-//line goweave.w:5340
+//line goweave.w:5868
 
 
 
@@ -7453,7 +7841,7 @@ tok_mem= tok_mem[:0]
 }
 
 /*:376*//*384:*/
-//line goweave.w:5511
+//line goweave.w:6039
 
 
 func footnote(flag int32){
@@ -7474,7 +7862,7 @@ default:
 out('A')
 }
 /*385:*/
-//line goweave.w:5538
+//line goweave.w:6066
 
 q:= cur_xref
 if xmem[xmem[q].xlink].num> flag{
@@ -7498,13 +7886,13 @@ out('s')
 }
 
 /*:385*/
-//line goweave.w:5530
+//line goweave.w:6058
 
 out('.')
 }
 
 /*:384*//*388:*/
-//line goweave.w:5574
+//line goweave.w:6102
 
 func phase_three(){
 if!flags['x']{
@@ -7528,7 +7916,7 @@ idx_file= f
 }
 if change_exists{
 /*390:*/
-//line goweave.w:5643
+//line goweave.w:6171
 {
 
 var k_section int32= 0
@@ -7545,7 +7933,7 @@ out('.')
 }
 
 /*:390*/
-//line goweave.w:5596
+//line goweave.w:6124
 
 finish_line()
 finish_line()
@@ -7555,7 +7943,7 @@ finish_line()
 
 active_file= idx_file
 /*392:*/
-//line goweave.w:5674
+//line goweave.w:6202
 {
 for c:= 0;c<=255;c++{
 bucket[c]= -1
@@ -7577,10 +7965,10 @@ bucket[c]= cur_name
 }
 
 /*:392*/
-//line goweave.w:5604
+//line goweave.w:6132
 
 /*403:*/
-//line goweave.w:5786
+//line goweave.w:6314
 
 sort_ptr= 0
 scrap_info= append(scrap_info,scrap{})
@@ -7589,14 +7977,14 @@ for sort_ptr> 0{
 cur_depth= scrap_info[sort_ptr].cat
 if blink[scrap_info[sort_ptr].head]==-1||cur_depth==infinity{
 /*405:*/
-//line goweave.w:5824
+//line goweave.w:6352
 {
 cur_name= scrap_info[sort_ptr].head
 for{
 out_str("\\I")
 
 /*406:*/
-//line goweave.w:5839
+//line goweave.w:6367
 
 switch name_dir[cur_name].ilk{
 case normal:
@@ -7649,13 +8037,13 @@ out_str("\\&")
 }
 out_name(cur_name,true)
 name_done:/*:406*/
-//line goweave.w:5829
+//line goweave.w:6357
 
 /*408:*/
-//line goweave.w:5895
+//line goweave.w:6423
 
 /*410:*/
-//line goweave.w:5924
+//line goweave.w:6452
 
 this_xref= name_dir[cur_name].xref
 cur_xref= 0
@@ -7670,7 +8058,7 @@ break
 }
 
 /*:410*/
-//line goweave.w:5896
+//line goweave.w:6424
 
 for{
 out_str(", ")
@@ -7692,7 +8080,7 @@ out('.')
 finish_line()
 
 /*:408*/
-//line goweave.w:5830
+//line goweave.w:6358
 
 cur_name= blink[cur_name]
 if cur_name==-1{
@@ -7703,11 +8091,11 @@ sort_ptr--
 }
 
 /*:405*/
-//line goweave.w:5793
+//line goweave.w:6321
 
 }else{
 /*404:*/
-//line goweave.w:5799
+//line goweave.w:6327
 {
 next_name:= scrap_info[sort_ptr].head
 for{
@@ -7734,13 +8122,13 @@ unbucket(cur_depth+1)
 }
 
 /*:404*/
-//line goweave.w:5795
+//line goweave.w:6323
 
 }
 }
 
 /*:403*/
-//line goweave.w:5605
+//line goweave.w:6133
 
 finish_line()
 active_file.Close()
@@ -7757,11 +8145,11 @@ scn_file= f
 }
 active_file= scn_file
 /*413:*/
-//line goweave.w:5959
+//line goweave.w:6487
 section_print(name_root)
 
 /*:413*/
-//line goweave.w:5620
+//line goweave.w:6148
 
 finish_line()
 active_file.Close()
@@ -7783,7 +8171,7 @@ check_complete()
 }
 
 /*:388*//*402:*/
-//line goweave.w:5762
+//line goweave.w:6290
 
 
 func unbucket(d int32){
@@ -7809,7 +8197,7 @@ bucket[collate[c]]= -1
 }
 
 /*:402*//*412:*/
-//line goweave.w:5941
+//line goweave.w:6469
 
 
 func section_print(p int32){
@@ -7829,7 +8217,7 @@ section_print(name_dir[p].rlink)
 }
 
 /*:412*//*414:*/
-//line goweave.w:5964
+//line goweave.w:6492
 
 func print_stats(){
 fmt.Println("\nMemory usage statistics:\n")
