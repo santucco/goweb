@@ -2334,7 +2334,7 @@ func big_app1(a int) {
 	case no_math:
 		if cur_mathness==maybe_math {
 			init_mathness=no_math
-		} else if (cur_mathness==yes_math) { 
+		} else if cur_mathness==yes_math { 
 			app_str("{}$") 
 		}
 		cur_mathness=scrap_info[a].mathness / 4 /* right boundary */
@@ -2533,7 +2533,7 @@ rollback:=func(){
 		scrap_info=scrap_info[:pp]
 		scrap_info=append(scrap_info,scraps_copy...)
 		f := "rollback"
-		@<Print a snapshot of the scrap list if debugging @>
+		@<Print a snapshot of the scrap list if debugging@>
 	}
 	reduced=reduced_copy
 }
@@ -4256,26 +4256,47 @@ if isCat(pp,for_token) {
 
 @ @<Cases for |ForClause|@>=
 p:=pp
+init:=-1
+s1:=-1
+cond:=-1
+s2:=-1
+post:=-1
 if isCat(pp,SimpleStmt) {
+	init=pp
 	pp++
 } else {
 	rollback()
 }
 if isCat(pp,semi) {
+	s1=pp
 	pp++
 	@<Making copy...@>
 	if isCat(pp,Expression) {
+		cond=pp
 		pp++
 	} else {
 		rollback()
 	}
 	if isCat(pp,semi) {
+		s2=pp
 		pp++
 		@<Making copy...@>
 		if isCat(pp,SimpleStmt) {
+			post=pp
 			pp++
 		} else {
 			rollback()
+		}
+		if init !=-1 {
+			app1(init)
+		}
+		app1(s1)
+		if cond !=-1 {
+			app1(cond)
+		}
+		app1(s2)
+		if post !=-1 {
+			app1(post)
 		}
 		reduce(p,pp-p,ForClause,0,65)
 	}
@@ -4622,7 +4643,7 @@ func reduce(pp int, k int, c rune, d int, n int) {
 		scrap_info = scrap_info[:len(scrap_info)-k+1]
 	}
 	f := "reduce"
-	@<Print a snapshot of the scrap list if debugging @>
+	@<Print a snapshot of the scrap list if debugging@>
 }
 
 @ Here's the |squash| procedure, which
@@ -4899,7 +4920,7 @@ switch (next_control) {
 	case ',': 
 		app(',')
 		next_control=comma
-		app_scrap(comma,yes_math)
+		app_scrap(comma,no_math)
 	case ';': 
 		app(';')
 		next_control=semi
