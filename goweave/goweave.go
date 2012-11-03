@@ -52,7 +52,7 @@ cat int32
 mathness int32
 trans[]interface{}
 /*394:*/
-//line goweave.w:6252
+//line goweave.w:6242
 
 head int32
 
@@ -81,7 +81,7 @@ mand bool
 }
 
 /*:200*//*346:*/
-//line goweave.w:5260
+//line goweave.w:5250
 
 type output_state struct{
 tok_field[]interface{}
@@ -89,7 +89,7 @@ mode_field mode
 }
 
 /*:346*//*395:*/
-//line goweave.w:6255
+//line goweave.w:6245
 
 type sort_pointer int32
 
@@ -345,7 +345,7 @@ no_math rune= iota
 )
 
 /*:195*//*345:*/
-//line goweave.w:5254
+//line goweave.w:5244
 
 const(
 inner mode= 0
@@ -353,7 +353,7 @@ outer mode= 1
 )
 
 /*:345*//*352:*/
-//line goweave.w:5312
+//line goweave.w:5302
 
 const(
 res_word rune= 0242
@@ -361,7 +361,7 @@ section_code rune= 0243
 )
 
 /*:352*//*401:*/
-//line goweave.w:6308
+//line goweave.w:6298
 
 const infinity= -1
 
@@ -445,33 +445,33 @@ var cur_mathness int32
 var init_mathness int32
 
 /*:197*//*324:*/
-//line goweave.w:4677
+//line goweave.w:4668
 
 var reduced_cat rune= -1
 
 /*:324*//*325:*/
-//line goweave.w:4681
+//line goweave.w:4672
 
 var reduced bool= false
 
 /*:325*//*327:*/
-//line goweave.w:4699
+//line goweave.w:4690
 
 var tracing int32
 
 /*:327*//*348:*/
-//line goweave.w:5271
+//line goweave.w:5261
 
 var cur_state output_state
 var stack[]output_state
 
 /*:348*//*351:*/
-//line goweave.w:5309
+//line goweave.w:5299
 
 var cur_name int32= -1
 
 /*:351*//*370:*/
-//line goweave.w:5773
+//line goweave.w:5763
 
 var save_line int
 var save_place int32
@@ -482,18 +482,18 @@ var doing_format bool= false
 var group_found bool= false
 
 /*:370*//*378:*/
-//line goweave.w:5957
+//line goweave.w:5947
 
 var this_section int32
 
 /*:378*//*391:*/
-//line goweave.w:6216
+//line goweave.w:6206
 
 var bucket[256]int32
 var blink[max_names]int32
 
 /*:391*//*397:*/
-//line goweave.w:6261
+//line goweave.w:6251
 
 var cur_depth int32
 var cur_byte int32
@@ -502,7 +502,7 @@ var max_sort_ptr int32
 var sort_ptr int32
 
 /*:397*//*399:*/
-//line goweave.w:6274
+//line goweave.w:6264
 
 
 var collate= [102+128]rune{
@@ -523,7 +523,7 @@ var collate= [102+128]rune{
 
 
 /*:399*//*409:*/
-//line goweave.w:6468
+//line goweave.w:6458
 
 var next_xref int32
 var this_xref int32
@@ -777,7 +777,7 @@ cat_name[plus_plus]= "'++'"
 cat_name[minus_minus]= "'--'"
 
 /*:186*//*398:*/
-//line goweave.w:6268
+//line goweave.w:6258
 
 max_sort_ptr= 0
 
@@ -1087,7 +1087,7 @@ flags['p']= true
 
 scan_args()
 /*416:*/
-//line goweave.w:6532
+//line goweave.w:6522
 
 if f,err:= os.OpenFile(tex_file_name,os.O_WRONLY|os.O_CREATE|os.O_TRUNC,0666);
 err!=nil{
@@ -2145,7 +2145,7 @@ found_out= true
 
 }else{
 /*415:*/
-//line goweave.w:6524
+//line goweave.w:6514
 
 {
 fatal("! Usage: goweave [options] webfile[.w] [{changefile[.ch]|-} [outfile[.tex]]]\n","")
@@ -2160,7 +2160,7 @@ fatal("! Usage: goweave [options] webfile[.w] [{changefile[.ch]|-} [outfile[.tex
 }
 if!found_web{
 /*415:*/
-//line goweave.w:6524
+//line goweave.w:6514
 
 {
 fatal("! Usage: goweave [options] webfile[.w] [{changefile[.ch]|-} [outfile[.tex]]]\n","")
@@ -3582,7 +3582,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -3748,7 +3748,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -3825,7 +3825,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -3945,7 +3945,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -4043,7 +4043,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -4275,7 +4275,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -4344,10 +4344,9 @@ for i:= 0;i<c;i++{
 if isCat(pp+1+i,ParameterList){
 app1(pp+1+i)
 }else if isCat(pp+1+i,comma){
+app1(pp+1+i)
 app(opt)
 app('9')
-app1(pp+1+i)
-app(break_space)
 }
 }
 reduce(pp,2+c,Parameters,0,20)
@@ -4361,17 +4360,16 @@ reduce(pp,1,Signature,0,20)
 //line goweave.w:2393
 
 case ParameterList:/*243:*/
-//line goweave.w:3329
+//line goweave.w:3328
 
 if isCat(pp,ParameterDecl){
 c:= 0
 isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ParameterDecl,mand:true})
 for i:= 0;i<c;i++{
 if isCat(pp+1+i,comma){
+app1(pp+1+i)
 app(opt)
 app('9')
-app1(pp+1+i)
-app(break_space)
 }else{
 app1(pp+1+i)
 }
@@ -4383,7 +4381,7 @@ reduce(pp,1+c,ParameterList,0,21)
 //line goweave.w:2394
 
 case ParameterDecl:/*244:*/
-//line goweave.w:3346
+//line goweave.w:3344
 
 if isCat(pp,dot_dot_dot)&&isCat(pp+1,Type){
 app1(pp)
@@ -4407,7 +4405,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -4443,7 +4441,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3356
+//line goweave.w:3354
 
 pp--
 if isCat(pp+1,dot_dot_dot)&&isCat(pp+2,Type){
@@ -4465,7 +4463,7 @@ reduce(pp,2,ParameterDecl,0,22)
 //line goweave.w:2395
 
 case InterfaceType:/*245:*/
-//line goweave.w:3373
+//line goweave.w:3371
 
 if isCat(pp,interface_token)&&isCat(pp+1,lbrace){
 c:= 0
@@ -4490,7 +4488,7 @@ reduce(pp,3+c,InterfaceType,0,23)
 //line goweave.w:2396
 
 case MethodSpec:/*246:*/
-//line goweave.w:3393
+//line goweave.w:3391
 
 if isCat(pp,identifier)&&isCat(pp+1,Signature){
 app1(pp)
@@ -4508,7 +4506,7 @@ reduce(pp,1,MethodSpec,0,24)
 //line goweave.w:2397
 
 case SliceType:/*247:*/
-//line goweave.w:3406
+//line goweave.w:3404
 
 if isCat(pp,lbracket)&&isCat(pp+1,rbracket)&&isCat(pp+2,Type){
 app1(pp)
@@ -4521,7 +4519,7 @@ reduce(pp,3,SliceType,0,25)
 //line goweave.w:2398
 
 case MapType:/*248:*/
-//line goweave.w:3414
+//line goweave.w:3412
 
 if isCat(pp,map_token)&&isCat(pp+1,lbracket)&&isCat(pp+2,Type)&&isCat(pp+3,rbracket)&&isCat(pp+4,Type){
 app1(pp)
@@ -4536,7 +4534,7 @@ reduce(pp,5,MapType,0,26)
 //line goweave.w:2399
 
 case ChannelType:/*249:*/
-//line goweave.w:3424
+//line goweave.w:3422
 
 if isCat(pp,direct)&&isCat(pp+1,chan_token)&&isCat(pp+2,Type){
 app1(pp)
@@ -4563,7 +4561,7 @@ reduce(pp,2,ChannelType,0,27)
 //line goweave.w:2400
 
 case IdentifierList:/*250:*/
-//line goweave.w:3446
+//line goweave.w:3444
 
 if isCat(pp,identifier){
 c:= 0
@@ -4571,10 +4569,9 @@ isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:identifier,mand:true})
 app1(pp)
 for i:= 0;i<c;i++{
 if isCat(pp+1+i,comma){
+app1(pp+1+i)
 app(opt)
 app('9')
-app1(pp+1+i)
-app(break_space)
 }else{
 app1(pp+1+i)
 }
@@ -4586,7 +4583,7 @@ reduce(pp,1+c,IdentifierList,0,28)
 //line goweave.w:2401
 
 case ExpressionList:/*251:*/
-//line goweave.w:3464
+//line goweave.w:3461
 
 if isCat(pp,Expression){
 c:= 0
@@ -4594,10 +4591,9 @@ isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})
 app1(pp)
 for i:= 0;i<c;i++{
 if isCat(pp+1+i,comma){
+app1(pp+1+i)
 app(opt)
 app('9')
-app1(pp+1+i)
-app(break_space)
 }else if isCat(pp+1+i,Expression){
 app1(pp+1+i)
 }
@@ -4609,7 +4605,7 @@ reduce(pp,1+c,ExpressionList,0,29)
 //line goweave.w:2402
 
 case Expression:/*252:*/
-//line goweave.w:3482
+//line goweave.w:3478
 
 if isCat(pp,UnaryExpr)&&isCat(pp+1,binary_op)&&isCat(pp+2,UnaryExpr){
 app1(pp)
@@ -4627,7 +4623,7 @@ reduce(pp,1,Expression,0,30)
 //line goweave.w:2403
 
 case UnaryExpr:/*253:*/
-//line goweave.w:3495
+//line goweave.w:3491
 
 if isCat(pp,unary_op)&&isCat(pp+1,UnaryExpr){
 app1(pp)
@@ -4642,7 +4638,7 @@ reduce(pp,1,UnaryExpr,0,31)
 //line goweave.w:2404
 
 case binary_op:/*254:*/
-//line goweave.w:3505
+//line goweave.w:3501
 
 if isCat(pp,rel_op)||isCat(pp,add_op)||isCat(pp,mul_op)||isCat(pp,asterisk){
 app1(pp)
@@ -4653,7 +4649,7 @@ reduce(pp,1,binary_op,0,32)
 //line goweave.w:2405
 
 case PrimaryExpr:/*255:*/
-//line goweave.w:3511
+//line goweave.w:3507
 
 if isCat(pp,BuiltinCall)||isCat(pp,Conversion)||isCat(pp,Operand){
 pp++
@@ -4670,7 +4666,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -4706,7 +4702,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3514
+//line goweave.w:3510
 
 pp--
 if isCat(pp+1,Selector)||isCat(pp+1,Index)||isCat(pp+1,Slice)||isCat(pp+1,TypeAssertion)||isCat(pp+1,Call){
@@ -4724,7 +4720,7 @@ reduce(pp,1,PrimaryExpr,0,33)
 //line goweave.w:2406
 
 case Operand:/*256:*/
-//line goweave.w:3527
+//line goweave.w:3523
 
 if isCat(pp,str)||isCat(pp,constant)||isCat(pp,QualifiedIdent)||isCat(pp,CompositeLit)||isCat(pp,FunctionLit)||isCat(pp,MethodExpr){
 app1(pp)
@@ -4740,7 +4736,7 @@ reduce(pp,3,Operand,0,34)
 //line goweave.w:2407
 
 case CompositeLit:/*257:*/
-//line goweave.w:3538
+//line goweave.w:3534
 
 if isCat(pp,LiteralType)&&isCat(pp+1,LiteralValue){
 app1(pp)
@@ -4753,7 +4749,7 @@ reduce(pp,2,CompositeLit,0,35)
 //line goweave.w:2408
 
 case LiteralType:/*258:*/
-//line goweave.w:3546
+//line goweave.w:3542
 
 if isCat(pp,Type){
 app1(pp)
@@ -4770,7 +4766,7 @@ reduce(pp,4,LiteralType,0,36)
 //line goweave.w:2409
 
 case LiteralValue:/*259:*/
-//line goweave.w:3558
+//line goweave.w:3554
 
 if isCat(pp,lbrace){
 c:= 0
@@ -4781,10 +4777,9 @@ for i:= 0;i<c;i++{
 if isCat(pp+1+i,ElementList){
 app1(pp+1+i)
 }else if isCat(pp+1+i,comma){
+app1(pp+1+i)
 app(opt)
 app('9')
-app1(pp+1+i)
-app(break_space)
 }
 }
 app1(pp+1+c)
@@ -4796,7 +4791,7 @@ reduce(pp,2+c,LiteralValue,0,37)
 //line goweave.w:2410
 
 case ElementList:/*260:*/
-//line goweave.w:3579
+//line goweave.w:3574
 
 if isCat(pp,Element){
 c:= 0
@@ -4804,10 +4799,9 @@ isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Element,mand:true})
 app1(pp)
 for i:= 0;i<c;i++{
 if isCat(pp+1+i,comma){
+app1(pp+1+i)
 app(opt)
 app('9')
-app1(pp+1+i)
-app(break_space)
 }else if isCat(pp+1+i,Element){
 app1(pp+1+i)
 }
@@ -4819,7 +4813,7 @@ reduce(pp,1+c,ElementList,0,38)
 //line goweave.w:2411
 
 case Element:/*261:*/
-//line goweave.w:3597
+//line goweave.w:3591
 
 if(isCat(pp,identifier)||isCat(pp,Expression))&&isCat(pp+1,colon){
 pp+= 2
@@ -4836,7 +4830,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -4872,7 +4866,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:3600
+//line goweave.w:3594
 
 pp-= 2
 if isCat(pp+2,Expression){
@@ -4897,7 +4891,7 @@ reduce(pp,1,Element,0,39)
 //line goweave.w:2412
 
 case FunctionLit:/*262:*/
-//line goweave.w:3620
+//line goweave.w:3614
 
 if isCat(pp,FunctionType)&&isCat(pp+1,Block){
 app1(pp)
@@ -4909,7 +4903,7 @@ reduce(pp,2,FunctionLit,0,40)
 //line goweave.w:2413
 
 case FunctionType:/*263:*/
-//line goweave.w:3627
+//line goweave.w:3621
 
 if isCat(pp,func_token)&&isCat(pp+1,Signature){
 app1(pp)
@@ -4922,7 +4916,7 @@ reduce(pp,2,FunctionType,0,42)
 //line goweave.w:2414
 
 case Block:/*264:*/
-//line goweave.w:3635
+//line goweave.w:3629
 
 if isCat(pp,lbrace){
 c:= 0
@@ -4947,7 +4941,7 @@ reduce(pp,2+c,Block,0,43)
 //line goweave.w:2415
 
 case Statement:/*266:*/
-//line goweave.w:3664
+//line goweave.w:3658
 
 if isCat(pp,ConstDecl)||isCat(pp,VarDecl)||isCat(pp,TypeDecl)||
 isCat(pp,LabeledStmt)||isCat(pp,SimpleStmt)||
@@ -4963,7 +4957,7 @@ reduce(pp,1,Statement,0,44)
 //line goweave.w:2416
 
 case LabeledStmt:/*267:*/
-//line goweave.w:3675
+//line goweave.w:3669
 
 if isCat(pp,identifier)&&isCat(pp+1,colon)&&isCat(pp+2,Statement){
 app1(pp)
@@ -4978,7 +4972,7 @@ reduce(pp,3,LabeledStmt,0,45)
 //line goweave.w:2417
 
 case SimpleStmt:/*269:*/
-//line goweave.w:3692
+//line goweave.w:3686
 
 if isCat(pp,SendStmt)||isCat(pp,IncDecStmt)||isCat(pp,Assignment)||isCat(pp,ShortVarDecl)||isCat(pp,Expression){
 app1(pp)
@@ -4989,7 +4983,7 @@ reduce(pp,1,SimpleStmt,0,46)
 //line goweave.w:2418
 
 case GoStmt:/*270:*/
-//line goweave.w:3698
+//line goweave.w:3692
 
 if isCat(pp,go_token)&&isCat(pp+1,Expression){
 app1(pp)
@@ -5002,7 +4996,7 @@ reduce(pp,2,GoStmt,0,47)
 //line goweave.w:2419
 
 case ReturnStmt:/*272:*/
-//line goweave.w:3717
+//line goweave.w:3711
 
 if isCat(pp,return_token)&&isCat(pp+1,ExpressionList){
 app1(pp)
@@ -5018,7 +5012,7 @@ reduce(pp,1,ReturnStmt,0,48)
 //line goweave.w:2420
 
 case BreakStmt:/*274:*/
-//line goweave.w:3742
+//line goweave.w:3736
 
 if isCat(pp,break_token){
 app1(pp)
@@ -5036,7 +5030,7 @@ reduce(pp,1,BreakStmt,0,49)
 //line goweave.w:2421
 
 case ContinueStmt:/*276:*/
-//line goweave.w:3776
+//line goweave.w:3770
 
 if isCat(pp,continue_token)&&isCat(pp+1,identifier){
 app1(pp)
@@ -5052,7 +5046,7 @@ reduce(pp,1,ContinueStmt,0,50)
 //line goweave.w:2422
 
 case GotoStmt:/*278:*/
-//line goweave.w:3808
+//line goweave.w:3802
 
 if isCat(pp,goto_token)&&isCat(pp+1,identifier){
 app1(pp)
@@ -5065,7 +5059,7 @@ reduce(pp,2,GotoStmt,0,51)
 //line goweave.w:2423
 
 case IfStmt:/*280:*/
-//line goweave.w:3823
+//line goweave.w:3817
 
 if isCat(pp,if_token){
 if isCat(pp+1,SimpleStmt)&&isCat(pp+2,semi){
@@ -5113,7 +5107,7 @@ reduce(pp,3,IfStmt,0,52)
 //line goweave.w:2424
 
 case ExprSwitchStmt:/*282:*/
-//line goweave.w:3885
+//line goweave.w:3879
 
 if isCat(pp,switch_token){
 if isCat(pp+1,lbrace){
@@ -5180,7 +5174,7 @@ reduce(pp,4+c,ExprSwitchStmt,0,53)
 //line goweave.w:2425
 
 case ExprCaseClause:/*283:*/
-//line goweave.w:3947
+//line goweave.w:3941
 
 if isCat(pp,case_token)&&isCat(pp+1,ExpressionList)&&isCat(pp+2,colon){
 c:= 0
@@ -5217,7 +5211,7 @@ reduce(pp,1,ExprCaseClause,0,54)
 //line goweave.w:2426
 
 case TypeSwitchStmt:/*284:*/
-//line goweave.w:3979
+//line goweave.w:3973
 
 if isCat(pp,switch_token){
 if isCat(pp+1,TypeSwitchGuard)&&isCat(pp+2,lbrace){
@@ -5255,7 +5249,7 @@ reduce(pp,6+c,TypeSwitchStmt,0,55)
 //line goweave.w:2427
 
 case TypeSwitchGuard:/*285:*/
-//line goweave.w:4012
+//line goweave.w:4006
 
 if isCat(pp,identifier)&&isCat(pp+1,col_eq)&&isCat(pp+2,PrimaryExpr)&&isCat(pp+3,dot)&&isCat(pp+4,lpar)&&isCat(pp+5,type_token)&&isCat(pp+6,rpar){
 app1(pp)
@@ -5279,7 +5273,7 @@ reduce(pp,5,TypeSwitchGuard,0,56)
 //line goweave.w:2428
 
 case TypeCaseClause:/*286:*/
-//line goweave.w:4031
+//line goweave.w:4025
 
 if isCat(pp,TypeSwitchCase)&&isCat(pp+1,colon){
 c:= 0
@@ -5301,7 +5295,7 @@ reduce(pp,1,TypeCaseClause,0,57)
 //line goweave.w:2429
 
 case TypeSwitchCase:/*287:*/
-//line goweave.w:4048
+//line goweave.w:4042
 
 if isCat(pp,case_token)&&isCat(pp+1,Type){
 c:= 0
@@ -5311,10 +5305,9 @@ app(break_space)
 app1(pp+1)
 for i:= 0;i<c;i++{
 if isCat(pp+2+i,comma){
+app1(pp+2+i)
 app(opt)
 app('9')
-app1(pp+2+i)
-app(break_space)
 }else{
 app1(pp+2+i)
 }
@@ -5332,7 +5325,7 @@ reduce(pp,1,TypeSwitchCase,0,58)
 //line goweave.w:2430
 
 case SelectStmt:/*289:*/
-//line goweave.w:4114
+//line goweave.w:4107
 
 if isCat(pp,select_token)&&isCat(pp+1,lbrace){
 c:= 0
@@ -5353,7 +5346,7 @@ reduce(pp,3+c,SelectStmt,0,59)
 //line goweave.w:2431
 
 case CommClause:/*290:*/
-//line goweave.w:4130
+//line goweave.w:4123
 
 if isCat(pp,CommCase)&&isCat(pp+1,colon){
 c:= 0
@@ -5372,7 +5365,7 @@ reduce(pp,2+c,CommClause,0,60)
 //line goweave.w:2432
 
 case CommCase:/*291:*/
-//line goweave.w:4144
+//line goweave.w:4137
 
 if isCat(pp,case_token){
 if isCat(pp+1,SendStmt){
@@ -5398,7 +5391,7 @@ reduce(pp,1,CommCase,0,61)
 //line goweave.w:2433
 
 case RecvStmt:/*292:*/
-//line goweave.w:4165
+//line goweave.w:4158
 
 if isCat(pp,ExpressionList)&&(isCat(pp+1,eq)||isCat(pp+1,col_eq))&&isCat(pp+2,Expression){
 app1(pp)
@@ -5416,7 +5409,7 @@ reduce(pp,1,RecvStmt,0,62)
 //line goweave.w:2434
 
 case SendStmt:/*293:*/
-//line goweave.w:4178
+//line goweave.w:4171
 
 if isCat(pp,Expression)&&isCat(pp+1,direct)&&isCat(pp+2,Expression){
 app1(pp)
@@ -5430,7 +5423,7 @@ reduce(pp,3,SendStmt,0,63)
 //line goweave.w:2435
 
 case ForStmt:/*296:*/
-//line goweave.w:4225
+//line goweave.w:4218
 
 if isCat(pp,for_token){
 /*203:*/
@@ -5446,7 +5439,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -5482,7 +5475,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:4227
+//line goweave.w:4220
 
 if isCat(pp+1,Expression)&&isCat(pp+2,Block){
 app1(pp)
@@ -5517,7 +5510,7 @@ reduce(pp,2,ForStmt,0,64)
 //line goweave.w:2436
 
 case ForClause:/*297:*/
-//line goweave.w:4257
+//line goweave.w:4250
 
 p:= pp
 init:= -1
@@ -5547,7 +5540,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -5583,7 +5576,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:4273
+//line goweave.w:4266
 
 if isCat(pp,Expression){
 cond= pp
@@ -5607,7 +5600,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -5643,7 +5636,7 @@ reduced= reduced_copy
 
 
 /*:203*/
-//line goweave.w:4283
+//line goweave.w:4276
 
 if isCat(pp,SimpleStmt){
 post= pp
@@ -5671,7 +5664,7 @@ pp= p
 //line goweave.w:2437
 
 case RangeClause:/*298:*/
-//line goweave.w:4306
+//line goweave.w:4299
 
 if isCat(pp,ExpressionList)&&(isCat(pp+1,eq)||isCat(pp+1,col_eq))&&isCat(pp+2,range_token)&&isCat(pp+3,Expression){
 app1(pp)
@@ -5687,7 +5680,7 @@ reduce(pp,4,RangeClause,0,66)
 //line goweave.w:2438
 
 case DeferStmt:/*300:*/
-//line goweave.w:4342
+//line goweave.w:4335
 
 if isCat(pp,defer_token)&&isCat(pp+1,Expression){
 app1(pp)
@@ -5700,7 +5693,7 @@ reduce(pp,2,DeferStmt,0,67)
 //line goweave.w:2439
 
 case IncDecStmt:/*302:*/
-//line goweave.w:4363
+//line goweave.w:4356
 
 if isCat(pp,Expression)&&(isCat(pp+1,plus_plus)||isCat(pp+1,minus_minus)){
 app1(pp)
@@ -5712,7 +5705,7 @@ reduce(pp,2,IncDecStmt,0,68)
 //line goweave.w:2440
 
 case Assignment:/*304:*/
-//line goweave.w:4380
+//line goweave.w:4373
 
 if isCat(pp,ExpressionList)&&isCat(pp+1,assign_op)&&isCat(pp+2,ExpressionList){
 app1(pp)
@@ -5725,7 +5718,7 @@ reduce(pp,3,Assignment,0,69)
 //line goweave.w:2441
 
 case assign_op:/*306:*/
-//line goweave.w:4443
+//line goweave.w:4436
 
 if(isCat(pp,unary_op)||isCat(pp,mul_op)||isCat(pp,asterisk))&&isCat(pp+1,eq){
 app1(pp)
@@ -5740,7 +5733,7 @@ reduce(pp,1,assign_op,0,70)
 //line goweave.w:2442
 
 case ShortVarDecl:/*307:*/
-//line goweave.w:4453
+//line goweave.w:4446
 
 if isCat(pp,IdentifierList)&&isCat(pp+1,col_eq)&&isCat(pp+2,ExpressionList){
 app1(pp)
@@ -5753,7 +5746,7 @@ reduce(pp,3,ShortVarDecl,0,71)
 //line goweave.w:2443
 
 case QualifiedIdent:/*309:*/
-//line goweave.w:4480
+//line goweave.w:4473
 
 if(isCat(pp,identifier)||isCat(pp,PackageName))&&isCat(pp+1,dot)&&isCat(pp+2,identifier){
 app1(pp)
@@ -5769,7 +5762,7 @@ reduce(pp,1,QualifiedIdent,0,72)
 //line goweave.w:2444
 
 case MethodExpr:/*310:*/
-//line goweave.w:4491
+//line goweave.w:4484
 
 if isCat(pp,ReceiverType)&&isCat(pp+1,dot)&&isCat(pp+2,identifier){
 app1(pp)
@@ -5782,7 +5775,7 @@ reduce(pp,3,MethodExpr,0,73)
 //line goweave.w:2445
 
 case ReceiverType:/*311:*/
-//line goweave.w:4499
+//line goweave.w:4492
 
 if isCat(pp,Type){
 app1(pp)
@@ -5799,7 +5792,7 @@ reduce(pp,4,ReceiverType,0,74)
 //line goweave.w:2446
 
 case Conversion:/*312:*/
-//line goweave.w:4511
+//line goweave.w:4504
 
 if isCat(pp,Type)&&isCat(pp+1,lpar)&&isCat(pp+2,Expression)&&isCat(pp+3,rpar){
 app1(pp)
@@ -5813,7 +5806,7 @@ reduce(pp,4,Conversion,0,75)
 //line goweave.w:2447
 
 case BuiltinCall:/*313:*/
-//line goweave.w:4520
+//line goweave.w:4513
 
 if isCat(pp,identifier)&&isCat(pp+1,lpar){
 c:= 0
@@ -5823,10 +5816,9 @@ app1(pp)
 app1(pp+1)
 for i:= 0;i<c;i++{
 if isCat(pp+2+i,comma){
+app1(pp+2+i)
 app(opt)
 app('9')
-app1(pp+2+i)
-app(break_space)
 }else{
 app1(pp+2+i)
 }
@@ -5840,7 +5832,7 @@ reduce(pp,3+c,BuiltinCall,0,76)
 //line goweave.w:2448
 
 case BuiltinArgs:/*314:*/
-//line goweave.w:4542
+//line goweave.w:4534
 
 if isCat(pp,Type){
 c:= 0
@@ -5848,10 +5840,9 @@ isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ExpressionList,mand:tr
 app1(pp)
 for i:= 0;i<c;i++{
 if isCat(pp+1+i,comma){
+app1(pp+1+i)
 app(opt)
 app('9')
-app1(pp+1+i)
-app(break_space)
 }else{
 app1(pp+1+i)
 }
@@ -5866,7 +5857,7 @@ reduce(pp,1,BuiltinArgs,0,77)
 //line goweave.w:2449
 
 case Selector:/*315:*/
-//line goweave.w:4563
+//line goweave.w:4554
 
 if isCat(pp,dot)&&isCat(pp+1,identifier){
 app1(pp)
@@ -5878,7 +5869,7 @@ reduce(pp,2,Selector,0,78)
 //line goweave.w:2450
 
 case Index:/*316:*/
-//line goweave.w:4570
+//line goweave.w:4561
 
 if isCat(pp,lbracket)&&isCat(pp+1,Expression)&&isCat(pp+2,rbracket){
 app1(pp)
@@ -5891,7 +5882,7 @@ reduce(pp,3,Index,0,79)
 //line goweave.w:2451
 
 case Slice:/*317:*/
-//line goweave.w:4578
+//line goweave.w:4569
 
 if isCat(pp,lbracket){
 c1:= 0
@@ -5918,7 +5909,7 @@ reduce(pp,3+c1+c2,Slice,0,80)
 //line goweave.w:2452
 
 case TypeAssertion:/*318:*/
-//line goweave.w:4600
+//line goweave.w:4591
 
 if isCat(pp,dot)&&isCat(pp+1,lpar)&&isCat(pp+2,Type)&&isCat(pp+3,rpar){
 app1(pp)
@@ -5932,7 +5923,7 @@ reduce(pp,4,TypeAssertion,0,81)
 //line goweave.w:2453
 
 case Call:/*319:*/
-//line goweave.w:4609
+//line goweave.w:4600
 
 if isCat(pp,lpar){
 c:= 0
@@ -5951,7 +5942,7 @@ reduce(pp,2+c,Call,0,82)
 //line goweave.w:2454
 
 case unary_op:/*320:*/
-//line goweave.w:4623
+//line goweave.w:4614
 
 if isCat(pp,asterisk)||isCat(pp,direct)||isCat(pp,add_op){
 app1(pp)
@@ -6117,7 +6108,7 @@ xmem[r].num= m
 }
 
 /*:211*//*321:*/
-//line goweave.w:4632
+//line goweave.w:4623
 
 func reduce(pp int,k int,c rune,d int,n int){
 reduced= true
@@ -6133,7 +6124,7 @@ scrap_info= scrap_info[:len(scrap_info)-k+1]
 }
 f:= "reduce"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -6161,12 +6152,12 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:4646
+//line goweave.w:4637
 
 }
 
 /*:321*//*322:*/
-//line goweave.w:4652
+//line goweave.w:4643
 
 func squash(pp int,k int,c rune,d int,n int){
 if k==1{
@@ -6175,7 +6166,7 @@ reduced_cat= c
 scrap_info[pp].cat= c
 f:= "squash"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -6203,7 +6194,7 @@ fmt.Println()
 }
 
 /*:328*/
-//line goweave.w:4659
+//line goweave.w:4650
 
 }
 for i:= pp;i<pp+k;i++{
@@ -6213,13 +6204,13 @@ reduce(pp,k,c,d,n)
 }
 
 /*:322*//*329:*/
-//line goweave.w:4734
+//line goweave.w:4725
 
 
 func translate()[]interface{}{
 pp:= 0
 /*332:*/
-//line goweave.w:4778
+//line goweave.w:4769
 
 if(tracing&2)==2{
 fmt.Printf("\nTracing after l. %d:\n",line[include_depth])
@@ -6228,10 +6219,10 @@ mark_harmless()
 }
 
 /*:332*/
-//line goweave.w:4738
+//line goweave.w:4729
 
 /*326:*/
-//line goweave.w:4684
+//line goweave.w:4675
 
 for{
 if pp>=len(scrap_info){
@@ -6299,7 +6290,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -6398,7 +6389,7 @@ reduce(pp,3+c,StructType,0,17)
 
 case interface_token:
 /*245:*/
-//line goweave.w:3373
+//line goweave.w:3371
 
 if isCat(pp,interface_token)&&isCat(pp+1,lbrace){
 c:= 0
@@ -6441,7 +6432,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -6521,7 +6512,7 @@ scrap_info= scrap_info[:pp]
 scrap_info= append(scrap_info,scraps_copy...)
 f:= "rollback"
 /*328:*/
-//line goweave.w:4702
+//line goweave.w:4693
 
 {
 if(tracing&2)==2{
@@ -6589,7 +6580,7 @@ if reduced_cat==MethodDecl{
 break
 }
 /*263:*/
-//line goweave.w:3627
+//line goweave.w:3621
 
 if isCat(pp,func_token)&&isCat(pp+1,Signature){
 app1(pp)
@@ -6603,7 +6594,7 @@ reduce(pp,2,FunctionType,0,42)
 
 default:
 /*266:*/
-//line goweave.w:3664
+//line goweave.w:3658
 
 if isCat(pp,ConstDecl)||isCat(pp,VarDecl)||isCat(pp,TypeDecl)||
 isCat(pp,LabeledStmt)||isCat(pp,SimpleStmt)||
@@ -6624,18 +6615,18 @@ pp++
 }
 
 /*:205*/
-//line goweave.w:4691
+//line goweave.w:4682
 
 }
 
 /*:326*/
-//line goweave.w:4739
+//line goweave.w:4730
 
 /*330:*/
-//line goweave.w:4748
+//line goweave.w:4739
 {
 /*331:*/
-//line goweave.w:4767
+//line goweave.w:4758
 
 if len(scrap_info)> 0&&tracing==1{
 fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count)
@@ -6648,7 +6639,7 @@ print_cat(scrap_info[i].cat)
 }
 
 /*:331*/
-//line goweave.w:4749
+//line goweave.w:4740
 
 for i,j:= range scrap_info{
 if i!=0{
@@ -6668,18 +6659,18 @@ return res
 }
 
 /*:330*/
-//line goweave.w:4740
+//line goweave.w:4731
 
 }
 
 /*:329*//*333:*/
-//line goweave.w:4800
+//line goweave.w:4791
 
 
 func Go_parse(spec_ctrl rune){
 for next_control<format_code||next_control==spec_ctrl{
 /*335:*/
-//line goweave.w:4822
+//line goweave.w:4813
 
 switch(next_control){
 case section_name:
@@ -6688,7 +6679,7 @@ app_scrap(section_scrap,maybe_math)
 app_scrap(Expression,yes_math)
 case str,constant,verbatim:
 /*337:*/
-//line goweave.w:5039
+//line goweave.w:5029
 
 count:= -1
 if next_control==constant{
@@ -6738,13 +6729,13 @@ app('}')
 app_scrap(next_control,maybe_math)
 
 /*:337*/
-//line goweave.w:4829
+//line goweave.w:4820
 
 case identifier:
 app_cur_id(true)
 case TeX_string:
 /*338:*/
-//line goweave.w:5092
+//line goweave.w:5082
 
 app_str("\\hbox{")
 for i:= 0;i<len(id);{
@@ -6757,7 +6748,7 @@ i++
 app('}')
 
 /*:338*/
-//line goweave.w:4833
+//line goweave.w:4824
 
 case'/':
 app(next_control)
@@ -6858,7 +6849,7 @@ app(':')
 next_control= colon
 app_scrap(colon,no_math)
 /*336:*/
-//line goweave.w:4977
+//line goweave.w:4968
 
 case not_eq:
 app_str("\\I")
@@ -6909,16 +6900,15 @@ case col_eq:
 app_str("\\K")
 app_scrap(col_eq,yes_math)
 case direct:
-app_str("\\langle")
-app('-')
-app_scrap(direct,maybe_math)
+app_str("\\leftarrow")
+app_scrap(direct,yes_math)
 case and_not:
 app_str("&^")
 app_scrap(mul_op,yes_math)
 
 
 /*:336*/
-//line goweave.w:4932
+//line goweave.w:4923
 
 case thin_space:
 app_str("\\,")
@@ -6961,7 +6951,7 @@ app_scrap(insert,maybe_math)
 }
 
 /*:335*/
-//line goweave.w:4804
+//line goweave.w:4795
 
 next_control= get_next()
 if next_control=='|'||next_control==begin_comment||
@@ -6972,7 +6962,7 @@ return
 }
 
 /*:333*//*334:*/
-//line goweave.w:4816
+//line goweave.w:4807
 
 func app_scrap(c int32,b int32){
 scrap_info= append(scrap_info,scrap{cat:c,trans:tok_mem,mathness:5*b,})
@@ -6980,7 +6970,7 @@ tok_mem= nil
 }
 
 /*:334*//*340:*/
-//line goweave.w:5106
+//line goweave.w:5096
 
 func app_cur_id(scrapping bool){
 p:= id_lookup(id,normal)
@@ -7011,7 +7001,7 @@ app_scrap(name_dir[p].ilk,maybe_math)
 }
 
 /*:340*//*341:*/
-//line goweave.w:5140
+//line goweave.w:5130
 
 func Go_translate()[]interface{}{
 save_scraps:= scrap_info
@@ -7030,7 +7020,7 @@ return p
 }
 
 /*:341*//*342:*/
-//line goweave.w:5167
+//line goweave.w:5157
 
 
 func outer_parse(){
@@ -7078,18 +7068,18 @@ app_scrap(insert,no_math)
 }
 
 /*:342*//*344:*/
-//line goweave.w:5252
+//line goweave.w:5242
 type mode int
 
 /*:344*//*347:*/
-//line goweave.w:5266
+//line goweave.w:5256
 func init_stack(){
 stack= make([]output_state,0,100)
 cur_state.mode_field= outer
 }
 
 /*:347*//*349:*/
-//line goweave.w:5279
+//line goweave.w:5269
 
 
 func push_level(tokens[]interface{}){
@@ -7098,7 +7088,7 @@ cur_state.tok_field= tokens
 }
 
 /*:349*//*350:*/
-//line goweave.w:5290
+//line goweave.w:5280
 
 func pop_level()bool{
 if len(stack)==0{
@@ -7111,7 +7101,7 @@ return true
 }
 
 /*:350*//*353:*/
-//line goweave.w:5318
+//line goweave.w:5308
 
 
 func get_output()rune{
@@ -7150,7 +7140,7 @@ panic(fmt.Sprintf("Invalid type of scrap: %T",val))
 }
 
 /*:353*//*354:*/
-//line goweave.w:5370
+//line goweave.w:5360
 
 
 func output_Go(){
@@ -7175,7 +7165,7 @@ next_control= save_next_control
 }
 
 /*:354*//*356:*/
-//line goweave.w:5395
+//line goweave.w:5385
 
 
 func make_output(){
@@ -7192,13 +7182,13 @@ case end_translation:
 return
 case identifier,res_word:
 /*357:*/
-//line goweave.w:5456
+//line goweave.w:5446
 
 out('\\')
 if a==identifier{
 if name_dir[cur_name].ilk==custom&&!doing_format{
 /*358:*/
-//line goweave.w:5489
+//line goweave.w:5479
 
 for _,v:= range name_dir[cur_name].name{
 if v=='_'{
@@ -7210,7 +7200,7 @@ out(v)
 break
 
 /*:358*/
-//line goweave.w:5460
+//line goweave.w:5450
 
 }else if is_tiny(cur_name){
 out('|')
@@ -7241,11 +7231,11 @@ out_name(cur_name,true)
 }
 
 /*:357*/
-//line goweave.w:5410
+//line goweave.w:5400
 
 case section_code:
 /*362:*/
-//line goweave.w:5594
+//line goweave.w:5584
 {
 out_str("\\X")
 
@@ -7275,7 +7265,7 @@ out_str("\\.{")
 
 }
 /*363:*/
-//line goweave.w:5629
+//line goweave.w:5619
 
 scratch:= sprint_section_name(cur_name)
 cur_section_name:= cur_name
@@ -7284,7 +7274,7 @@ b= scratch[i]
 i++
 if b=='@'{
 /*364:*/
-//line goweave.w:5673
+//line goweave.w:5663
 
 ii:= i
 i++
@@ -7297,7 +7287,7 @@ mark_error()
 }
 
 /*:364*/
-//line goweave.w:5636
+//line goweave.w:5626
 
 }
 if an_output{
@@ -7324,7 +7314,7 @@ out(b)
 }else{
 var buf[]rune
 /*365:*/
-//line goweave.w:5690
+//line goweave.w:5680
 
 var delim rune
 for{
@@ -7340,7 +7330,7 @@ b= scratch[i]
 i++
 if b=='@'||b=='\\'&&delim!=0{
 /*366:*/
-//line goweave.w:5721
+//line goweave.w:5711
 {
 buf= append(buf,b)
 buf= append(buf,scratch[i])
@@ -7348,7 +7338,7 @@ i++
 }
 
 /*:366*/
-//line goweave.w:5704
+//line goweave.w:5694
 
 }else{
 if b=='\''||b=='"'{
@@ -7367,7 +7357,7 @@ break
 }
 
 /*:365*/
-//line goweave.w:5661
+//line goweave.w:5651
 
 save_buf:= buffer
 save_loc:= loc
@@ -7381,7 +7371,7 @@ buffer= save_buf
 }
 
 /*:363*/
-//line goweave.w:5622
+//line goweave.w:5612
 
 if an_output{
 out_str(" }")
@@ -7390,7 +7380,7 @@ out_str("\\X")
 }
 
 /*:362*/
-//line goweave.w:5412
+//line goweave.w:5402
 
 case math_rel:
 out_str("\\MRL{")
@@ -7417,7 +7407,7 @@ a= get_output()
 }
 }
 /*361:*/
-//line goweave.w:5577
+//line goweave.w:5567
 
 for;c> 0;c--{
 out_str("\\1")
@@ -7429,13 +7419,13 @@ out_str("\\2")
 }
 
 /*:361*/
-//line goweave.w:5437
+//line goweave.w:5427
 
 goto reswitch
 case indent,outdent,opt,backup,break_space,
 force,big_force:
 /*359:*/
-//line goweave.w:5502
+//line goweave.w:5492
 
 if a<break_space{
 if cur_state.mode_field==outer{
@@ -7459,7 +7449,7 @@ b= get_output()
 }
 }else{
 /*360:*/
-//line goweave.w:5533
+//line goweave.w:5523
 {
 b= a
 save_mode:= cur_state.mode_field
@@ -7471,7 +7461,7 @@ continue
 }
 if a==cancel||a==big_cancel{
 /*361:*/
-//line goweave.w:5577
+//line goweave.w:5567
 
 for;c> 0;c--{
 out_str("\\1")
@@ -7483,7 +7473,7 @@ out_str("\\2")
 }
 
 /*:361*/
-//line goweave.w:5543
+//line goweave.w:5533
 
 goto reswitch
 }
@@ -7493,7 +7483,7 @@ if out_ptr> 3&&compare_runes(out_buf[out_ptr-3:out_ptr+1],[]rune("\\Y\\B"))==0{
 goto reswitch
 }
 /*361:*/
-//line goweave.w:5577
+//line goweave.w:5567
 
 for;c> 0;c--{
 out_str("\\1")
@@ -7505,7 +7495,7 @@ out_str("\\2")
 }
 
 /*:361*/
-//line goweave.w:5551
+//line goweave.w:5541
 
 out('\\')
 out(b-cancel+'0')
@@ -7533,12 +7523,12 @@ b= a
 }
 
 /*:360*/
-//line goweave.w:5524
+//line goweave.w:5514
 
 }
 
 /*:359*/
-//line goweave.w:5441
+//line goweave.w:5431
 
 case quoted_char:
 out(cur_state.tok_field[0].(rune))
@@ -7550,7 +7540,7 @@ out(a)
 }
 
 /*:356*//*368:*/
-//line goweave.w:5734
+//line goweave.w:5724
 
 func phase_two(){
 reset_input()
@@ -7565,11 +7555,11 @@ finish_line()
 flush_buffer(0,false,false)
 for!input_has_ended{
 /*371:*/
-//line goweave.w:5782
+//line goweave.w:5772
 {
 section_count++
 /*372:*/
-//line goweave.w:5800
+//line goweave.w:5790
 
 if loc-1>=len(buffer)||buffer[loc-1]!='*'{
 out_str("\\M")
@@ -7606,11 +7596,11 @@ out_section(section_count)
 out_str("}")
 
 /*:372*/
-//line goweave.w:5784
+//line goweave.w:5774
 
 save_position()
 /*373:*/
-//line goweave.w:5838
+//line goweave.w:5828
 
 for{
 next_control= copy_TeX()
@@ -7639,16 +7629,16 @@ break
 }
 
 /*:373*/
-//line goweave.w:5786
+//line goweave.w:5776
 
 /*374:*/
-//line goweave.w:5868
+//line goweave.w:5858
 
 space_checked= false
 for next_control<=format_code{
 init_stack()
 /*377:*/
-//line goweave.w:5923
+//line goweave.w:5913
 {
 doing_format= true
 if buffer[loc-1]=='s'||buffer[loc-1]=='S'{
@@ -7680,7 +7670,7 @@ err_print("! Improper format definition")
 }
 
 /*:377*/
-//line goweave.w:5872
+//line goweave.w:5862
 
 outer_parse()
 finish_Go(format_visible)
@@ -7689,10 +7679,10 @@ doing_format= false
 }
 
 /*:374*/
-//line goweave.w:5787
+//line goweave.w:5777
 
 /*379:*/
-//line goweave.w:5960
+//line goweave.w:5950
 
 this_section= -1
 if next_control<=section_name{
@@ -7703,7 +7693,7 @@ next_control= get_next()
 }else{
 this_section= cur_section
 /*380:*/
-//line goweave.w:5982
+//line goweave.w:5972
 
 for{
 next_control= get_next()
@@ -7740,13 +7730,13 @@ app_scrap(dead,no_math)
 
 
 /*:380*/
-//line goweave.w:5970
+//line goweave.w:5960
 
 }
 for next_control<=section_name{
 outer_parse()
 /*381:*/
-//line goweave.w:6017
+//line goweave.w:6007
 
 if next_control<section_name{
 err_print("! You can't do that in Go text")
@@ -7759,17 +7749,17 @@ next_control= get_next()
 }
 
 /*:381*/
-//line goweave.w:5974
+//line goweave.w:5964
 
 }
 finish_Go(true)
 }
 
 /*:379*/
-//line goweave.w:5788
+//line goweave.w:5778
 
 /*382:*/
-//line goweave.w:6031
+//line goweave.w:6021
 
 if this_section!=-1{
 cur_xref= name_dir[this_section].xref
@@ -7788,10 +7778,10 @@ footnote(0)
 }
 
 /*:382*/
-//line goweave.w:5789
+//line goweave.w:5779
 
 /*386:*/
-//line goweave.w:6109
+//line goweave.w:6099
 
 out_str("\\fi")
 finish_line()
@@ -7799,18 +7789,18 @@ finish_line()
 flush_buffer(0,false,false)
 
 /*:386*/
-//line goweave.w:5790
+//line goweave.w:5780
 
 }
 
 /*:371*/
-//line goweave.w:5747
+//line goweave.w:5737
 
 }
 }
 
 /*:368*//*369:*/
-//line goweave.w:5759
+//line goweave.w:5749
 
 func save_position(){
 save_line= out_line
@@ -7826,7 +7816,7 @@ space_checked= true
 }
 
 /*:369*//*376:*/
-//line goweave.w:5889
+//line goweave.w:5879
 
 
 
@@ -7862,7 +7852,7 @@ tok_mem= tok_mem[:0]
 }
 
 /*:376*//*384:*/
-//line goweave.w:6060
+//line goweave.w:6050
 
 
 func footnote(flag int32){
@@ -7883,7 +7873,7 @@ default:
 out('A')
 }
 /*385:*/
-//line goweave.w:6087
+//line goweave.w:6077
 
 q:= cur_xref
 if xmem[xmem[q].xlink].num> flag{
@@ -7907,13 +7897,13 @@ out('s')
 }
 
 /*:385*/
-//line goweave.w:6079
+//line goweave.w:6069
 
 out('.')
 }
 
 /*:384*//*388:*/
-//line goweave.w:6123
+//line goweave.w:6113
 
 func phase_three(){
 if!flags['x']{
@@ -7937,7 +7927,7 @@ idx_file= f
 }
 if change_exists{
 /*390:*/
-//line goweave.w:6192
+//line goweave.w:6182
 {
 
 var k_section int32= 0
@@ -7954,7 +7944,7 @@ out('.')
 }
 
 /*:390*/
-//line goweave.w:6145
+//line goweave.w:6135
 
 finish_line()
 finish_line()
@@ -7964,7 +7954,7 @@ finish_line()
 
 active_file= idx_file
 /*392:*/
-//line goweave.w:6223
+//line goweave.w:6213
 {
 for c:= 0;c<=255;c++{
 bucket[c]= -1
@@ -7986,10 +7976,10 @@ bucket[c]= cur_name
 }
 
 /*:392*/
-//line goweave.w:6153
+//line goweave.w:6143
 
 /*403:*/
-//line goweave.w:6335
+//line goweave.w:6325
 
 sort_ptr= 0
 scrap_info= append(scrap_info,scrap{})
@@ -7998,14 +7988,14 @@ for sort_ptr> 0{
 cur_depth= scrap_info[sort_ptr].cat
 if blink[scrap_info[sort_ptr].head]==-1||cur_depth==infinity{
 /*405:*/
-//line goweave.w:6373
+//line goweave.w:6363
 {
 cur_name= scrap_info[sort_ptr].head
 for{
 out_str("\\I")
 
 /*406:*/
-//line goweave.w:6388
+//line goweave.w:6378
 
 switch name_dir[cur_name].ilk{
 case normal:
@@ -8058,13 +8048,13 @@ out_str("\\&")
 }
 out_name(cur_name,true)
 name_done:/*:406*/
-//line goweave.w:6378
+//line goweave.w:6368
 
 /*408:*/
-//line goweave.w:6444
+//line goweave.w:6434
 
 /*410:*/
-//line goweave.w:6473
+//line goweave.w:6463
 
 this_xref= name_dir[cur_name].xref
 cur_xref= 0
@@ -8079,7 +8069,7 @@ break
 }
 
 /*:410*/
-//line goweave.w:6445
+//line goweave.w:6435
 
 for{
 out_str(", ")
@@ -8101,7 +8091,7 @@ out('.')
 finish_line()
 
 /*:408*/
-//line goweave.w:6379
+//line goweave.w:6369
 
 cur_name= blink[cur_name]
 if cur_name==-1{
@@ -8112,11 +8102,11 @@ sort_ptr--
 }
 
 /*:405*/
-//line goweave.w:6342
+//line goweave.w:6332
 
 }else{
 /*404:*/
-//line goweave.w:6348
+//line goweave.w:6338
 {
 next_name:= scrap_info[sort_ptr].head
 for{
@@ -8143,13 +8133,13 @@ unbucket(cur_depth+1)
 }
 
 /*:404*/
-//line goweave.w:6344
+//line goweave.w:6334
 
 }
 }
 
 /*:403*/
-//line goweave.w:6154
+//line goweave.w:6144
 
 finish_line()
 active_file.Close()
@@ -8166,11 +8156,11 @@ scn_file= f
 }
 active_file= scn_file
 /*413:*/
-//line goweave.w:6508
+//line goweave.w:6498
 section_print(name_root)
 
 /*:413*/
-//line goweave.w:6169
+//line goweave.w:6159
 
 finish_line()
 active_file.Close()
@@ -8192,7 +8182,7 @@ check_complete()
 }
 
 /*:388*//*402:*/
-//line goweave.w:6311
+//line goweave.w:6301
 
 
 func unbucket(d int32){
@@ -8218,7 +8208,7 @@ bucket[collate[c]]= -1
 }
 
 /*:402*//*412:*/
-//line goweave.w:6490
+//line goweave.w:6480
 
 
 func section_print(p int32){
@@ -8238,7 +8228,7 @@ section_print(name_dir[p].rlink)
 }
 
 /*:412*//*414:*/
-//line goweave.w:6513
+//line goweave.w:6503
 
 func print_stats(){
 fmt.Println("\nMemory usage statistics:\n")

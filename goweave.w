@@ -3312,11 +3312,10 @@ if isCat(pp,lpar) {
 		for i:=0;i<c;i++ {
 			if isCat(pp+1+i,ParameterList) {
 				app1(pp+1+i)
-			} else if isCat(pp+1+i, comma) {
+			} else if isCat(pp+1+i,comma) {
+				app1(pp+1+i)
 				app(opt)
 				app('9')
-				app1(pp+1+i)
-				app(break_space)
 			}			
 		}
 		reduce(pp,2+c,Parameters,0,20)
@@ -3332,10 +3331,9 @@ if isCat(pp,ParameterDecl) {
 	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ParameterDecl,mand:true})
 	for i:=0;i<c;i++ {
 		if isCat(pp+1+i,comma) {
+			app1(pp+1+i)
 			app(opt)
 			app('9')
-			app1(pp+1+i)
-			app(break_space)
 		} else {
 			app1(pp+1+i)
 		}		
@@ -3450,10 +3448,9 @@ if isCat(pp,identifier) {
 	app1(pp)
 	for i:=0;i<c;i++ {
 		if isCat(pp+1+i,comma) {
+			app1(pp+1+i)
 			app(opt)
 			app('9')
-			app1(pp+1+i)
-			app(break_space)
 		} else {
 			app1(pp+1+i)
 		}
@@ -3468,10 +3465,9 @@ if isCat(pp,Expression) {
 	app1(pp)
 	for i:=0;i<c;i++ {
 		if isCat(pp+1+i,comma) {
+			app1(pp+1+i)
 			app(opt)
 			app('9')
-			app1(pp+1+i)
-			app(break_space)
 		} else if isCat(pp+1+i,Expression) {
 			app1(pp+1+i)
 		}
@@ -3565,10 +3561,9 @@ if isCat(pp,lbrace) {
 			if isCat(pp+1+i,ElementList) {
 				app1(pp+1+i)
 			} else if isCat(pp+1+i,comma) {
+				app1(pp+1+i)
 				app(opt)
 				app('9')
-				app1(pp+1+i)
-				app(break_space)
 			}
 		}
 		app1(pp+1+c)
@@ -3583,10 +3578,9 @@ if isCat(pp,Element) {
 	app1(pp)
 	for i:=0;i<c;i++ {
 		if isCat(pp+1+i,comma) {
+			app1(pp+1+i)
 			app(opt)
 			app('9')
-			app1(pp+1+i)
-			app(break_space)
 		} else if isCat(pp+1+i,Element) {
 			app1(pp+1+i)
 		}
@@ -4054,10 +4048,9 @@ if isCat(pp,case_token) && isCat(pp+1,Type) {
 	app1(pp+1)
 	for i:=0;i<c;i++ {
 		if isCat(pp+2+i,comma) {
+			app1(pp+2+i)
 			app(opt)
 			app('9')
-			app1(pp+2+i)
-			app(break_space)
 		} else {
 			app1(pp+2+i)
 		}
@@ -4526,10 +4519,9 @@ if isCat(pp,identifier) && isCat(pp+1,lpar) {
 		app1(pp+1)
 		for i:=0;i<c;i++ {
 			if isCat(pp+2+i,comma) {
+				app1(pp+2+i)
 				app(opt)
 				app('9')
-				app1(pp+2+i)
-				app(break_space)
 			} else {
 				app1(pp+2+i)
 			}
@@ -4546,10 +4538,9 @@ if isCat(pp,Type) {
 	app1(pp)
 	for i:=0;i<c;i++ {
 		if isCat(pp+1+i,comma) {
+			app1(pp+1+i)
 			app(opt)
 			app('9')
-			app1(pp+1+i)
-			app(break_space)
 		} else {
 			app1(pp+1+i)
 		}
@@ -5024,9 +5015,8 @@ case col_eq:
 	app_str("\\K")
 	@+app_scrap(col_eq,yes_math)
 case direct:
-	app_str("\\langle")
-	app('-')
-	@+app_scrap(direct,maybe_math)
+	app_str("\\leftarrow")
+	@+app_scrap(direct,yes_math)
 case and_not:
 	app_str("&^")
 	@+app_scrap(mul_op,yes_math)
