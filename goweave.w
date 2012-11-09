@@ -1765,7 +1765,6 @@ const (
 
 const (
 	zero rune = iota
-	Type rune = iota
 	ArrayType rune = iota
 	StructType rune = iota
 	PointerType rune = iota
@@ -1846,6 +1845,7 @@ const (
 	PackageName rune = iota
 	ImportDecl rune = iota
 	ImportSpec rune = iota
+	Type rune = iota
 	package_token rune = iota /* denotes \.{package}*/
 	import_token rune = iota /* denotes \&{import} */
 	type_token rune = iota /* \&{type} */
@@ -3785,7 +3785,7 @@ if isCat(pp,case_token) {
 
 @ @<Cases for |RecvStmt|@>=
 if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,Expression) {
-	reduce(pp,3,RecvStmt,0,62,pp,break_space,pp+1,break_space,pp+2)
+	reduce(pp,3,RecvStmt,0,62,pp,pp+1,pp+2)
 } else if isCat(pp,Expression) {
 	reduce(pp,1,RecvStmt,0,62,pp)
 }
@@ -3851,7 +3851,7 @@ if isCat(pp,for_token) {
 p:=pp
 var tok_mem []interface{}
 if isCat(pp,SimpleStmt) {
-	tok_mem=append(tok_mem,pp,break_space)
+	tok_mem=append(tok_mem,pp)
 	pp++
 } else {
 	rollback()
@@ -3861,7 +3861,7 @@ if isCat(pp,semi) {
 	pp++
 	@<Making copy...@>
 	if isCat(pp,Expression) {
-		tok_mem=append(tok_mem,pp,break_space)
+		tok_mem=append(tok_mem,break_space,pp)
 		pp++
 	} else {
 		rollback()
@@ -3871,7 +3871,7 @@ if isCat(pp,semi) {
 		pp++
 		@<Making copy...@>
 		if isCat(pp,SimpleStmt) {
-			tok_mem=append(tok_mem,pp)
+			tok_mem=append(tok_mem,break_space,pp)
 			pp++
 		} else {
 			rollback()
@@ -3883,7 +3883,7 @@ pp=p
 
 @ @<Cases for |RangeClause|@>=
 if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,range_token) && isCat(pp+3,Expression) {
-	reduce(pp,4,RangeClause,0,66,pp,pp+1,break_space,pp+2,break_space,pp+3)
+	reduce(pp,4,RangeClause,0,66,pp,pp+1,pp+2,break_space,pp+3)
 }
 
 @ Tests for |for|
