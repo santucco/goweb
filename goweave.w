@@ -304,22 +304,6 @@ func set_file_flag(p int32) {
 	name_dir[p].xref = int32(len(xmem)-1)
 }
 
-@ A third large area of memory is used for sixteen-bit `tokens', which appear
-in short lists similar to the strings of characters in |byte_mem|. Token lists
-are used to contain the result of \GO/ code translated into \TEX/ form;
-further details about them will be explained later.
-
-@ @<Global...@>=
-var tok_mem []interface{} /* tokens */
-//var tok_start []int32 /* directory into |tok_mem| */
-var max_tok_ptr int /* largest length of |tok_mem| */
-//var max_text_ptr int /* largest length of |tok_start| */
-
-@ @<Set init...@>=
-//tok_start=append(tok_start, 0)
-max_tok_ptr=1
-//max_text_ptr=1
-
 @ Here are the three procedures needed to complete |id_lookup|:
 @c
 func names_match(
@@ -1095,12 +1079,12 @@ func outer_xref() {
 			Go_xref(ignore)
 		} else {
 			is_long_comment:=(next_control==begin_comment)
-			bal:=copy_comment(is_long_comment,1)/* brace level in comment */
+			bal,res:=copy_comment(is_long_comment,1,nil)/* brace level in comment */
 			next_control='|'
 			for bal>0 {
 				Go_xref(section_name) /* do not reference section names in comments */
 				if next_control=='|' {
-					 bal=copy_comment(is_long_comment,bal)
+					 bal,res=copy_comment(is_long_comment,bal,res)
 				} else { 
 					bal=0 /* an error message will occur in phase two */
 				}
@@ -1619,8 +1603,9 @@ into the output buffer, this function copies it into the token memory
 @ @c
 /* copies \TEX/ code in comments */
 func copy_comment(
-	is_long_comment bool, /* is this a traditional \GO/ comment? */
-	bal int /* brace balance */) int {
+	is_long_comment bool,
+	bal int /* brace balance */,
+	tok_mem []interface{} ) (int,[]interface{}) {
 	for {
 		if loc>=len(buffer) {
 			if is_long_comment {
@@ -1641,16 +1626,16 @@ func copy_comment(
 		c:=buffer[loc]
 		loc++
 		if c=='|' {
-			return bal
+			return bal,tok_mem
 		}
 		if is_long_comment {
 			@<Check for end of comment@>
 		}
 		if phase==2 {
 			if c>0177 {
-				app(quoted_char)
+				tok_mem=append(tok_mem,quoted_char)
 			}
-			app(c)
+			tok_mem=append(tok_mem,c)
 		}
 		@<Copy special things when |c=='@@', '\\'|@>
 		if c=='{' {
@@ -1696,7 +1681,7 @@ if c=='@@' {
 	}
 } else if c=='\\' && loc < len(buffer) && buffer[loc]!='@@' {
 	if phase==2 {
-		app(buffer[loc])
+		tok_mem=append(tok_mem,buffer[loc])
 	}
 	loc++
 }
@@ -1707,10 +1692,10 @@ enough right braces to keep \TEX/ happy.
 @<Clear |bal|...@>=
 if phase==2 {
 	for bal--; bal>=0; bal-- {
-		app('}')
+		tok_mem=append(tok_mem,'}')
 	}
 }
-return 0
+return 0,tok_mem
 
 @** Parsing.
 The most intricate part of \.{GOWEAVE} is its mechanism for converting
@@ -2290,66 +2275,6 @@ const (
 	no_math rune = iota /* should be in horizontal mode */
 )
 
-@ @c 
-func app(a interface{}) {
-	tok_mem = append(tok_mem, a)
-}
-
-func app1(a int) {
-	tok_mem = append(tok_mem, scrap_info[a].trans)
-}
-
-@ @<Global...@>=
-var cur_mathness int32
-var init_mathness int32
-
-@ @c
-func app_str(s string) {
-	for _, v := range s {
-		app(v)
-	}
-}
-
-func big_app(a rune) {
-	if a==' ' || (a>=big_cancel && a<=big_force) /* non-math token */ {
-		if cur_mathness==maybe_math { 
-			init_mathness=no_math
-		} else if cur_mathness==yes_math { 
-			app_str("{}$") 
-		}
-		cur_mathness=no_math
-	} else {
-		if cur_mathness==maybe_math { 
-			init_mathness=yes_math
-		} else if cur_mathness==no_math { 
-			app_str("${}") 
-		}
-		cur_mathness=yes_math
-	}
-	app(a)
-}
-
-func big_app1(a int) {
-	switch scrap_info[a].mathness % 4 { /* left boundary */
-	case no_math:
-		if cur_mathness==maybe_math {
-			init_mathness=no_math
-		} else if cur_mathness==yes_math { 
-			app_str("{}$") 
-		}
-		cur_mathness=scrap_info[a].mathness / 4 /* right boundary */
-	case yes_math:
-		if cur_mathness==maybe_math { 
-			init_mathness=yes_math 
-		} else if cur_mathness==no_math {
-			app_str("${}")
-		}
-		cur_mathness=scrap_info[a].mathness / 4 /* right boundary */
-	case maybe_math: /* no changes */
-	}
-	app1(a)
-}
-
 @ The function |isCat| checks if the specified index |i| is inside 
 the |scrap_info| and a corresponding scrap has the specified category |cat|
 
@@ -2547,13 +2472,13 @@ code needs to be provided with a proper environment.
 @ @<Match a production at |pp|, or increase |pp| if there is no match@>= {
 	/* not a production with left side length 1 */	
 	if isCat(pp+1,insert) { 
-		squash(pp,2,scrap_info[pp].cat,-2,0)
+		reduce(pp,2,scrap_info[pp].cat,-2,0,pp,pp+1)
 		pp--
 	} else if isCat(pp+2,insert) { 
-		squash(pp+1,2,scrap_info[pp+1].cat,-1,0)
+		reduce(pp+1,2,scrap_info[pp+1].cat,-1,0,pp+1,pp+2)
 		pp--
 	} else if isCat(pp+3,insert) { 
-		squash(pp+2,2,scrap_info[pp+2].cat,0,0)
+		reduce(pp+2,2,scrap_info[pp+2].cat,0,0,pp+2,pp+3)
 		pp--
 	} else {
 		switch scrap_info[pp].cat {
@@ -2712,17 +2637,13 @@ to be performed, followed by |goto found|.
 
 @ @<Cases for |insert|@>=
 if isNotCat(pp+1,zero) {
-	squash(pp,2,scrap_info[pp+1].cat,0,0)
+	reduce(pp,2,scrap_info[pp+1].cat,0,0,pp,pp+1)
 }
 
 @ @<Cases for |PackageClause|@>=
 if isCat(pp,package_token)  && isCat(pp+1,identifier) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
 	make_reserved(pp+1,PackageName)
-	app(big_force)
-	reduce(pp,2,PackageClause,1,1)
+	reduce(pp,2,PackageClause,1,1,pp,break_space,pp+1,big_force)
 }
 
 @ Test for |package|
@@ -2735,30 +2656,25 @@ package main
 @ @<Cases for |ConstDecl|@>= 
 if isCat(pp,const_token) {
 	if isCat(pp+1,ConstSpec) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(big_force)
-		reduce(pp,2,ConstDecl,0,2)
+		reduce(pp,2,ConstDecl,0,2,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:ConstSpec,mand:true},cat_pair{cat:semi,mand:false})	
 		if isCat(pp+2+c,rpar) {
-			app1(pp)
-			app(break_space)
-			app1(pp+1)
-			app(force)
-			app(indent)
+			tok_mem:=append([]interface{}{},pp,pp+1)
 			for i:=0;i<c;i++ {
+				if i==0 {
+					tok_mem=append(tok_mem,force,indent)
+				}
 				if isCat(pp+2+i,ConstSpec) {
-					app1(pp+2+i)
-					app(force)
+					tok_mem=append(tok_mem,pp+2+i,force)
+				}
+				if i==c-1 {
+					tok_mem=append(tok_mem,outdent)
 				}
 			}
-			app(outdent)
-			app1(pp+2+c)
-			app(big_force)
-			reduce(pp,3+c,ConstDecl,0,2)
+			tok_mem=append(tok_mem,pp+2+c,big_force)
+			reduce(pp,3+c,ConstDecl,0,2,tok_mem...)
 		}	
 	}
 }
@@ -2788,30 +2704,25 @@ const u, v float32 = 0, 3
 @ @<Cases for |TypeDecl|@>= 
 if isCat(pp,type_token) {
 	if isCat(pp+1,TypeSpec) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(big_force)
-		reduce(pp,2,TypeDecl,0,3)
+		reduce(pp,2,TypeDecl,0,3,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:TypeSpec,mand:true},cat_pair{cat:semi,mand:false})
 		if isCat(pp+2+c,rpar) {
-			app1(pp)
-			app(break_space)
-			app1(pp+1)
-			app(force)
-			app(indent)
+			tok_mem:=append([]interface{}{},pp,pp+1)
 			for i:=0;i<c;i++ {
+				if i==0 {
+					tok_mem=append(tok_mem,force,indent)
+				}
 				if isCat(pp+2+i,TypeSpec) {
-					app1(pp+2+i)
-					app(force)
+					tok_mem=append(tok_mem,pp+2+i,force)
+				}
+				if i==c-1 {
+					tok_mem=append(tok_mem,outdent)
 				}
 			}
-			app(outdent)
-			app1(pp+2+c)
-			app(big_force)
-			reduce(pp,3+c,TypeDecl,0,3)
+			tok_mem=append(tok_mem,pp+2+c,big_force)
+			reduce(pp,3+c,TypeDecl,0,3,tok_mem...)
 		}
 	} 
 }
@@ -2845,30 +2756,25 @@ type Block interface {
 @ @<Cases for |VarDecl|@>=
 if isCat(pp,var_token) {
 	if isCat(pp+1,VarSpec) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(big_force)
-		reduce(pp,2,VarDecl,0,4)
+		reduce(pp,2,VarDecl,0,4,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:VarSpec,mand:true},cat_pair{cat:semi,mand:false}) 
 		if isCat(pp+2+c,rpar) {
-			app1(pp)
-			app(break_space)
-			app1(pp+1)
-			app(force)
-			app(indent)
+			tok_mem:=append([]interface{}{},pp,pp+1)
 			for i:=0;i<c;i++ {
+				if i==0 {
+					tok_mem=append(tok_mem,force,indent)
+				}
 				if isCat(pp+2+i,VarSpec) {
-					app1(pp+2+i)
-					app(force)
+					tok_mem=append(tok_mem,pp+2+i,force)
+				}
+				if i==c-1 {
+					tok_mem=append(tok_mem,outdent)
 				}
 			}
-			app(outdent)
-			app1(pp+2+c)
-			app(big_force)
-			reduce(pp,3+c,VarDecl,0,4)
+			tok_mem=append(tok_mem,pp+2+c,big_force)
+			reduce(pp,3+c,VarDecl,0,4,tok_mem...)
 		}
 	} 
 }
@@ -2905,30 +2811,25 @@ var _, found = entries[name]
 if isCat(pp,import_token) {
 	@<Making copy...@>
 	if isCat(pp+1,ImportSpec) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(big_force)
-		reduce(pp,2,ImportDecl,0,5)
+		reduce(pp,2,ImportDecl,0,5,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:ImportSpec,mand:true},cat_pair{cat:semi,mand:false})
 		if isCat(pp+2+c,rpar) {
-			app1(pp)
-			app(break_space)
-			app1(pp+1)
-			app(force)
-			app(indent)
+			tok_mem:=append([]interface{}{},pp,pp+1)
 			for i:=0;i<c;i++ {
+				if i==0 {
+					tok_mem=append(tok_mem,force,indent)
+				}
 				if isCat(pp+2+i,ImportSpec) {
-					app1(pp+2+i)
-					app(force)
+					tok_mem=append(tok_mem,pp+2+i,force)
+				}
+				if i==c-1 {
+					tok_mem=append(tok_mem,outdent)
 				}
 			}
-			app(outdent)
-			app1(pp+2+c)
-			app(big_force)
-			reduce(pp,3+c,ImportDecl,0,5)	
+			tok_mem=append(tok_mem,pp+2+c,big_force)
+			reduce(pp,3+c,ImportDecl,0,5,tok_mem...)	
 		} 
 	}
 }
@@ -2964,19 +2865,10 @@ if isCat(pp,func_token) && isCat(pp+1,identifier) && isCat(pp+2,Signature){
 	@<Making copy...@>
 	pp-=3
 	if isCat(pp+3,Block) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app1(pp+2)	
-		app1(pp+3)	
-		reduce(pp,4,FunctionDecl,0,6)
+		reduce(pp,4,FunctionDecl,0,6,pp,break_space,pp+1,pp+2,pp+3)	
 	} else {
 		rollback()
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app1(pp+2)	
-		reduce(pp,3,FunctionDecl,0,6)
+		reduce(pp,3,FunctionDecl,0,6,pp,break_space,pp+1,pp+2)	
 	}
 }
 
@@ -3001,24 +2893,10 @@ if isCat(pp,func_token) && isCat(pp+1,Receiver) && isCat(pp+2,identifier) && isC
 	@<Making copy...@>
 	pp-=3
 	if isCat(pp+4,Block) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		app1(pp+3)
-		app1(pp+4)
-		app(force)
-		reduce(pp,5,MethodDecl,0,7)
+		reduce(pp,5,MethodDecl,0,7,pp,break_space,pp+1,break_space,pp+2,pp+3,pp+4,force)
 	} else {
 		rollback()
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		app1(pp+3)
-		reduce(pp,4,MethodDecl,0,7)
+		reduce(pp,4,MethodDecl,0,7,pp,break_space,pp+1,break_space,pp+2,pp+3)
 	}
 }
 
@@ -3042,32 +2920,14 @@ func (p *Point) Scale(factor float64) {
 if isCat(pp,lpar) {
 	if isCat(pp+1,identifier) {
 		if isCat(pp+2,asterisk) && isCat(pp+3,identifier) && isCat(pp+4,rpar){
-			app1(pp)
-			app1(pp+1)
-			app(break_space)
-			app1(pp+2)
-			app1(pp+3)
-			app1(pp+4)
-			reduce(pp,5,Receiver,0,8)
+			reduce(pp,5,Receiver,0,8,pp,pp+1,pp+2,pp+3,pp+4)
 		} else if rollback(); isCat(pp+2,identifier) && isCat(pp+3,rpar) {
-			app1(pp)
-			app1(pp+1)
-			app(break_space)
-			app1(pp+2)
-			app1(pp+3)
-			reduce(pp,4,Receiver,0,8)
+			reduce(pp,4,Receiver,0,8,pp,pp+1,pp+2,pp+3)
 		} else if rollback(); isCat(pp+2,rpar) {
-			app1(pp)
-			app1(pp+1)
-			app1(pp+2)
-			reduce(pp,3,Receiver,0,8)
+			reduce(pp,3,Receiver,0,8,pp,pp+1,pp+2)
 		}
 	} else if rollback(); isCat(pp+1,asterisk) && isCat(pp+2,identifier) && isCat(pp+3,rpar) {
-		app1(pp)
-		app1(pp+1)
-		app1(pp+2)
-		app1(pp+3)
-		reduce(pp,4,Receiver,0,8)
+		reduce(pp,4,Receiver,0,8,pp,pp+1,pp+2,pp+3)
 	}
 }
 
@@ -3077,36 +2937,19 @@ if isCat(pp,IdentifierList) {
 	@<Making copy...@>
 	pp--
 	if isCat(pp+1,Type) && isCat(pp+2,eq) && isCat(pp+3,ExpressionList) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		app(break_space)
-		app1(pp+3)
-		reduce(pp,4,ConstSpec,0,9)
+		reduce(pp,4,ConstSpec,0,9,pp,break_space,pp+1,break_space,pp+2,break_space,pp+3)
 	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,ConstSpec,0,9)
+		reduce(pp,3,ConstSpec,0,9,pp,break_space,pp+1,break_space,pp+2)
 	}
 } else if rollback(); isCat(pp, section_scrap) {
-	app1(pp)
-	reduce(pp,1,ConstSpec,0,9)
+	reduce(pp,1,ConstSpec,0,9,pp)
 }
 
 @ @<Cases for |TypeSpec|@>=
 if isCat(pp,identifier) && isCat(pp+1,Type) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,TypeSpec,0,10)
+	reduce(pp,2,TypeSpec,0,10,pp,break_space,pp+1)
 } else if rollback(); isCat(pp, section_scrap) {
-	app1(pp)
-	reduce(pp,1,TypeSpec,0,10)
+	reduce(pp,1,TypeSpec,0,10,pp)
 }
 
 @ @<Cases for |VarSpec|@>=
@@ -3116,31 +2959,15 @@ if isCat(pp,IdentifierList) {
 	pp--
 	if isCat(pp+1,Type) {
 		if isCat(pp+2,eq) && isCat(pp+3,ExpressionList) {
-			app1(pp)
-			app(break_space)
-			app1(pp+1)
-			app(break_space)
-			app1(pp+2)
-			app(break_space)
-			app1(pp+3)
-			reduce(pp,4,VarSpec,0,11)
+			reduce(pp,4,VarSpec,0,11,pp,break_space,pp+1,pp+2,pp+3)
 		} else {
-			app1(pp)
-			app(break_space)
-			app1(pp+1)
-			reduce(pp,2,VarSpec,0,11)
+			reduce(pp,2,VarSpec,0,11,pp,break_space,pp+1)
 		}
 	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,VarSpec,0,11)
+		reduce(pp,3,VarSpec,0,11,pp,pp+1,pp+2)
 	}
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,VarSpec,0,11)	
+	reduce(pp,1,VarSpec,0,11,pp)	
 }
 
 @ @<Cases for |ImportSpec|@>=
@@ -3148,79 +2975,57 @@ if isCat(pp,identifier) && isCat(pp+1,str) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
 	make_reserved(pp,PackageName)
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2+c,ImportSpec,0,12)
+	reduce(pp,2+c,ImportSpec,0,12,pp,break_space,pp+1)
 } else if isCat(pp,dot) && isCat(pp+1,str) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2+c,ImportSpec,0,12)
+	reduce(pp,2+c,ImportSpec,0,12,pp,break_space,pp+1)
 } else if isCat(pp,str) {
-	app1(pp)
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:semi,mand:false})
-	reduce(pp,1+c,ImportSpec,0,12)
+	reduce(pp,1+c,ImportSpec,0,12,pp)
 } else if isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,ImportSpec,0,12)
+	reduce(pp,1,ImportSpec,0,12,pp)
 }
 
 @ @<Cases for |FieldDecl|@>=
 if isCat(pp,IdentifierList) && isCat(pp+1,Type) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
+	tok_mem:=append([]interface{}{},pp,break_space,pp+1)
 	p:=pp+2
 	if isCat(p,str) {
-		app(break_space)
-		app1(p)
+		tok_mem=append(tok_mem,break_space,pp+2)
 		p++
 	}
-	reduce(pp,p-pp,FieldDecl,0,13)
+	reduce(pp,p-pp,FieldDecl,0,13,tok_mem...)
 } else if rollback(); isCat(pp,AnonymousField) {
-	app1(pp)
+	tok_mem:=append([]interface{}{},pp)
 	p:=pp+1
 	if isCat(p,str) {
-		app(break_space)
-		app1(p)
+		tok_mem=append(tok_mem,pp,break_space,pp+1,break_space,pp+1)
 		p++
 	}
-	reduce(pp,p-pp,FieldDecl,0,13)
+	reduce(pp,p-pp,FieldDecl,0,13,tok_mem...)
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,FieldDecl,0,13)
+	reduce(pp,1,FieldDecl,0,13,pp)
 }
 
 @ @<Cases for |AnonymousField|@>=
 if isCat(pp,asterisk) && isCat(pp+1,Type) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,AnonymousField,0,14)
+	reduce(pp,2,AnonymousField,0,14,pp,pp+1)
 } else if rollback(); isCat(pp,Type) {
-	app1(pp)
-	reduce(pp,1,AnonymousField,0,14)
+	reduce(pp,1,AnonymousField,0,14,pp)
 }
 
 @ @<Cases for |Type|@>=
 if  isCat(pp,ArrayType) || isCat(pp,StructType) || isCat(pp,PointerType) || 
 	isCat(pp,FunctionType) || isCat(pp,InterfaceType) || isCat(pp,SliceType) || 
 	isCat(pp,MapType) || isCat(pp,ChannelType) || isCat(pp,QualifiedIdent) {
-	app1(pp)
-	reduce(pp,1,Type,0,15)
+	reduce(pp,1,Type,0,15,pp)
 }
 
 @ @<Cases for |ArrayType|@>=
 if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app(break_space)
-	app1(pp+3)
-	reduce(pp,4,ArrayType,0,16)
+	reduce(pp,4,ArrayType,0,16,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |StructType|@>=
@@ -3228,19 +3033,17 @@ if isCat(pp,struct_token) && isCat(pp+1,lbrace) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:FieldDecl,mand:true},cat_pair{cat:semi,mand:false})
 	if isCat(pp+2+c,rbrace) {
-		app1(pp)
-		app1(pp+1)
-		app(force)
-		app(indent)
+		tok_mem:=append([]interface{}{},pp,pp+1)
 		for i:=0;i<c;i++ {
+			if i==0 {
+				tok_mem=append(tok_mem,force,indent)
+			}
 			if isCat(pp+2+i,FieldDecl) {
-				app1(pp+2+i)
-				app(force)
+				tok_mem=append(tok_mem,pp+2+i,force)
 			}
 		}
-		app(outdent)
-		app1(pp+2+c)
-		reduce(pp,3+c,StructType,0,17)
+		tok_mem=append(tok_mem,outdent,pp+2+c)
+		reduce(pp,3+c,StructType,0,17,tok_mem...)
 	}
 }
 
@@ -3278,9 +3081,7 @@ struct {
 
 @ @<Cases for |PointerType|@>=
 if isCat(pp,asterisk) && isCat(pp+1,Type) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,PointerType,0,18)
+	reduce(pp,2,PointerType,0,18,pp,pp+1)
 }
 
 @ @<Cases for |Signature|@>=
@@ -3289,18 +3090,13 @@ if isCat(pp,Parameters) {
 	@<Making copy...@>
 	pp--
 	if isCat(pp+1,Type) || isCat(pp+1,Parameters) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		reduce(pp,2,Signature,0,19)
+		reduce(pp,2,Signature,0,19,pp,break_space,pp+1)
 	} else {
 		rollback()
-		app1(pp)
-		reduce(pp,1,Signature,0,19)
+		reduce(pp,1,Signature,0,19,pp)
 	}
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,Signature,0,19)
+	reduce(pp,1,Signature,0,19,pp)
 }
 
 @ @<Cases for |Parameters|@>=
@@ -3308,136 +3104,102 @@ if isCat(pp,lpar) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:ParameterList,mand:true},cat_pair{cat:comma,mand:false})
  	if isCat(pp+1+c,rpar) {
-		app1(pp)
+		tok_mem:=append([]interface{}{},pp)
 		for i:=0;i<c;i++ {
-			if isCat(pp+1+i,ParameterList) {
-				app1(pp+1+i)
-			} else if isCat(pp+1+i,comma) {
-				app1(pp+1+i)
-				app(opt)
-				app('9')
-			}			
+			tok_mem=append(tok_mem,pp+1+i)
 		}
-		reduce(pp,2+c,Parameters,0,20)
+		tok_mem=append(tok_mem,pp+1+c)
+		reduce(pp,2+c,Parameters,0,20,tok_mem...)
 	}
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,Signature,0,20)
+	reduce(pp,1,Signature,0,20,pp)
 }
 
 @ @<Cases for |ParameterList|@>=
 if isCat(pp,ParameterDecl) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ParameterDecl,mand:true})
+	tok_mem:=append([]interface{}{},pp)	
 	for i:=0;i<c;i++ {
-		if isCat(pp+1+i,comma) {
-			app1(pp+1+i)
-			app(opt)
-			app('9')
-		} else {
-			app1(pp+1+i)
-		}		
+		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,ParameterList,0,21)
+	reduce(pp,1+c,ParameterList,0,21,tok_mem...)
 }
 
 @ @<Cases for |ParameterDecl|@>=
-if isCat(pp,dot_dot_dot) && isCat(pp+1,Type) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,ParameterDecl,0,22)
+if isCat(pp,IdentifierList) && isCat(pp+1,dot_dot_dot) &&  isCat(pp+2,Type) {
+	reduce(pp,3,ParameterDecl,0,22,pp,break_space,pp+1,pp+2)
+} else if rollback(); isCat(pp,IdentifierList) && isCat(pp+1,Type) {
+	reduce(pp,2,ParameterDecl,0,22,pp,break_space,pp+1)
+} else if rollback(); isCat(pp,dot_dot_dot) &&  isCat(pp+1,Type) {
+	reduce(pp,2,ParameterDecl,0,22,pp,pp+1)
 } else if rollback(); isCat(pp,Type) {
-	app1(pp)
-	reduce(pp,1,ParameterDecl,0,22)
-} else if isCat(pp,IdentifierList) { 
-	pp++
-	@<Making copy...@>
-	pp--
-	if isCat(pp+1,dot_dot_dot) && isCat(pp+2,Type){
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app1(pp+2)
-		reduce(pp,3,ParameterDecl,0,22)
-	} else if rollback(); isCat(pp+1,Type) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		reduce(pp,2,ParameterDecl,0,22)
-	}
-} 
+	reduce(pp,1,ParameterDecl,0,22,pp)
+}
 
+break
+p:=pp
+var tok_mem []interface{}
+if isCat(pp,IdentifierList) {
+	tok_mem=append(tok_mem,pp,break_space)
+	pp++
+} else {
+	rollback()
+}
+if isCat(pp,dot_dot_dot) {
+	tok_mem=append(tok_mem,pp)
+	pp++
+}
+if isCat(pp,Type) {
+	tok_mem=append(tok_mem,pp)
+	pp+=1
+	reduce(p,pp-p,ParameterDecl,0,22,tok_mem...)
+}
+pp=p
 
 @ @<Cases for |InterfaceType|@>=
 if isCat(pp,interface_token) && isCat(pp+1,lbrace) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:MethodSpec,mand:true},cat_pair{cat:semi,mand:false})
 	if isCat(pp+2+c,rbrace) {
-		app1(pp)
-		app1(pp+1)
-		app(indent)
+		tok_mem:=append([]interface{}{},pp,pp+1,force,indent)
 		for i:=0;i<c;i++ {
 			if isCat(pp+2+i,MethodSpec) {
-				app1(pp+2+i)
-				app(force)
+				tok_mem=append(tok_mem,pp+2+i,force)
 			}
 		}
-		app(outdent)
-		app1(pp+2+c)
-		reduce(pp,3+c,InterfaceType,0,23)
+		tok_mem=append(tok_mem,outdent,pp+2+c)
+		reduce(pp,3+c,InterfaceType,0,23,tok_mem...)
 	}
 }
 
 @ @<Cases for |MethodSpec|@>=
 if isCat(pp,identifier) && isCat(pp+1,Signature) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,MethodSpec,0,24)
+	reduce(pp,2,MethodSpec,0,24,pp,pp+1)
 } else if rollback(); isCat(pp,Type) {
-	app1(pp)
-	reduce(pp,1,MethodSpec,0,24)	
+	reduce(pp,1,MethodSpec,0,24,pp)	
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,MethodSpec,0,24)	
+	reduce(pp,1,MethodSpec,0,24,pp)	
 }
 
 @ @<Cases for |SliceType|@>=
 if isCat(pp,lbracket) && isCat(pp+1,rbracket) && isCat(pp+2,Type) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,SliceType,0,25)
+	reduce(pp,3,SliceType,0,25,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |MapType|@>=
 if isCat(pp,map_token) && isCat(pp+1,lbracket) && isCat(pp+2,Type) && isCat(pp+3,rbracket) && isCat(pp+4,Type) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app1(pp+3)
-	app1(pp+4)
-	reduce(pp,5,MapType,0,26)
+	reduce(pp,5,MapType,0,26,pp,pp+1,pp+2,pp+3,pp+4)
 }
 
 @ @<Cases for |ChannelType|@>=
 if isCat(pp,direct) && isCat(pp+1,chan_token) && isCat(pp+2,Type) {
-	app1(pp)
-	app1(pp+1)
-	app(break_space)
-	app1(pp+2)
-	reduce(pp,3,ChannelType,0,27)
+	reduce(pp,3,ChannelType,0,27,pp,pp+1,break_space,pp+2)
 } else if rollback(); isCat(pp,chan_token) { 
 	if isCat(pp+1,direct) && isCat(pp+2,Type) {
-		app1(pp)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,ChannelType,0,27)
+		reduce(pp,3,ChannelType,0,27,pp,pp+1,pp+2)
 	} else if isCat(pp+1,Type) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		reduce(pp,2,ChannelType,0,27)	
+		reduce(pp,2,ChannelType,0,27,pp,break_space,pp+1)
 	}
 }
 
@@ -3445,63 +3207,41 @@ if isCat(pp,direct) && isCat(pp+1,chan_token) && isCat(pp+2,Type) {
 if isCat(pp,identifier) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:identifier,mand:true}) 
-	app1(pp)
+	tok_mem:=append([]interface{}{},pp)
 	for i:=0;i<c;i++ {
-		if isCat(pp+1+i,comma) {
-			app1(pp+1+i)
-			app(opt)
-			app('9')
-		} else {
-			app1(pp+1+i)
-		}
+		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,IdentifierList,0,28)
+	reduce(pp,1+c,IdentifierList,0,28,tok_mem...)
 } 
 
 @ @<Cases for |ExpressionList|@>=
 if isCat(pp,Expression) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})	
-	app1(pp)
+	tok_mem:=append([]interface{}{},pp)
 	for i:=0;i<c;i++ {
-		if isCat(pp+1+i,comma) {
-			app1(pp+1+i)
-			app(opt)
-			app('9')
-		} else if isCat(pp+1+i,Expression) {
-			app1(pp+1+i)
-		}
+		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,ExpressionList,0,29)
+	reduce(pp,1+c,ExpressionList,0,29,tok_mem...)
 }
 
 @ @<Cases for |Expression|@>= 
 if isCat(pp,UnaryExpr) && isCat(pp+1,binary_op) && isCat(pp+2,UnaryExpr) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	app(break_space)
-	app1(pp+2)
-	squash(pp,3,Expression,0,30)
+	reduce(pp,3,Expression,0,30,pp,pp+1,pp+2)
 } else if rollback(); isCat(pp,UnaryExpr) {
-	app1(pp)
-	reduce(pp,1,Expression,0,30)
+	reduce(pp,1,Expression,0,30,pp)
 }
 
 @ @<Cases for |UnaryExpr|@>=
 if isCat(pp,unary_op) && isCat(pp+1,UnaryExpr) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,UnaryExpr,0,31)
+	reduce(pp,2,UnaryExpr,0,31,pp,pp+1)
 } else if isCat(pp,PrimaryExpr) {
-	app1(pp)
-	reduce(pp,1,UnaryExpr,0,31)
+	reduce(pp,1,UnaryExpr,0,31,pp)
 }
 
 @ @<Cases for |binary_op|@>=
 if isCat(pp,rel_op) || isCat(pp,add_op) || isCat(pp,mul_op) || isCat(pp,asterisk) {
-	app1(pp)
-	reduce(pp,1,binary_op,0,32)
+	reduce(pp,1,binary_op,0,32,pp)
 }
 
 @ @<Cases for |PrimaryExpr|@>=
@@ -3510,45 +3250,30 @@ if isCat(pp,BuiltinCall) || isCat(pp,Conversion) || isCat(pp,Operand) {
 	@<Making copy...@>
 	pp--
 	if isCat(pp+1,Selector) || isCat(pp+1,Index) || isCat(pp+1,Slice) || isCat(pp+1,TypeAssertion) || isCat(pp+1,Call) {
-		app1(pp)
-		app1(pp+1)
-		reduce(pp,2,PrimaryExpr,0,33)
+		reduce(pp,2,PrimaryExpr,0,33,pp,pp+1)
 	} else {
 		rollback()
-		app1(pp)
-		reduce(pp,1,PrimaryExpr,0,33)
+		reduce(pp,1,PrimaryExpr,0,33,pp)
 	}
 }
 
 @ @<Cases for |Operand|@>=
 if isCat(pp,str) || isCat(pp,constant) || isCat(pp,QualifiedIdent) || isCat(pp,CompositeLit) || isCat(pp,FunctionLit)  || isCat(pp,MethodExpr) {
-	app1(pp)
-	reduce(pp,1,Operand,0,34)
+	reduce(pp,1,Operand,0,34,pp)
 } else if rollback(); isCat(pp,lpar) && isCat(pp+1,Expression) && isCat(pp+2,rpar) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,Operand,0,34)
+	reduce(pp,3,Operand,0,34,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |CompositeLit|@>=
 if isCat(pp,LiteralType) && isCat(pp+1,LiteralValue) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,CompositeLit,0,35)
+	reduce(pp,2,CompositeLit,0,35,pp,break_space,pp+1)
 }
 
 @ @<Cases for |LiteralType|@>=
 if isCat(pp,Type) {
-	app1(pp)
-	reduce(pp,1,LiteralType,0,36)
+	reduce(pp,1,LiteralType,0,36,pp)
 } else if rollback(); isCat(pp,lbracket) && isCat(pp+1,dot_dot_dot) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app1(pp+3)
-	reduce(pp,4,LiteralType,0,36)
+	reduce(pp,4,LiteralType,0,36,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |LiteralValue|@>=
@@ -3556,18 +3281,12 @@ if isCat(pp,lbrace) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:ElementList,mand:true},cat_pair{cat:comma,mand:true})
 	if isCat(pp+1+c,rbrace) {
-		app1(pp)
+		tok_mem:=append([]interface{}{},pp)
 		for i:=0;i<c;i++ {
-			if isCat(pp+1+i,ElementList) {
-				app1(pp+1+i)
-			} else if isCat(pp+1+i,comma) {
-				app1(pp+1+i)
-				app(opt)
-				app('9')
-			}
+			tok_mem=append(tok_mem,pp+1+i)
 		}
-		app1(pp+1+c)
-		reduce(pp,2+c,LiteralValue,0,37)
+		tok_mem=append(tok_mem,pp+1+c)
+		reduce(pp,2+c,LiteralValue,0,37,tok_mem...)
 	}
 }
 
@@ -3575,17 +3294,11 @@ if isCat(pp,lbrace) {
 if isCat(pp,Element) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Element,mand:true})
-	app1(pp)
+	tok_mem:=append([]interface{}{},pp)
 	for i:=0;i<c;i++ {
-		if isCat(pp+1+i,comma) {
-			app1(pp+1+i)
-			app(opt)
-			app('9')
-		} else if isCat(pp+1+i,Element) {
-			app1(pp+1+i)
-		}
+		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,ElementList,0,38)
+	reduce(pp,1+c,ElementList,0,38,tok_mem...)
 }
 
 @ @<Cases for |Element|@>=
@@ -3594,36 +3307,22 @@ if (isCat(pp,identifier) || isCat(pp,Expression)) && isCat(pp+1,colon) {
 	@<Making copy...@>
 	pp-=2
 	if isCat(pp+2,Expression) {
-		app1(pp)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,Element,0,39)
+		reduce(pp,3,Element,0,39,pp,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+2,LiteralValue) {
-		app1(pp)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,Element,0,39)
+		reduce(pp,3,Element,0,39,pp,pp+1,break_space,pp+2)
 	}
 } else if isCat(pp,Expression) || isCat(pp,LiteralValue) {
-	app1(pp)
-	reduce(pp,1,Element,0,39)
+	reduce(pp,1,Element,0,39,pp)
 }
 
 @ @<Cases for |FunctionLit|@>=
 if isCat(pp,FunctionType) && isCat(pp+1,Block) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,FunctionLit,0,40)
+	reduce(pp,2,FunctionLit,0,40,pp,pp+1)
 }
 
 @ @<Cases for |FunctionType|@>=
 if isCat(pp,func_token) && isCat(pp+1,Signature) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,FunctionType,0,42)
+	reduce(pp,2,FunctionType,0,42,pp,pp+1)
 }
 
 @ @<Cases for |Block|@>=
@@ -3631,18 +3330,14 @@ if isCat(pp,lbrace) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
 	if isCat(pp+1+c,rbrace) {
-		app1(pp)
-		app(big_force)
-		app(indent)
+		tok_mem:=append([]interface{}{},pp,big_force,indent)
 		for i:=0;i<c;i++ {
 			if isCat(pp+1+i,Statement) {
-				app1(pp+1+i)
-				app(force)
+				tok_mem=append(tok_mem,pp+1+i,force)
 			}
 		}
-		app(outdent)
-		app1(pp+1+c)
-		reduce(pp,2+c,Block,0,43)
+		tok_mem=append(tok_mem,outdent,pp+1+c)
+		reduce(pp,2+c,Block,0,43,tok_mem...)
 	}
 }
 
@@ -3662,17 +3357,12 @@ if isCat(pp,ConstDecl) || isCat(pp,VarDecl) || isCat(pp,TypeDecl) ||
 	isCat(pp,GotoStmt) || isCat(pp,fallthrough_token) || isCat(pp,Block) || isCat(pp,IfStmt) || 
 	isCat(pp,ExprSwitchStmt) || isCat(pp,TypeSwitchStmt) || isCat(pp,SelectStmt) || 
 	isCat(pp,ForStmt) || isCat(pp,DeferStmt) {
-	app1(pp)
-	reduce(pp,1,Statement,0,44)
+	reduce(pp,1,Statement,0,44,pp)
 }
 
 @ @<Cases for |LabeledStmt|@>=
 if isCat(pp,identifier) && isCat(pp+1,colon) && isCat(pp+2,Statement) {
-	app1(pp)
-	app1(pp+1)
-	app(break_space)
-	app1(pp+2)
-	reduce(pp,3,LabeledStmt,0,45)
+	reduce(pp,3,LabeledStmt,0,45,pp,pp+1,break_space,pp+2)
 }
 
 
@@ -3685,16 +3375,12 @@ Error: log.Panic("error encountered")
 
 @ @<Cases for |SimpleStmt|@>=
 if isCat(pp,SendStmt) || isCat(pp,IncDecStmt) || isCat(pp,Assignment) || isCat(pp,ShortVarDecl) || isCat(pp,Expression) {
-	app1(pp)
-	reduce(pp,1,SimpleStmt,0,46)
+	reduce(pp,1,SimpleStmt,0,46,pp)
 } 
 
 @ @<Cases for |GoStmt|@>=
 if isCat(pp,go_token) && isCat(pp+1,Expression) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,GoStmt,0,47)
+	reduce(pp,2,GoStmt,0,47,pp,break_space,pp+1)
 }
 
 @ Tests for |go|
@@ -3710,13 +3396,9 @@ go func(ch chan<- bool) { for { sleep(10); ch <- true; }} (c)
 
 @ @<Cases for |ReturnStmt|@>=
 if isCat(pp,return_token) && isCat(pp+1,ExpressionList) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,ReturnStmt,0,48)
+	reduce(pp,2,ReturnStmt,0,48,pp,break_space,pp+1)
 } else if rollback();  isCat(pp,return_token) {
-	app1(pp)
-	reduce(pp,1,ReturnStmt,0,48)
+	reduce(pp,1,ReturnStmt,0,48,pp)
 }
 
 @ Tests for |return|
@@ -3735,14 +3417,10 @@ return complexF1()
 
 @ @<Cases for |BreakStmt|@>=
 if isCat(pp,break_token) {
-	app1(pp)
 	if isCat(pp+1,identifier) {
-		app(break_space)
-		app1(pp+1)
-		reduce(pp,2,BreakStmt,0,49)
+		reduce(pp,2,BreakStmt,0,49,pp,break_space,pp+1)
 	} else {
-		app1(pp)
-		reduce(pp,1,BreakStmt,0,49)
+		reduce(pp,1,BreakStmt,0,49,pp)
 	}
 }
 
@@ -3769,13 +3447,9 @@ for i < n {
 
 @ @<Cases for |ContinueStmt|@>=
 if isCat(pp,continue_token) && isCat(pp+1,identifier) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,ContinueStmt,0,50)
+	reduce(pp,2,ContinueStmt,0,50,pp,break_space,pp+1)
 } else if rollback(); isCat(pp,continue_token) {
-	app1(pp)
-	reduce(pp,1,ContinueStmt,0,50)
+	reduce(pp,1,ContinueStmt,0,50,pp)
 }
 
 @ Tests for |continue|
@@ -3801,10 +3475,7 @@ for i < n {
 
 @ @<Cases for |GotoStmt|@>=
 if isCat(pp,goto_token) && isCat(pp+1,identifier) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,GotoStmt,0,51)
+	reduce(pp,2,GotoStmt,0,51,pp,break_space,pp+1)
 }
 
 @ Tests for |goto|
@@ -3815,47 +3486,32 @@ if isCat(pp,goto_token) && isCat(pp+1,identifier) {
 goto Label
 
 @ @<Cases for |IfStmt|@>=
+p:=pp
 if isCat(pp,if_token) {
-	if isCat(pp+1,SimpleStmt) && isCat(pp+2,semi) {
-		if isCat(pp+3,Expression) && isCat(pp+4,Block) {
-			if isCat(pp+5,else_token) && (isCat(pp+6,IfStmt) || isCat(pp+6,Block)) {
-				app1(pp)
-				app1(pp+1)
-				app1(pp+2)
-				app(break_space)
-				app1(pp+3)
-				app1(pp+4)
-				app1(pp+5)
-				app(break_space)
-				app1(pp+6)
-				reduce(pp,7,IfStmt,0,52)
-			} else {	
-				app1(pp)
-				app1(pp+1)
-				app(break_space)
-				app1(pp+2)
-				app1(pp+3)
-				app1(pp+4)
-				reduce(pp,5,IfStmt,0,52)
-			}
-		} 
-	} else if rollback(); isCat(pp+1,Expression) && isCat(pp+2,Block) {
-		if isCat(pp+3,else_token) && (isCat(pp+4,IfStmt) || isCat(pp+4,Block)) {
-			app1(pp)
-			app1(pp+1)
-			app1(pp+2)
-			app1(pp+3)
-			app(break_space)
-			app1(pp+4)
-			reduce(pp,5,IfStmt,0,52)
-		} else {	
-			app1(pp)
-			app1(pp+1)
-			app1(pp+2)
-			reduce(pp,3,IfStmt,0,52)
+	tok_mem:=append([]interface{}{},pp,break_space)
+	pp++
+	@<Making copy...@>
+	if isCat(pp,SimpleStmt) && isCat(pp+1,semi) {
+		tok_mem=append(tok_mem,pp,pp+1,break_space)
+		pp+=2
+	} else {
+		rollback()
+	}
+	if isCat(pp,Expression) && isCat(pp+1,Block) {
+		tok_mem=append(tok_mem,pp,break_space,pp+1)
+		pp+=2
+		@<Making copy...@>
+		if isCat(pp,else_token) && (isCat(pp+1,IfStmt) || isCat(pp+1,Block)) {
+			tok_mem=append(tok_mem,break_space,pp,break_space,pp+1)
+			pp+=2
+		} else {
+			rollback()
 		}
+		pp++
+		reduce(p,pp-p,IfStmt,0,52,tok_mem...)
 	} 
 }
+pp=p
 
 @ Tests for |if|
 @(tests/if.w@>=
@@ -3877,191 +3533,160 @@ if x := f(); x < y {
 
 
 @ @<Cases for |ExprSwitchStmt|@>=
+p:=pp
 if isCat(pp,switch_token) {
-	if isCat(pp+1,lbrace) {
+	tok_mem:=append([]interface{}{},pp)
+	pp++
+	{
+		@<Making copy...@>
+		if isCat(pp,SimpleStmt) && isCat(pp+1,semi) {
+			tok_mem=append(tok_mem,break_space,pp,pp+1)
+			pp+=2
+		} else {
+			rollback()
+		}
+	}
+	{
+		@<Making copy...@>
+		if isCat(pp,Expression) {
+			tok_mem=append(tok_mem,break_space,pp,break_space)
+			pp++
+		} else {
+			rollback()
+		}
+	}
+	if isCat(pp,lbrace) {
 		c:=0
-		isCats(pp+2,&c,cat_pair{cat:ExprCaseClause,mand:false})
-		if isCat(pp+2+c,rbrace) {
-			app1(pp)
-			app1(pp+1)
+		isCats(pp+1,&c,cat_pair{cat:ExprCaseClause,mand:false})
+		if isCat(pp+1+c,rbrace) {
+			tok_mem=append(tok_mem,pp)
 			for i:=0;i<c;i++ {
-				app1(pp+2+i)
-			}
-			app1(pp+2+c)
-			reduce(pp,pp+3+c,ExprSwitchStmt,0,53)
-		}
-	} else if isCat(pp+1,SimpleStmt) && isCat(pp+2,semi) {
-		if isCat(pp+3,lbrace) {
-		 	c:=0
-			isCats(pp+4,&c,cat_pair{cat:ExprCaseClause,mand:false})
-			if isCat(pp+4+c,rbrace) {
-				app1(pp)
-				app1(pp+1)
-				app1(pp+2)
-				app1(pp+3)
-				for i:=0;i<c;i++ {
-					app1(pp+4+i)
+				if i==0 {
+					tok_mem=append(tok_mem,force,indent)
 				}
-				app1(pp+4+c)
-				reduce(pp,5+c,ExprSwitchStmt,0,53)
-			}
-		} else if isCat(pp+3,Expression) && isCat(pp+4,lbrace) {
-		 	c:=0
-			isCats(pp+5,&c,cat_pair{cat:ExprCaseClause,mand:false})
-			if isCat(pp+5+c,rbrace) {
-				app1(pp)
-				app1(pp+1)
-				app1(pp+2)
-				app1(pp+3)
-				app1(pp+4)
-				for i:=0;i<c;i++ {
-					app1(pp+5+i)
+				tok_mem=append(tok_mem,pp+1+i,force)
+				if i==c-1 {
+					tok_mem=append(tok_mem,outdent)
 				}
-				app1(pp+5+c)
-				reduce(pp,6+c,ExprSwitchStmt,0,53)
 			}
+			tok_mem=append(tok_mem,pp+1+c)
+			pp+=2+c
+			reduce(p,pp-p,ExprSwitchStmt,0,53,tok_mem...)
 		}
-	} else if rollback(); isCat(pp+1,Expression) && isCat(pp+2,lbrace) {
-		c:=0
-		isCats(pp+3,&c,cat_pair{cat:ExprCaseClause,mand:false})
-		if isCat(pp+3+c,rbrace) {
-			app1(pp)
-			app1(pp+1)
-			app1(pp+2)
-			for i:=0;i<c;i++ {
-				app1(pp+3+i)
-			}
-			app1(pp+3+c)
-			reduce(pp,4+c,ExprSwitchStmt,0,53)
-		}
-	} 
-} 
-
+	}
+}
+pp=p
 
 @ @<Cases for |ExprCaseClause|@>=
 if isCat(pp,case_token) && isCat(pp+1,ExpressionList) && isCat(pp+2,colon) {
 	c:=0
 	isCats(pp+3,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	app1(pp+2)
+	tok_mem:=append([]interface{}{},pp,break_space,pp+1,pp+2,force)
 	for i:=0;i<c;i++ {
+		if i==0 {
+			tok_mem=append(tok_mem,indent)
+		}
 		if isCat(pp+3+i,Statement) {
-			app1(pp+3+i)
-			app(force)
+			tok_mem=append(tok_mem,pp+3+i,force)
+		}
+		if i==c-1 {
+			tok_mem=append(tok_mem,outdent)
 		}
 	}
-	reduce(pp,3+c,ExprCaseClause,0,54)
+	reduce(pp,3+c,ExprCaseClause,0,54,tok_mem...)
 } else if rollback(); isCat(pp,default_token) && isCat(pp+1,colon) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	app1(pp)
-	app1(pp+1)
+	tok_mem:=append([]interface{}{},pp,pp+1,force)
 	for i:=0;i<c;i++ {
+		if i==0 {
+			tok_mem=append(tok_mem,indent)
+		}
 		if isCat(pp+2+i,Statement) {
-			app1(pp+2+i)
-			app(force)
+			tok_mem=append(tok_mem,pp+2+i,force)
+		}
+		if i==c-1 {
+			tok_mem=append(tok_mem,outdent)
 		}
 	}
-	reduce(pp,2+c,ExprCaseClause,0,54)
+	reduce(pp,2+c,ExprCaseClause,0,54,tok_mem...)
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,ExprCaseClause,0,54)
+	reduce(pp,1,ExprCaseClause,0,54,pp)
 }
 
 @ @<Cases for |TypeSwitchStmt|@>=
+p:=pp
 if isCat(pp,switch_token) {
+	tok_mem:=append([]interface{}{},pp)
+	if isCat(pp+1,SimpleStmt) && isCat(pp+2,semi) {
+		tok_mem=append(tok_mem,break_space,pp+1,pp+2)
+		pp+=2
+	} else {
+		rollback()
+	}
 	if isCat(pp+1,TypeSwitchGuard) && isCat(pp+2,lbrace) {
 	 	c:=0
 		isCats(pp+3,&c,cat_pair{cat:TypeCaseClause,mand:true})
 		if isCat(pp+3+c,rbrace) {
-			app1(pp)
-			app1(pp+1)
-			app1(pp+2)
+			tok_mem=append(tok_mem,break_space,pp+1,break_space,pp+2)
 			for i:=0;i<c;i++ {
-				app1(pp+3+i)
+				if i==0 {
+					tok_mem=append(tok_mem,force,indent)
+				}
+				tok_mem=append(tok_mem,pp+3+i,force)
+				if i==c-1 {
+					tok_mem=append(tok_mem,outdent)
+				}
 			}
-			app1(pp+3+c)
-			reduce(pp,4+c,TypeSwitchStmt,0,55)
+			tok_mem=append(tok_mem,pp+3+c)
+			pp+=4+c
+			reduce(p,pp-p,TypeSwitchStmt,0,55,tok_mem...)
 		}
-	} else if rollback(); isCat(pp+1,SimpleStmt) && isCat(pp+2,semi) && isCat(pp+3,TypeSwitchGuard) && isCat(pp+4,lbrace) {
-	 	c:=0
-		isCats(pp+5,&c,cat_pair{cat:TypeCaseClause,mand:true})
-		if isCat(pp+5+c,rbrace) {
-			app1(pp)
-			app1(pp+1)
-			app1(pp+2)
-			app1(pp+3)
-			app1(pp+4)
-			for i:=0;i<c;i++ {
-				app1(pp+5+i)
-			}
-			app1(pp+5+c)
-			reduce(pp,6+c,TypeSwitchStmt,0,55)
-		}
-	} 
+	}
 }
+pp=p
 
 @ @<Cases for |TypeSwitchGuard|@>=
 if isCat(pp,identifier) && isCat(pp+1,col_eq) && isCat(pp+2,PrimaryExpr) && isCat(pp+3,dot) && isCat(pp+4,lpar) && isCat(pp+5,type_token) && isCat(pp+6,rpar){
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app1(pp+3)
-	app1(pp+4)
-	app1(pp+5)
-	app1(pp+6)
-	reduce(pp,7,TypeSwitchGuard,0,56)
-} else if isCat(pp,PrimaryExpr) && isCat(pp+1,dot) && isCat(pp+2,lpar) && isCat(pp+3,type_token) && isCat(pp+4,rpar) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app1(pp+3)
-	app1(pp+4)
-	reduce(pp,5,TypeSwitchGuard,0,56)
+	reduce(pp,7,TypeSwitchGuard,0,56,pp,pp+1,pp+2,pp+3,pp+4,pp+5,pp+6)
+} else if rollback(); isCat(pp,PrimaryExpr) && isCat(pp+1,dot) && isCat(pp+2,lpar) && isCat(pp+3,type_token) && isCat(pp+4,rpar) {
+	reduce(pp,5,TypeSwitchGuard,0,56,pp,pp+1,pp+2,pp+3,pp+4)
 }
 
 @ @<Cases for |TypeCaseClause|@>=
 if isCat(pp,TypeSwitchCase) && isCat(pp+1,colon) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	app1(pp)
+	tok_mem:=append([]interface{}{},pp,pp+1,force)
 	for i:=0;i<c;i++ {
+		if i==0 {
+			tok_mem=append(tok_mem,indent)
+		}
 		if isCat(pp+2+i,Statement) {
-			app1(pp+2+i)
-			app(force)
+			tok_mem=append(tok_mem,pp+2+i,force)
+		}
+		if i==c-1 {
+			tok_mem=append(tok_mem,outdent)
 		}
 	}
-	reduce(pp,2+c,TypeCaseClause,0,57)
+	reduce(pp,2+c,TypeCaseClause,0,57,tok_mem...)
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,TypeCaseClause,0,57)
+	reduce(pp,1,TypeCaseClause,0,57,pp)
 }
 
 @ @<Cases for |TypeSwitchCase|@>=
 if isCat(pp,case_token) && isCat(pp+1,Type) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Type,mand:true})
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
+	tok_mem:=append([]interface{}{},pp,break_space,pp+1)
 	for i:=0;i<c;i++ {
-		if isCat(pp+2+i,comma) {
-			app1(pp+2+i)
-			app(opt)
-			app('9')
-		} else {
-			app1(pp+2+i)
-		}
+		tok_mem=append(tok_mem,pp+2+i)
 	}
-	reduce(pp,2+c,TypeSwitchCase,0,58)
+	reduce(pp,2+c,TypeSwitchCase,0,58,tok_mem...)
 } else if rollback(); isCat(pp,default_token) {
-	app1(pp)
-	reduce(pp,1,TypeSwitchCase,0,58)
+	reduce(pp,1,TypeSwitchCase,0,58,pp)
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,TypeSwitchCase,0,58)
+	reduce(pp,1,TypeSwitchCase,0,58,pp)
 }
 
 @ Tests for |switch|
@@ -4109,14 +3734,20 @@ if isCat(pp,select_token) && isCat(pp+1,lbrace){
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:CommClause,mand:false})
 	if isCat(pp+2+c,rbrace) {
-		app1(pp)
-		app1(pp+1)
+		tok_mem:=append([]interface{}{},pp,pp+1)
 		for i:=0;i<c;i++ {
+			if i==0 {
+				tok_mem=append(tok_mem,force,indent)
+			}
 			if isCat(pp+2+i,CommClause) {
-				app1(pp+2+i)
+				tok_mem=append(tok_mem,pp+2+i)
+			}
+			if i==c-1 {
+				tok_mem=append(tok_mem,outdent)
 			}
 		}
-		reduce(pp,3+c,SelectStmt,0,59)
+		tok_mem=append(tok_mem,pp+2+c)
+		reduce(pp,3+c,SelectStmt,0,59,tok_mem...)
 	}
 }
 
@@ -4124,57 +3755,44 @@ if isCat(pp,select_token) && isCat(pp+1,lbrace){
 if isCat(pp,CommCase) && isCat(pp+1,colon) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	app1(pp)
-	app1(pp+1)
+	tok_mem:=append([]interface{}{},pp,pp+1,force)
 	for i:=0;i<c;i++ {
+		if i==0 {
+			tok_mem=append(tok_mem,indent)
+		}
 		if isCat(pp+2+i,Statement) {
-			app1(pp+2+i)
+			tok_mem=append(tok_mem,pp+2+i,force)
 		} 
+		if i==c-1 {
+			tok_mem=append(tok_mem,outdent)
+		}
 	}
-	reduce(pp,2+c,CommClause,0,60)
+	reduce(pp,2+c,CommClause,0,60,tok_mem...)
 }
 
 @ @<Cases for |CommCase|@>=
 if isCat(pp,case_token) {
 	if isCat(pp+1,SendStmt) { 
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		reduce(pp,2,CommCase,0,61)
+		reduce(pp,2,CommCase,0,61,pp,break_space,pp+1)
 	} else if rollback(); isCat(pp+1,RecvStmt) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		reduce(pp,2,CommCase,0,61)
+		reduce(pp,2,CommCase,0,61,pp,break_space,pp+1)
 	}
 } else if rollback(); isCat(pp,default_token) {
-	app1(pp)
-	reduce(pp,1,CommCase,0,61)
+	reduce(pp,1,CommCase,0,61,pp)
 } else if rollback(); isCat(pp,section_scrap) {
-	app1(pp)
-	reduce(pp,1,CommCase,0,61)
+	reduce(pp,1,CommCase,0,61,pp)
 }
 
 @ @<Cases for |RecvStmt|@>=
 if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,Expression) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	app(break_space)
-	app1(pp+2)
-	reduce(pp,3,RecvStmt,0,62)
+	reduce(pp,3,RecvStmt,0,62,pp,break_space,pp+1,break_space,pp+2)
 } else if isCat(pp,Expression) {
-	app1(pp)
-	reduce(pp,1,RecvStmt,0,62)
+	reduce(pp,1,RecvStmt,0,62,pp)
 }
 
 @ @<Cases for |SendStmt|@>=
 if isCat(pp,Expression) && isCat(pp+1,direct) && isCat(pp+2,Expression) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,SendStmt,0,63)
+	reduce(pp,3,SendStmt,0,63,pp,pp+1,pp+2)
 }
 
 @ Tests for |send|
@@ -4219,92 +3837,53 @@ select {}
 if isCat(pp,for_token) {
 	@<Making copy...@>
 	if isCat(pp+1,Expression) && isCat(pp+2,Block) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,ForStmt,0,64)	
+		reduce(pp,3,ForStmt,0,64,pp,break_space,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+1,ForClause) && isCat(pp+2,Block) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,ForStmt,0,64)	
+		reduce(pp,3,ForStmt,0,64,pp,break_space,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+1,RangeClause) && isCat(pp+2,Block) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		app(break_space)
-		app1(pp+2)
-		reduce(pp,3,ForStmt,0,64)	
+		reduce(pp,3,ForStmt,0,64,pp,break_space,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+1,Block) {
-		app1(pp)
-		app(break_space)
-		app1(pp+1)
-		reduce(pp,2,ForStmt,0,64)	
+		reduce(pp,2,ForStmt,0,64,pp,pp+1)
 	}   
 }
 
 @ @<Cases for |ForClause|@>=
 p:=pp
-init:=-1
-s1:=-1
-cond:=-1
-s2:=-1
-post:=-1
+var tok_mem []interface{}
 if isCat(pp,SimpleStmt) {
-	init=pp
+	tok_mem=append(tok_mem,pp,break_space)
 	pp++
 } else {
 	rollback()
 }
 if isCat(pp,semi) {
-	s1=pp
+	tok_mem=append(tok_mem,pp)
 	pp++
 	@<Making copy...@>
 	if isCat(pp,Expression) {
-		cond=pp
+		tok_mem=append(tok_mem,pp,break_space)
 		pp++
 	} else {
 		rollback()
 	}
 	if isCat(pp,semi) {
-		s2=pp
+		tok_mem=append(tok_mem,pp)
 		pp++
 		@<Making copy...@>
 		if isCat(pp,SimpleStmt) {
-			post=pp
+			tok_mem=append(tok_mem,pp)
 			pp++
 		} else {
 			rollback()
 		}
-		if init !=-1 {
-			app1(init)
-		}
-		app1(s1)
-		if cond !=-1 {
-			app1(cond)
-		}
-		app1(s2)
-		if post !=-1 {
-			app1(post)
-		}
-		reduce(p,pp-p,ForClause,0,65)
+		reduce(p,pp-p,ForClause,0,65,tok_mem...)
 	}
 }
 pp=p
 
 @ @<Cases for |RangeClause|@>=
 if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,range_token) && isCat(pp+3,Expression) {
-	app1(pp)
-	app1(pp+1)
-	app(break_space)
-	app1(pp+2)
-	app(break_space)
-	app1(pp+3)
-	reduce(pp,4,RangeClause,0,66)
+	reduce(pp,4,RangeClause,0,66,pp,pp+1,break_space,pp+2,break_space,pp+3)
 }
 
 @ Tests for |for|
@@ -4334,10 +3913,7 @@ for i, s := range a {
 
 @ @<Cases for |DeferStmt|@>=
 if isCat(pp,defer_token) && isCat(pp+1,Expression) {
-	app1(pp)
-	app(break_space)
-	app1(pp+1)
-	reduce(pp,2,DeferStmt,0,67)
+	reduce(pp,2,DeferStmt,0,67,pp,break_space,pp+1)
 }
 
 @ Tests for |defer|
@@ -4355,9 +3931,7 @@ defer func() {
 
 @ @<Cases for |IncDecStmt|@>=
 if isCat(pp,Expression) && (isCat(pp+1,plus_plus) || isCat(pp+1,minus_minus)) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,IncDecStmt,0,68)
+	reduce(pp,2,IncDecStmt,0,68,pp,pp+1)
 }
 
 @ Tests for |incdec|
@@ -4372,10 +3946,7 @@ j--
 
 @ @<Cases for |Assignment|@>=
 if isCat(pp,ExpressionList) && isCat(pp+1,assign_op) && isCat(pp+2,ExpressionList) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,Assignment,0,69)
+	reduce(pp,3,Assignment,0,69,pp,pp+1,pp+2)
 }
 
 @ Tests for assignments
@@ -4435,20 +4006,14 @@ x = []int{3, 5, 7}
 
 @ @<Cases for |assign_op|@>=
 if (isCat(pp,unary_op) || isCat(pp,mul_op) || isCat(pp,asterisk)) && isCat(pp+1,eq) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,assign_op,0,70)
+	reduce(pp,2,assign_op,0,70,math_rel,'{',pp,'}','{',pp+1,'}','}')
 } else if rollback(); isCat(pp,eq) {
-	app1(pp)
-	reduce(pp,1,assign_op,0,70)
+	reduce(pp,1,assign_op,0,70,pp)
 }
 
 @ @<Cases for |ShortVarDecl|@>=
 if isCat(pp,IdentifierList) && isCat(pp+1,col_eq) && isCat(pp+2,ExpressionList) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,ShortVarDecl,0,71)
+	reduce(pp,3,ShortVarDecl,0,71,pp,pp+1,pp+2)
 }
 
 @ Tests for short var declarations
@@ -4472,42 +4037,26 @@ _, y, _ := coord(p)
 
 @ @<Cases for |QualifiedIdent|@>=
 if (isCat(pp,identifier) || isCat(pp,PackageName)) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,QualifiedIdent,0,72)
+	reduce(pp,3,QualifiedIdent,0,72,pp,pp+1,pp+2)
 } else if rollback(); isCat(pp,identifier) {
-	app1(pp)
-	reduce(pp,1,QualifiedIdent,0,72)
+	reduce(pp,1,QualifiedIdent,0,72,pp)
 }
 
 @ @<Cases for |MethodExpr|@>=
 if isCat(pp,ReceiverType) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,MethodExpr,0,73)
+	reduce(pp,3,MethodExpr,0,73,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |ReceiverType|@>=
 if isCat(pp,Type) {
-	app1(pp)
-	reduce(pp,1,ReceiverType,0,74)
+	reduce(pp,1,ReceiverType,0,74,pp)
 } else if rollback(); isCat(pp,lpar) && isCat(pp+1,asterisk) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app1(pp+3)
-	reduce(pp,4,ReceiverType,0,74)
+	reduce(pp,4,ReceiverType,0,74,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |Conversion|@>=
 if isCat(pp,Type) && isCat(pp+1,lpar) && isCat(pp+2,Expression) && isCat(pp+3,rpar) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app1(pp+3)
-	reduce(pp,4,Conversion,0,75)
+	reduce(pp,4,Conversion,0,75,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |BuiltinCall|@>=
@@ -4515,19 +4064,12 @@ if isCat(pp,identifier) && isCat(pp+1,lpar) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:BuiltinArgs,mand:true},cat_pair{cat:comma,mand:false}) 
 	if isCat(pp+2+c,rpar) {
-		app1(pp)
-		app1(pp+1)
+		tok_mem:=append([]interface{}{},pp,pp+1)
 		for i:=0;i<c;i++ {
-			if isCat(pp+2+i,comma) {
-				app1(pp+2+i)
-				app(opt)
-				app('9')
-			} else {
-				app1(pp+2+i)
-			}
+			tok_mem=append(tok_mem,pp+2+i)
 		}
-		app1(pp+2+c)
-		reduce(pp,3+c,BuiltinCall,0,76)
+		tok_mem=append(tok_mem,pp+2+c)
+		reduce(pp,3+c,BuiltinCall,0,76,tok_mem...)
 	}
 }
 
@@ -4535,35 +4077,23 @@ if isCat(pp,identifier) && isCat(pp+1,lpar) {
 if isCat(pp,Type) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ExpressionList,mand:true})
-	app1(pp)
+	tok_mem:=append([]interface{}{},pp)
 	for i:=0;i<c;i++ {
-		if isCat(pp+1+i,comma) {
-			app1(pp+1+i)
-			app(opt)
-			app('9')
-		} else {
-			app1(pp+1+i)
-		}
+		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,BuiltinArgs,0,77)	
+	reduce(pp,1+c,BuiltinArgs,0,77,tok_mem...)	
 } else if rollback(); isCat(pp,ExpressionList) {
-	app1(pp)
-	reduce(pp,1,BuiltinArgs,0,77)	
+	reduce(pp,1,BuiltinArgs,0,77,pp)	
 }
 
 @ @<Cases for |Selector|@>= 
 if isCat(pp,dot) && isCat(pp+1,identifier) {
-	app1(pp)
-	app1(pp+1)
-	reduce(pp,2,Selector,0,78)
+	reduce(pp,2,Selector,0,78,pp,pp+1)
 }
 
 @ @<Cases for |Index|@>=
 if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	reduce(pp,3,Index,0,79)
+	reduce(pp,3,Index,0,79,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |Slice|@>=
@@ -4574,27 +4104,23 @@ if isCat(pp,lbracket) {
 		c2 := 0
 		isCats(pp+2+c1,&c2, cat_pair{cat:Expression,mand:false})
 		if isCat(pp+2+c1+c2,rbracket) {
-			app1(pp)
+			tok_mem:=append([]interface{}{},pp)
 			for i:=0;i<c1;i++ {
-				app1(pp+1+i)
+				tok_mem=append(tok_mem,pp+1+i)
 			}
-			app1(pp+1+c1)
+			tok_mem=append(tok_mem,pp+1+c1)
 			for i:=0;i<c2;i++ {
-				app1(pp+2+c1+i)
+				tok_mem=append(tok_mem,pp+2+c1+i)
 			}
-			app1(pp+2+c1+c2)
-			reduce(pp,3+c1+c2,Slice,0,80)
+			tok_mem=append(tok_mem,pp+2+c1+c2)
+			reduce(pp,3+c1+c2,Slice,0,80,tok_mem...)
 		}
 	}
 }
 
 @ @<Cases for |TypeAssertion|@>=
 if isCat(pp,dot) && isCat(pp+1,lpar) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
-	app1(pp)
-	app1(pp+1)
-	app1(pp+2)
-	app1(pp+3)
-	reduce(pp,4,TypeAssertion,0,81)
+	reduce(pp,4,TypeAssertion,0,81,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |Call|@>=
@@ -4602,34 +4128,79 @@ if isCat(pp,lpar) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:ExpressionList,mand:false}, cat_pair{cat:dot_dot_dot,mand:false})
 	if isCat(pp+1+c,rpar) {
-		app1(pp)
+		tok_mem:=append([]interface{}{},pp)
 		for i:=0;i<c;i++ {
-			app1(pp+1+i)
+			tok_mem=append(tok_mem,pp+1+i)
 		}
-		app1(pp+1+c)
-		reduce(pp,2+c,Call,0,82)
+		tok_mem=append(tok_mem,pp+1+c)
+		reduce(pp,2+c,Call,0,82,tok_mem...)
 	}	
 }
 
 @ @<Cases for |unary_op|@>=
 if isCat(pp,asterisk) || isCat(pp,direct) || isCat(pp,add_op) {
-	app1(pp)
-	reduce(pp,1,unary_op,0,83)
+	reduce(pp,1,unary_op,0,83,pp)
 }
-
 
 @ Now here's the |reduce| procedure used in our code for productions.
 
 @c
-func reduce(pp int, k int, c rune, d int, n int) {
+func reduce(pp int, k int, c rune, d int, n int, s ...interface{}) {
 	reduced=true
 	reduced_cat=c
-	t_mem:=tok_mem
-	tok_mem=nil
-	scrap_info[pp] = scrap{cat: c, trans: t_mem, mathness: 4*cur_mathness+init_mathness,}
+	var trans []interface{}
+	cur_mathness:=maybe_math
+	init_mathness:=maybe_math
+
+	for _,t:=range s {
+		switch v := t.(type) {
+			case rune: 
+				if v==' ' || (v>=big_cancel && v<=big_force) /* non-math token */ {
+					if cur_mathness==maybe_math { 
+						init_mathness=no_math
+					} else if cur_mathness==yes_math { 
+						trans=append(trans,"{}$") 
+					}
+					cur_mathness=no_math
+				} else {
+					if scrap_info[pp].mathness==maybe_math { 
+						init_mathness=yes_math
+					} else if scrap_info[pp].mathness==no_math { 
+						trans=append(trans,"${}") 
+					}
+					cur_mathness=yes_math
+				}
+				trans=append(trans,v)
+			case int: 
+				switch scrap_info[v].mathness % 4 { /* left boundary */
+					case no_math:
+						if cur_mathness==maybe_math {
+							init_mathness=no_math
+						} else if cur_mathness==yes_math { 
+							trans=append(trans,"{}$") 
+						}
+						cur_mathness=scrap_info[v].mathness / 4 /* right boundary */
+					case yes_math:
+						if cur_mathness==maybe_math { 
+							init_mathness=yes_math 
+						} else if cur_mathness==no_math {
+							trans=append(trans,"${}")
+						}
+						cur_mathness=scrap_info[v].mathness / 4 /* right boundary */
+					case maybe_math: /* no changes */
+				}
+				trans=append(trans,scrap_info[v].trans)
+			default:
+				panic(fmt.Sprintf( "Invalid type of translation: %T(%v)",v,v))
+		}
+	}
 	if k==1 {
 		scrap_info[pp].cat=c
 	} else {
+		if init_mathness==maybe_math && cur_mathness!=maybe_math {
+			init_mathness=cur_mathness
+		}
+		scrap_info[pp] = scrap{cat: c, trans: trans, mathness: 4*cur_mathness+init_mathness,}
 		copy(scrap_info[pp+1:len(scrap_info)-1],scrap_info[pp+k:])
 		scrap_info = scrap_info[:len(scrap_info)-k+1]
 	}
@@ -4641,7 +4212,7 @@ func reduce(pp int, k int, c rune, d int, n int) {
 takes advantage of the simplification that occurs when |k==1|.
 
 @c
-func squash(pp int, k int, c rune,d int, n int) {
+/*func squash(pp int, k int, c rune,d int, n int) {
 	if k==1 {
 		reduced=true
 		reduced_cat=c
@@ -4654,6 +4225,7 @@ func squash(pp int, k int, c rune,d int, n int) {
 	}
 	reduce(pp,k,c,d,n)
 }
+*/
 
 @ And here now is the code that applies productions as long as possible.
 Before applying the production mechanism, we must make sure
@@ -4677,8 +4249,6 @@ for  {
 	if pp>=len(scrap_info) {
 		break
 	}
-	init_mathness=maybe_math
-	cur_mathness=maybe_math
 	@<Match a production...@>
 }
 
@@ -4738,21 +4308,20 @@ where appropriate.
 
 @<Combine the irreducible...@>= {
 	@<If semi-tracing, show the irreducible scraps@>
-	for i,j:=range scrap_info {
+	var tok_mem []interface{}
+	for i,v:=range scrap_info {
 		if i!=0 {
-			app(' ')
+			tok_mem=append(tok_mem,' ')
 		}
-		if j.mathness % 4 == yes_math {
-			app('$')
+		if v.mathness % 4 == yes_math {
+			tok_mem=append(tok_mem,'$')
 		}
-		app1(i)
-		if j.mathness / 4 == yes_math {
-			app('$')
+		tok_mem=append(tok_mem,v.trans...)
+		if v.mathness / 4 == yes_math {
+			tok_mem=append(tok_mem,'$')
 		}
 	}
-	res := tok_mem
-	tok_mem=nil
-	return res
+	return tok_mem
 }
 
 @ @<If semi-tracing, show the irreducible scraps@>=
@@ -4805,160 +4374,123 @@ func Go_parse(spec_ctrl rune) {
 been appended:
 
 @c
-func app_scrap(c int32, b int32) {
-	scrap_info = append(scrap_info, scrap{cat:c, trans: tok_mem, mathness:5*b,})
-	tok_mem=nil
+func app_scrap(c int32, b int32, t ...interface{}) {
+	scrap_info = append(scrap_info, scrap{cat:c, trans: t, mathness:5*b,})
 }
 
 @ @<Append the scr...@>=
 switch (next_control) {
 	case section_name:
-		app(section_token(cur_section))
-		app_scrap(section_scrap,maybe_math)
-		app_scrap(Expression,yes_math)
+		app_scrap(section_scrap,maybe_math,section_token(cur_section))
 	case str,constant,verbatim:
 		@<Append a string or constant@>
 	case identifier: 
-		app_cur_id(true)
+		app_cur_id()
 	case TeX_string:
 		@<Append a \TEX/ string, without forming a scrap@>
 	case '/':
-		app(next_control)
+		app_scrap(mul_op,yes_math,next_control)
 		next_control=mul_op
-		app_scrap(mul_op,yes_math)
 	case '.':
-		app(next_control)
+		app_scrap(dot,yes_math,next_control)
 		next_control=dot
-		app_scrap(dot,yes_math)
 	case '_':
-		app_str("\\_")
+		app_scrap(identifier,maybe_math,"\\_")
 		next_control=identifier
-		app_scrap(identifier,maybe_math)
 	case '<': 
-		app_str("\\langle")
+		@+app_scrap(rel_op,yes_math,"\\langle")
 		next_control=rel_op
-		@+app_scrap(rel_op,yes_math)
 	case '>': 
-		app_str("\\rangle")
+		@+app_scrap(rel_op,yes_math,"\\rangle")
 		next_control=rel_op
-		@+app_scrap(rel_op,yes_math)
 	case '=': 
-		app_str("\\K")
+		app_scrap(eq,yes_math,"\\K")
 		next_control=eq
-		app_scrap(eq,yes_math)
 @.\\K@>
 	case '|': 
-		app_str("\\OR")
+		app_scrap(add_op,yes_math,"\\OR")
 		next_control=add_op
-		app_scrap(add_op,yes_math)
 @.\\OR@>
 	case '^': 
-		app_str("\\XOR")
+		app_scrap(add_op,yes_math,"\\XOR")
 		next_control=add_op
-		app_scrap(add_op,yes_math)
 @.\\XOR@>
 	case '%': 
-		app_str("\\MOD")
+		app_scrap(mul_op,yes_math,"\\MOD")
 		next_control=mul_op
-		app_scrap(mul_op,yes_math)
 @.\\MOD@>
 	case '!': 
-		app_str("\\R")
+		app_scrap(unary_op,yes_math,"\\R")
 		next_control=unary_op
-		app_scrap(unary_op,yes_math)
 @.\\R@>
 	case '+', '-':
-		app(next_control)
+		app_scrap(add_op,yes_math,next_control)
 		next_control=add_op
-		app_scrap(add_op,yes_math)
 	case '*': 
-		app(next_control)
+		app_scrap(asterisk,yes_math,next_control)
 		next_control=asterisk
-		app_scrap(asterisk,yes_math)
 	case '&': 
-		app_str("\\AND")
+		app_scrap(mul_op,yes_math,"\\AND")
 		next_control=mul_op
-		app_scrap(mul_op,yes_math)
 @.\\AND@>
 	case ignore, xref_roman, xref_wildcard, xref_typewriter, noop:
 		@+break
 	case '(' : 
-		app(next_control)
+		app_scrap(lpar,maybe_math,next_control)
 		next_control=lpar
-		app_scrap(lpar,maybe_math)
 	case ')' : 
-		app(next_control)
+		app_scrap(rpar,maybe_math,next_control)
 		next_control=rpar
-		app_scrap(rpar,maybe_math)
 	case '[': 
-		app(next_control)
+		app_scrap(lbracket,maybe_math,next_control)
 		next_control=lbracket
-		app_scrap(lbracket,maybe_math)
 	case ']': 
-		app(next_control)
+		app_scrap(rbracket,maybe_math,next_control)
 		next_control=rbracket
-		app_scrap(rbracket,maybe_math)
 	case '{': 
-		app_str("\\{"@q}@>)
+		app_scrap(lbrace,yes_math,"\\{"@q}@>)
 		next_control=lbrace
-		app_scrap(lbrace,yes_math)
 @.\\\{@>@q}@>
 	case '}': 
-		app_str(@q{@>"\\}")
+		app_scrap(rbrace,yes_math,@q{@>"\\}")
 		next_control=rbrace
-		app_scrap(rbrace,yes_math)
 @q{@>@.\\\}@>
 	case ',': 
-		app(',')
+		app_scrap(comma,yes_math,next_control,opt,'9',)
 		next_control=comma
-		app_scrap(comma,no_math)
 	case ';': 
-		app(';')
+		app_scrap(semi,maybe_math,next_control)
 		next_control=semi
-		app_scrap(semi,maybe_math)
 	case ':': 
-		app(':')
+		app_scrap(colon,no_math,next_control)@/
 		next_control=colon
-		app_scrap(colon,no_math)@/
 	@t\4@>  @<Cases involving nonstandard characters@>
 	case thin_space: 
-		app_str("\\,")
-		app_scrap(insert,maybe_math)
+		app_scrap(insert,maybe_math,"\\,")
+		next_control=thin_space
 @.\\,@>
 	case math_break: 
-		app(opt)
-		app_str("0")
+		app_scrap(insert,maybe_math,opt,"0")
 		next_control=insert
-		app_scrap(insert,maybe_math)
 	case line_break: 
-		app(force)
+		app_scrap(insert,no_math,force)
 		next_control=insert
-		app_scrap(insert,no_math)
 	case big_line_break: 
-		app(big_force)
+		app_scrap(insert,no_math,big_force)
 		next_control=insert
-		app_scrap(insert,no_math)
 	case no_line_break: 
-		app(big_cancel)
-		app(noop)
-		app(break_space)
-		app(noop)
-		app(big_cancel)
+		app_scrap(insert,no_math,big_cancel,noop,break_space,noop,big_cancel)
 		next_control=insert
-		app_scrap(insert,no_math)
 	case pseudo_semi: 
 		next_control=semi
 		app_scrap(semi,maybe_math)
 	case join: 
-		app_str("\\J")
+		app_scrap(insert,no_math,"\\J")
 		next_control=insert
-		app_scrap(insert,no_math)
 @.\\J@>
 	default: 
-		app(inserted)
-		app(next_control)
+		app_scrap(insert,maybe_math,inserted,next_control)
 		next_control=insert
-		app_scrap(insert,maybe_math)
 }
 
 @ Some nonstandard characters may have entered \.{GOWEAVE} by means of
@@ -4967,59 +4499,45 @@ possible to keep \.{GOWEAVE} from outputting unusual |rune| codes.
 
 @<Cases involving nonstandard...@>=
 case not_eq: 
-	app_str("\\I")
-	@+app_scrap(rel_op,yes_math)
+	@+app_scrap(rel_op,yes_math,"\\I")
 @.\\I@>
 case lt_eq: 
-	app_str("\\Z")
-	@+app_scrap(rel_op,yes_math)
+	@+app_scrap(rel_op,yes_math,"\\Z")
 @.\\Z@>
 case gt_eq: 
-	app_str("\\G")
-	@+app_scrap(rel_op,yes_math)
+	@+app_scrap(rel_op,yes_math,"\\G")
 @.\\G@>
 case eq_eq: 
-	app_str("\\E")
-	@+app_scrap(rel_op,yes_math)
+	@+app_scrap(rel_op,yes_math,"\\E")
 @.\\E@>
 case and_and: 
-	app_str("\\W")
-	@+app_scrap(binary_op,yes_math)
+	@+app_scrap(binary_op,yes_math,"\\W")
 @.\\W@>
 case or_or: 
-	app_str("\\V")
-	@+app_scrap(binary_op,yes_math)
+	@+app_scrap(binary_op,yes_math,"\\V")
 @.\\V@>
 case plus_plus: 
-	app_str("\\PP")
-	@+app_scrap(plus_plus,yes_math)
+	@+app_scrap(plus_plus,yes_math,"\\PP")
 @.\\PP@>
 case minus_minus: 
-	app_str("\\MM")
-	@+app_scrap(minus_minus,yes_math)
+	@+app_scrap(minus_minus,yes_math,"\\MM")
 @.\\MM@>
 case gt_gt: 
-	app_str("\\GG")
-	@+app_scrap(mul_op,yes_math)
+	@+app_scrap(mul_op,yes_math,"\\GG")
 @.\\GG@>
 case lt_lt: 
-	app_str("\\LL")
-	@+app_scrap(mul_op,yes_math)
+	@+app_scrap(mul_op,yes_math,"\\LL")
 @.\\LL@>
 case dot_dot_dot: 
-	app_str("\\,\\ldots\\,")
-	@+app_scrap(dot_dot_dot,yes_math)
+	@+app_scrap(dot_dot_dot,yes_math,"\\,\\ldots\\,")
 @.\\,@>
 @.\\ldots@>
 case col_eq: 
-	app_str("\\K")
-	@+app_scrap(col_eq,yes_math)
+	@+app_scrap(col_eq,yes_math,":\\K")
 case direct:
-	app_str("\\leftarrow")
-	@+app_scrap(direct,yes_math)
+	@+app_scrap(direct,yes_math,"\\leftarrow")
 case and_not:
-	app_str("&^")
-	@+app_scrap(mul_op,yes_math)
+	@+app_scrap(mul_op,yes_math,"\\AND\\XOR")
 
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
@@ -5028,26 +4546,27 @@ case and_not:
 
 @<Append a string or...@>=
 count:= -1 
+var tok_mem []interface{}
 if next_control==constant {
-	app_str("\\T{"@q}@>)
+	tok_mem=append(tok_mem,"\\T{"@q}@>)
 @.\\T@>
 } else if next_control==str {
 	count=20
-	app_str("\\.{"@q}@>)
+	tok_mem=append(tok_mem,"\\.{"@q}@>)
 @.\\.@>
 } else {
-	app_str("\\vb{"@q}@>)
+	tok_mem=append(tok_mem,"\\vb{"@q}@>)
 }
 @.\\vb@>
 for i:=0; i < len(id); {
 	if count==0 { /* insert a discretionary break in a long string */
-		app_str(@q(@>@q{@>"}\\)\\.{"@q}@>)
+		tok_mem=append(tok_mem,@q(@>@q{@>"}\\)\\.{"@q}@>)
 		count=20
 @q(@>@.\\)@>
 	}
 	switch (id[i]) {
 		case ' ', '\\', '#', '%', '$','^', '{', '}', '~', '&', '_': 
-			app('\\')
+			tok_mem=append(tok_mem,'\\')
 @.\\\ @>
 @.\\\\@>
 @.\\\#@>
@@ -5067,12 +4586,12 @@ for i:=0; i < len(id); {
 			}
 @.Double @@ should be used...@>
 	}
-	app(id[i])
+	tok_mem=append(tok_mem,id[i])
 	i++
 	count--
 }
-app(@q{@>'}')
-app_scrap(next_control,maybe_math)
+tok_mem=append(tok_mem,@q{@>'}')
+app_scrap(next_control,maybe_math,tok_mem...)
 
 @ We do not make the \TEX/ string into a scrap, because there is no
 telling what the user will be putting into it; instead we leave it
@@ -5080,44 +4599,39 @@ open, to be picked up by the next scrap. If it comes at the end of a
 section, it will be made into a scrap when |finish_Go| is called.
 
 @<Append a \TEX/ string, without forming a scrap@>=
-app_str("\\hbox{"@q}@>)
+tok_mem:=append([]interface{}{},"\\hbox{"@q}@>)
 for i:=0; i < len(id);{ 
 	if id[i]=='@@' {
 		i++
 	}
-	app(id[i])
+	tok_mem=append(tok_mem,id[i])
 	i++
 }
-app(@q{@>'}')
+tok_mem=append(tok_mem,@q{@>'}')
+app_scrap(insert,no_math,tok_mem...)
 
 @ The function |app_cur_id| appends the current identifier to the
 token list; it also builds a new scrap if |scrapping==true|.
 
 @ @c
-func app_cur_id(scrapping bool) {
+func app_cur_id() {
 	p:=id_lookup(id,normal)
 	if name_dir[p].ilk<=custom { /* not a reserved word */
-		app(id_token(p))
-		if scrapping {
-			a1 := identifier
-			a2 := maybe_math
-			if name_dir[p].ilk==custom {
-				a2 = yes_math
-			} 
-			app_scrap(a1, a2)
-		}
-@.\\NULL@>
+//	if p < res_wd_end {/* not a reserved word */
+		a1 := identifier
+		a2 := maybe_math
+		if name_dir[p].ilk==custom {
+			a2 = yes_math
+		} 
+		app_scrap(a1, a2,id_token(p))
 	} else {
-		app(res_token(p))
-		if scrapping {
-			if name_dir[p].ilk==binary_op || 
-				name_dir[p].ilk==rel_op || 
-				name_dir[p].ilk==add_op ||
-				name_dir[p].ilk==mul_op {
-				app_scrap(name_dir[p].ilk,yes_math)
-			} else {
-				app_scrap(name_dir[p].ilk,maybe_math)
-			}
+		if name_dir[p].ilk==binary_op || 
+			name_dir[p].ilk==rel_op || 
+			name_dir[p].ilk==add_op ||
+			name_dir[p].ilk==mul_op {
+			app_scrap(name_dir[p].ilk,yes_math,res_token(p))
+		} else {
+			app_scrap(name_dir[p].ilk,maybe_math,res_token(p))
 		}
 	}
 }
@@ -5136,8 +4650,7 @@ func Go_translate() []interface{} {
 		err_print("! Missing '|' after Go text")
 @.Missing '|'...@>
 	}
-	app(cancel)
-	app_scrap(insert,maybe_math)
+	app_scrap(insert,maybe_math,cancel)
 				/* place a |cancel| token as a final ``comment'' */
 	p:=translate() /* make the translation */
 	scrap_info=save_scraps /* scrap the scraps */
@@ -5158,43 +4671,43 @@ program text.
 /* makes scraps from \GO/ tokens and comments */
 func outer_parse() {
 	for next_control<format_code {
+		var tok_mem []interface{}
 		if next_control!=begin_comment && next_control!=begin_short_comment {
 			Go_parse(ignore)
 		} else {
 			is_long_comment:=(next_control==begin_comment)
-			app(cancel)
-			app(inserted)
+			tok_mem=append(tok_mem,cancel,inserted)
 			if is_long_comment {
-				app_str("\\C{"@q}@>)
+				tok_mem=append(tok_mem,"\\C{"@q}@>)
 @.\\C@>
 			} else {
-				app_str("\\SHC{"@q}@>)
+				tok_mem=append(tok_mem,"\\SHC{"@q}@>)
 			}
 @.\\SHC@>
-			bal:=copy_comment(is_long_comment,1)  /* brace level in comment */
+			bal,tok_mem:=copy_comment(is_long_comment,1,tok_mem)  /* brace level in comment */
 			next_control=ignore
 			for bal>0 {
 				p:=tok_mem
 				tok_mem=nil
 				q:=Go_translate()/* partial comments */
-				app(list_token(p))
+				tok_mem=append(tok_mem,list_token(p))
 				if flags['e'] {
-					app_str("\\PB{")
+					tok_mem=append(tok_mem,"\\PB{")
 @.\\PB@>
 				}
-				app(inner_list_token(q))
+				tok_mem=append(tok_mem,inner_list_token(q))
 				if flags['e'] {
-					app('}') 
+					tok_mem=append(tok_mem,'}') 
 				}
 				if next_control=='|' {
-					bal=copy_comment(is_long_comment,bal)
+					bal,tok_mem=copy_comment(is_long_comment,bal,tok_mem)
 					next_control=ignore
 				} else {
 					bal=0 /* an error has been reported */
 				}
 			}
-			app(force)
-			app_scrap(insert,no_math)
+			tok_mem=append(tok_mem,force)
+			app_scrap(insert,no_math,tok_mem...)
 				/* the full comment becomes a scrap */
 		}
 	}
@@ -5338,8 +4851,15 @@ restart:
 		case []interface{}:
 			push_level(tok)
 			goto restart
+		case string:
+			var tok_mem []interface{}
+			for _, v := range tok {
+				tok_mem=append(tok_mem,v)
+			}			
+			push_level(tok_mem)
+			goto restart
 	}
-	panic(fmt.Sprintf( "Invalid type of scrap: %T", val))
+	panic(fmt.Sprintf( "Invalid type of scrap: %T(%v)", val,val))
 }
 
 @ The real work associated with token output is done by |make_output|.
@@ -5360,23 +4880,17 @@ while outputting the name of a section.
 @c
 /* outputs the current token list */
 func output_Go() {
-	save_tokens:=tok_mem
 	save_next_control:=next_control/* values to be restored */
 	next_control=ignore
 	p:=Go_translate()/* translation of the \GO/ text */
-	app(inner_list_token(p))
 	if flags['e'] {
 		out_str("\\PB{")
-		make_output()
+		make_output(inner_list_token(p))
 		out('}')
 @.\\PB@>
 	}@+else {
-		make_output() /* output the list */
+		make_output(inner_list_token(p)) /* output the list */
 	}
-	if len(tok_mem)>max_tok_ptr {
-		max_tok_ptr=len(tok_mem)
-	}
-	tok_mem = save_tokens/* forget the tokens */
 	next_control=save_next_control /* restore |next_control| to original state */
 }
 
@@ -5384,9 +4898,9 @@ func output_Go() {
 
 @ @c
 /* outputs the equivalents of tokens */
-func make_output() {
+func make_output(p interface{}) {
 	var c int /* count of |indent| and |outdent| tokens */
-	app(end_translation) /* append a sentinel */
+	tok_mem:=append([]interface{}{},p,end_translation) /* append a sentinel */
 	push_level(tok_mem)
 	tok_mem=nil
 	var b rune
@@ -5882,13 +5396,11 @@ takes place, so that the translation will normally end with \.{\\6} or
 func finish_Go(visible bool) {
 	if visible {
 		out_str("\\B")
-		app(force)
-		app_scrap(insert,no_math)
+		app_scrap(insert,no_math,force)
 		p:=translate() /* translation of the scraps */
 @.\\B@>
-		app(list_token(p))
 		scrap_info=nil
-		make_output() /* output the list */
+		make_output(list_token(p)) /* output the list */
 		if out_ptr>1 {
 			if out_buf[out_ptr-1]=='\\' {
 @.\\6@>
@@ -5904,10 +5416,6 @@ func finish_Go(visible bool) {
 		out_str("\\par")
 		finish_line()
 	}
-	if len(tok_mem)>max_tok_ptr {
-		max_tok_ptr=len(tok_mem) 
-	}
-	tok_mem=tok_mem[:0]
 }
 
 @ @<Start a format...@>= {
@@ -5919,18 +5427,15 @@ func finish_Go(visible bool) {
 		emit_space_if_needed()
 		save_position()
 	}
-	app_str("\\F") /* this will produce `\&{format }' */
+	tok_mem:=append([]interface{}{},"\\F") /* this will produce `\&{format }' */
 @.\\F@>
 	next_control=get_next()
 	if next_control==identifier {
-		app(id_token(id_lookup(id,normal)))
-		app(' ')
-		app(break_space) /* this is syntactically separate from what follows */
+		tok_mem=append(tok_mem,id_token(id_lookup(id,normal)),' ',break_space) /* this is syntactically separate from what follows */
 		next_control=get_next()
 		if next_control==identifier {
-			app(id_token(id_lookup(id,normal)))
-			app_scrap(Expression,maybe_math)
-			app_scrap(semi,maybe_math)
+			tok_mem=append(tok_mem,id_token(id_lookup(id,normal)))
+			app_scrap(Expression,maybe_math,tok_mem...)
 			next_control=get_next()
 		}
 	}
@@ -5976,6 +5481,7 @@ for {
 		break
 	}
 } /* allow optional `\.{+=}' */
+var tok_mem []interface{}
 if next_control!='=' && next_control!=eq_eq {
 	err_print("! You need an = sign after the section name")
 @.You need an = sign...@>
@@ -5983,25 +5489,23 @@ if next_control!='=' && next_control!=eq_eq {
 	next_control=get_next()
 }
 if out_ptr>1 && out_buf[out_ptr]=='Y' && out_buf[out_ptr-1]=='\\' {
-	app(backup)
+	tok_mem=append(tok_mem,backup)
 }
 		/* the section name will be flush left */
 @.\\Y@>
-app(section_token(this_section))
+tok_mem=append(tok_mem,section_token(this_section))
 cur_xref=name_dir[this_section].xref
 if xmem[cur_xref].num==file_flag {
 	cur_xref=xmem[cur_xref].xlink
 }
-app_str("${}")
+tok_mem=append(tok_mem,"${}")
 if xmem[cur_xref].num!=section_count+def_flag {
-	app_str("\\mathrel+") /*section name is multiply defined*/
+	tok_mem=append(tok_mem,"\\mathrel+") /*section name is multiply defined*/
 	this_section=-1 /*so we won't give cross-reference info here*/
 }
-app_str("\\E") /* output an equivalence sign */
+tok_mem=append(tok_mem,"\\E","{}$",force) /* output an equivalence sign */
 @.\\E@>
-app_str("{}$")
-app(force)
-app_scrap(dead,no_math)
+app_scrap(dead,no_math,tok_mem...)
 				/* this forces a line break unless `\.{@@+}' follows */
 
 @ @<Emit the scrap...@>=
@@ -6010,8 +5514,7 @@ if next_control<section_name {
 @.You can't do that...@>
 	next_control=get_next()
 } else if next_control==section_name {
-	app(section_token(cur_section))
-	app_scrap(section_scrap,maybe_math)
+	app_scrap(section_scrap,maybe_math,section_token(cur_section))
 	next_control=get_next()
 }
 
@@ -6484,10 +5987,8 @@ func section_print(p int32) {
 		section_print(name_dir[p].llink)
 		out_str("\\I")
 @.\\I@>
-		tok_mem=tok_mem[:0]
 		init_stack()
-		app(section_token(p))
-		make_output()
+		make_output(section_token(p))
 		footnote(cite_flag)
 		footnote(0) /* |cur_xref| was set by |make_output| */
 		finish_line() @/
@@ -6506,7 +6007,6 @@ func print_stats() {
 @.Memory usage statistics:@>
 	fmt.Println("%v names", len(name_dir))
 	fmt.Println("Parsing:")
-	fmt.Println("%v tokens", max_tok_ptr)
 	fmt.Println("Sorting:")
 	fmt.Println("%v levels ",max_sort_ptr)
 }
