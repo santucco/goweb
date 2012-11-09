@@ -170,7 +170,6 @@ custom rune= iota
 
 const(
 zero rune= iota
-Type rune= iota
 ArrayType rune= iota
 StructType rune= iota
 PointerType rune= iota
@@ -251,6 +250,7 @@ PackageClause rune= iota
 PackageName rune= iota
 ImportDecl rune= iota
 ImportSpec rune= iota
+Type rune= iota
 package_token rune= iota
 import_token rune= iota
 type_token rune= iota
@@ -5176,7 +5176,7 @@ case RecvStmt:/*286:*/
 //line goweave.w:3786
 
 if isCat(pp,ExpressionList)&&(isCat(pp+1,eq)||isCat(pp+1,col_eq))&&isCat(pp+2,Expression){
-reduce(pp,3,RecvStmt,0,62,pp,break_space,pp+1,break_space,pp+2)
+reduce(pp,3,RecvStmt,0,62,pp,pp+1,pp+2)
 }else if isCat(pp,Expression){
 reduce(pp,1,RecvStmt,0,62,pp)
 }
@@ -5329,7 +5329,7 @@ reduced= reduced_copy
 //line goweave.w:3862
 
 if isCat(pp,Expression){
-tok_mem= append(tok_mem,pp)
+tok_mem= append(tok_mem,break_space,pp)
 pp++
 }else{
 rollback()
@@ -5389,7 +5389,7 @@ reduced= reduced_copy
 //line goweave.w:3872
 
 if isCat(pp,SimpleStmt){
-tok_mem= append(tok_mem,pp)
+tok_mem= append(tok_mem,break_space,pp)
 pp++
 }else{
 rollback()
@@ -5406,7 +5406,7 @@ case RangeClause:/*292:*/
 //line goweave.w:3884
 
 if isCat(pp,ExpressionList)&&(isCat(pp+1,eq)||isCat(pp+1,col_eq))&&isCat(pp+2,range_token)&&isCat(pp+3,Expression){
-reduce(pp,4,RangeClause,0,66,pp,pp+1,break_space,pp+2,break_space,pp+3)
+reduce(pp,4,RangeClause,0,66,pp,pp+1,pp+2,break_space,pp+3)
 }
 
 /*:292*/
