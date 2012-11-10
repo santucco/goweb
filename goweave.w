@@ -4208,25 +4208,6 @@ func reduce(pp int, k int, c rune, d int, n int, s ...interface{}) {
 	@<Print a snapshot of the scrap list if debugging@>
 }
 
-@ Here's the |squash| procedure, which
-takes advantage of the simplification that occurs when |k==1|.
-
-@c
-/*func squash(pp int, k int, c rune,d int, n int) {
-	if k==1 {
-		reduced=true
-		reduced_cat=c
-		scrap_info[pp].cat=c
-		f := "squash"
-		@<Print a snapshot...@>
-	}
-	for i:=pp; i<pp+k; i++ {
-		big_app1(i)
-	}
-	reduce(pp,k,c,d,n)
-}
-*/
-
 @ And here now is the code that applies productions as long as possible.
 Before applying the production mechanism, we must make sure
 it has good input (at least four scraps, the length of the lhs of the
@@ -4617,7 +4598,6 @@ token list; it also builds a new scrap if |scrapping==true|.
 func app_cur_id() {
 	p:=id_lookup(id,normal)
 	if name_dir[p].ilk<=custom { /* not a reserved word */
-//	if p < res_wd_end {/* not a reserved word */
 		a1 := identifier
 		a2 := maybe_math
 		if name_dir[p].ilk==custom {

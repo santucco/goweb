@@ -106,7 +106,7 @@ eq_eq rune = 036 /* `\.{==}'\,;  corresponds to MIT's {\tentex\char'36} */
 or_or rune = 037 /* `\.{\v\v}'\,;  corresponds to MIT's {\tentex\char'37} */
 dot_dot_dot rune = 0202 /* `\.{...}'\,;  corresponds to MIT's {\tentex\char'16} */
 begin_comment rune = '\t' /* tab marks will not appear */
-and_not rune = 010  /*`\.{&^}'\,;*/
+and_not rune = 010  /*`\.{\&\^}'\,;*/
 direct rune = 0203 /*`\.{<-}'\,;*/
 begin_short_comment rune = 031 /* short comment */
 
@@ -136,7 +136,6 @@ func input_ln(fp *bufio.Reader) error {
 	buffer = nil
 	for buf, prefix, err = fp.ReadLine(); 
 		err == nil && prefix
-		/*err == nil && (prefix || len(buf) == 0); */
 		b, prefix, err = fp.ReadLine(){
 		buf = append(buf, b...)
 	}
