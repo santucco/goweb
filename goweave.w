@@ -52,7 +52,7 @@ under the terms of a permission notice identical to this one.
 @s not_eq normal @q unreserve a C++ keyword @>
 
 @** Introduction.
-This is the \.{GOWEAVE} program by Alexander Syhcev
+This is the \.{GOWEAVE} program by Alexander Sychev
 based on \.{CWEAVE} by Silvio Levy and Donald E. Knuth.
 
 The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
