@@ -52,8 +52,6 @@ const (
 @<Common constants@>@/
 )
 
-
-@h
 @<Definitions that should agree with \.{GOTANGLE} and \.{GOWEAVE}@>@/
 @<Other definitions@>@/
 
