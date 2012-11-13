@@ -386,12 +386,12 @@ id_lookup([]rune("uint64"),Type)
 id_lookup([]rune("uintptr"),Type)
 
 // constants
-id_lookup([]rune("true"),Type)
-id_lookup([]rune("false"),Type)
-id_lookup([]rune("iota"),Expression)
+id_lookup([]rune("true"),constant)
+id_lookup([]rune("false"),constant)
+id_lookup([]rune("iota"),constant)
 
 // zero value
-id_lookup([]rune("nil"),identifier)
+id_lookup([]rune("nil"),constant)
 
 // functions
 id_lookup([]rune("append"),identifier)
@@ -2454,7 +2454,6 @@ reduced_copy:=reduced
 reduced=false
 rollback:=func(){
 	if reduced {
-		n:=pp
 		scrap_info=scrap_info[:pp]
 		scrap_info=append(scrap_info,scraps_copy...)
 		f := "rollback"
@@ -2472,13 +2471,13 @@ code needs to be provided with a proper environment.
 @ @<Match a production at |pp|, or increase |pp| if there is no match@>= {
 	/* not a production with left side length 1 */	
 	if isCat(pp+1,insert) { 
-		reduce(pp,2,scrap_info[pp].cat,-2,0,pp,pp+1)
+		reduce(pp,2,scrap_info[pp].cat,pp,pp+1)
 		pp--
 	} else if isCat(pp+2,insert) { 
-		reduce(pp+1,2,scrap_info[pp+1].cat,-1,0,pp+1,pp+2)
+		reduce(pp+1,2,scrap_info[pp+1].cat,pp+1,pp+2)
 		pp--
 	} else if isCat(pp+3,insert) { 
-		reduce(pp+2,2,scrap_info[pp+2].cat,0,0,pp+2,pp+3)
+		reduce(pp+2,2,scrap_info[pp+2].cat,pp+2,pp+3)
 		pp--
 	} else {
 		switch scrap_info[pp].cat {
@@ -2637,13 +2636,13 @@ to be performed, followed by |goto found|.
 
 @ @<Cases for |insert|@>=
 if isNotCat(pp+1,zero) {
-	reduce(pp,2,scrap_info[pp+1].cat,0,0,pp,pp+1)
+	reduce(pp,2,scrap_info[pp+1].cat,pp,pp+1)
 }
 
 @ @<Cases for |PackageClause|@>=
 if isCat(pp,package_token)  && isCat(pp+1,identifier) {
 	make_reserved(pp+1,PackageName)
-	reduce(pp,2,PackageClause,1,1,pp,break_space,pp+1,big_force)
+	reduce(pp,2,PackageClause,pp,break_space,pp+1,big_force)
 }
 
 @ Test for |package|
@@ -2656,7 +2655,7 @@ package main
 @ @<Cases for |ConstDecl|@>= 
 if isCat(pp,const_token) {
 	if isCat(pp+1,ConstSpec) {
-		reduce(pp,2,ConstDecl,0,2,pp,break_space,pp+1,big_force)
+		reduce(pp,2,ConstDecl,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:ConstSpec,mand:true},cat_pair{cat:semi,mand:false})	
@@ -2674,7 +2673,7 @@ if isCat(pp,const_token) {
 				}
 			}
 			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,ConstDecl,0,2,tok_mem...)
+			reduce(pp,3+c,ConstDecl,tok_mem...)
 		}	
 	}
 }
@@ -2704,7 +2703,7 @@ const u, v float32 = 0, 3
 @ @<Cases for |TypeDecl|@>= 
 if isCat(pp,type_token) {
 	if isCat(pp+1,TypeSpec) {
-		reduce(pp,2,TypeDecl,0,3,pp,break_space,pp+1,big_force)
+		reduce(pp,2,TypeDecl,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:TypeSpec,mand:true},cat_pair{cat:semi,mand:false})
@@ -2722,7 +2721,7 @@ if isCat(pp,type_token) {
 				}
 			}
 			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,TypeDecl,0,3,tok_mem...)
+			reduce(pp,3+c,TypeDecl,tok_mem...)
 		}
 	} 
 }
@@ -2756,7 +2755,7 @@ type Block interface {
 @ @<Cases for |VarDecl|@>=
 if isCat(pp,var_token) {
 	if isCat(pp+1,VarSpec) {
-		reduce(pp,2,VarDecl,0,4,pp,break_space,pp+1,big_force)
+		reduce(pp,2,VarDecl,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:VarSpec,mand:true},cat_pair{cat:semi,mand:false}) 
@@ -2774,7 +2773,7 @@ if isCat(pp,var_token) {
 				}
 			}
 			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,VarDecl,0,4,tok_mem...)
+			reduce(pp,3+c,VarDecl,tok_mem...)
 		}
 	} 
 }
@@ -2811,7 +2810,7 @@ var _, found = entries[name]
 if isCat(pp,import_token) {
 	@<Making copy...@>
 	if isCat(pp+1,ImportSpec) {
-		reduce(pp,2,ImportDecl,0,5,pp,break_space,pp+1,big_force)
+		reduce(pp,2,ImportDecl,pp,break_space,pp+1,big_force)
 	} else if rollback(); isCat(pp+1,lpar) {
 		c:=0
 		isCats(pp+2,&c,cat_pair{cat:ImportSpec,mand:true},cat_pair{cat:semi,mand:false})
@@ -2829,7 +2828,7 @@ if isCat(pp,import_token) {
 				}
 			}
 			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,ImportDecl,0,5,tok_mem...)	
+			reduce(pp,3+c,ImportDecl,tok_mem...)	
 		} 
 	}
 }
@@ -2865,10 +2864,10 @@ if isCat(pp,func_token) && isCat(pp+1,identifier) && isCat(pp+2,Signature){
 	@<Making copy...@>
 	pp-=3
 	if isCat(pp+3,Block) {
-		reduce(pp,4,FunctionDecl,0,6,pp,break_space,pp+1,pp+2,pp+3)	
+		reduce(pp,4,FunctionDecl,pp,break_space,pp+1,pp+2,pp+3)	
 	} else {
 		rollback()
-		reduce(pp,3,FunctionDecl,0,6,pp,break_space,pp+1,pp+2)	
+		reduce(pp,3,FunctionDecl,pp,break_space,pp+1,pp+2)	
 	}
 }
 
@@ -2893,10 +2892,10 @@ if isCat(pp,func_token) && isCat(pp+1,Receiver) && isCat(pp+2,identifier) && isC
 	@<Making copy...@>
 	pp-=3
 	if isCat(pp+4,Block) {
-		reduce(pp,5,MethodDecl,0,7,pp,break_space,pp+1,break_space,pp+2,pp+3,pp+4,force)
+		reduce(pp,5,MethodDecl,pp,break_space,pp+1,break_space,pp+2,pp+3,pp+4,force)
 	} else {
 		rollback()
-		reduce(pp,4,MethodDecl,0,7,pp,break_space,pp+1,break_space,pp+2,pp+3)
+		reduce(pp,4,MethodDecl,pp,break_space,pp+1,break_space,pp+2,pp+3)
 	}
 }
 
@@ -2920,14 +2919,14 @@ func (p *Point) Scale(factor float64) {
 if isCat(pp,lpar) {
 	if isCat(pp+1,identifier) {
 		if isCat(pp+2,asterisk) && isCat(pp+3,identifier) && isCat(pp+4,rpar){
-			reduce(pp,5,Receiver,0,8,pp,pp+1,pp+2,pp+3,pp+4)
+			reduce(pp,5,Receiver,pp,pp+1,pp+2,pp+3,pp+4)
 		} else if rollback(); isCat(pp+2,identifier) && isCat(pp+3,rpar) {
-			reduce(pp,4,Receiver,0,8,pp,pp+1,pp+2,pp+3)
+			reduce(pp,4,Receiver,pp,pp+1,pp+2,pp+3)
 		} else if rollback(); isCat(pp+2,rpar) {
-			reduce(pp,3,Receiver,0,8,pp,pp+1,pp+2)
+			reduce(pp,3,Receiver,pp,pp+1,pp+2)
 		}
 	} else if rollback(); isCat(pp+1,asterisk) && isCat(pp+2,identifier) && isCat(pp+3,rpar) {
-		reduce(pp,4,Receiver,0,8,pp,pp+1,pp+2,pp+3)
+		reduce(pp,4,Receiver,pp,pp+1,pp+2,pp+3)
 	}
 }
 
@@ -2937,19 +2936,19 @@ if isCat(pp,IdentifierList) {
 	@<Making copy...@>
 	pp--
 	if isCat(pp+1,Type) && isCat(pp+2,eq) && isCat(pp+3,ExpressionList) {
-		reduce(pp,4,ConstSpec,0,9,pp,break_space,pp+1,break_space,pp+2,break_space,pp+3)
+		reduce(pp,4,ConstSpec,pp,break_space,pp+1,break_space,pp+2,break_space,pp+3)
 	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
-		reduce(pp,3,ConstSpec,0,9,pp,break_space,pp+1,break_space,pp+2)
+		reduce(pp,3,ConstSpec,pp,break_space,pp+1,break_space,pp+2)
 	}
 } else if rollback(); isCat(pp, section_scrap) {
-	reduce(pp,1,ConstSpec,0,9,pp)
+	reduce(pp,1,ConstSpec,pp)
 }
 
 @ @<Cases for |TypeSpec|@>=
 if isCat(pp,identifier) && isCat(pp+1,Type) {
-	reduce(pp,2,TypeSpec,0,10,pp,break_space,pp+1)
+	reduce(pp,2,TypeSpec,pp,break_space,pp+1)
 } else if rollback(); isCat(pp, section_scrap) {
-	reduce(pp,1,TypeSpec,0,10,pp)
+	reduce(pp,1,TypeSpec,pp)
 }
 
 @ @<Cases for |VarSpec|@>=
@@ -2959,15 +2958,15 @@ if isCat(pp,IdentifierList) {
 	pp--
 	if isCat(pp+1,Type) {
 		if isCat(pp+2,eq) && isCat(pp+3,ExpressionList) {
-			reduce(pp,4,VarSpec,0,11,pp,break_space,pp+1,pp+2,pp+3)
+			reduce(pp,4,VarSpec,pp,break_space,pp+1,pp+2,pp+3)
 		} else {
-			reduce(pp,2,VarSpec,0,11,pp,break_space,pp+1)
+			reduce(pp,2,VarSpec,pp,break_space,pp+1)
 		}
 	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
-		reduce(pp,3,VarSpec,0,11,pp,pp+1,pp+2)
+		reduce(pp,3,VarSpec,pp,pp+1,pp+2)
 	}
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,VarSpec,0,11,pp)	
+	reduce(pp,1,VarSpec,pp)	
 }
 
 @ @<Cases for |ImportSpec|@>=
@@ -2975,17 +2974,17 @@ if isCat(pp,identifier) && isCat(pp+1,str) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
 	make_reserved(pp,PackageName)
-	reduce(pp,2+c,ImportSpec,0,12,pp,break_space,pp+1)
+	reduce(pp,2+c,ImportSpec,pp,break_space,pp+1)
 } else if isCat(pp,dot) && isCat(pp+1,str) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
-	reduce(pp,2+c,ImportSpec,0,12,pp,break_space,pp+1)
+	reduce(pp,2+c,ImportSpec,pp,break_space,pp+1)
 } else if isCat(pp,str) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:semi,mand:false})
-	reduce(pp,1+c,ImportSpec,0,12,pp)
+	reduce(pp,1+c,ImportSpec,pp)
 } else if isCat(pp,section_scrap) {
-	reduce(pp,1,ImportSpec,0,12,pp)
+	reduce(pp,1,ImportSpec,pp)
 }
 
 @ @<Cases for |FieldDecl|@>=
@@ -2996,7 +2995,7 @@ if isCat(pp,IdentifierList) && isCat(pp+1,Type) {
 		tok_mem=append(tok_mem,break_space,pp+2)
 		p++
 	}
-	reduce(pp,p-pp,FieldDecl,0,13,tok_mem...)
+	reduce(pp,p-pp,FieldDecl,tok_mem...)
 } else if rollback(); isCat(pp,AnonymousField) {
 	tok_mem:=append([]interface{}{},pp)
 	p:=pp+1
@@ -3004,28 +3003,28 @@ if isCat(pp,IdentifierList) && isCat(pp+1,Type) {
 		tok_mem=append(tok_mem,pp,break_space,pp+1,break_space,pp+1)
 		p++
 	}
-	reduce(pp,p-pp,FieldDecl,0,13,tok_mem...)
+	reduce(pp,p-pp,FieldDecl,tok_mem...)
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,FieldDecl,0,13,pp)
+	reduce(pp,1,FieldDecl,pp)
 }
 
 @ @<Cases for |AnonymousField|@>=
 if isCat(pp,asterisk) && isCat(pp+1,Type) {
-	reduce(pp,2,AnonymousField,0,14,pp,pp+1)
+	reduce(pp,2,AnonymousField,pp,pp+1)
 } else if rollback(); isCat(pp,Type) {
-	reduce(pp,1,AnonymousField,0,14,pp)
+	reduce(pp,1,AnonymousField,pp)
 }
 
 @ @<Cases for |Type|@>=
 if  isCat(pp,ArrayType) || isCat(pp,StructType) || isCat(pp,PointerType) || 
 	isCat(pp,FunctionType) || isCat(pp,InterfaceType) || isCat(pp,SliceType) || 
 	isCat(pp,MapType) || isCat(pp,ChannelType) || isCat(pp,QualifiedIdent) {
-	reduce(pp,1,Type,0,15,pp)
+	reduce(pp,1,Type,pp)
 }
 
 @ @<Cases for |ArrayType|@>=
 if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
-	reduce(pp,4,ArrayType,0,16,pp,pp+1,pp+2,pp+3)
+	reduce(pp,4,ArrayType,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |StructType|@>=
@@ -3043,7 +3042,7 @@ if isCat(pp,struct_token) && isCat(pp+1,lbrace) {
 			}
 		}
 		tok_mem=append(tok_mem,outdent,pp+2+c)
-		reduce(pp,3+c,StructType,0,17,tok_mem...)
+		reduce(pp,3+c,StructType,tok_mem...)
 	}
 }
 
@@ -3081,7 +3080,7 @@ struct {
 
 @ @<Cases for |PointerType|@>=
 if isCat(pp,asterisk) && isCat(pp+1,Type) {
-	reduce(pp,2,PointerType,0,18,pp,pp+1)
+	reduce(pp,2,PointerType,pp,pp+1)
 }
 
 @ @<Cases for |Signature|@>=
@@ -3090,13 +3089,13 @@ if isCat(pp,Parameters) {
 	@<Making copy...@>
 	pp--
 	if isCat(pp+1,Type) || isCat(pp+1,Parameters) {
-		reduce(pp,2,Signature,0,19,pp,break_space,pp+1)
+		reduce(pp,2,Signature,pp,break_space,pp+1)
 	} else {
 		rollback()
-		reduce(pp,1,Signature,0,19,pp)
+		reduce(pp,1,Signature,pp)
 	}
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,Signature,0,19,pp)
+	reduce(pp,1,Signature,pp)
 }
 
 @ @<Cases for |Parameters|@>=
@@ -3109,10 +3108,10 @@ if isCat(pp,lpar) {
 			tok_mem=append(tok_mem,pp+1+i)
 		}
 		tok_mem=append(tok_mem,pp+1+c)
-		reduce(pp,2+c,Parameters,0,20,tok_mem...)
+		reduce(pp,2+c,Parameters,tok_mem...)
 	}
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,Signature,0,20,pp)
+	reduce(pp,1,Signature,pp)
 }
 
 @ @<Cases for |ParameterList|@>=
@@ -3123,18 +3122,18 @@ if isCat(pp,ParameterDecl) {
 	for i:=0;i<c;i++ {
 		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,ParameterList,0,21,tok_mem...)
+	reduce(pp,1+c,ParameterList,tok_mem...)
 }
 
 @ @<Cases for |ParameterDecl|@>=
 if isCat(pp,IdentifierList) && isCat(pp+1,dot_dot_dot) &&  isCat(pp+2,Type) {
-	reduce(pp,3,ParameterDecl,0,22,pp,break_space,pp+1,pp+2)
+	reduce(pp,3,ParameterDecl,pp,break_space,pp+1,pp+2)
 } else if rollback(); isCat(pp,IdentifierList) && isCat(pp+1,Type) {
-	reduce(pp,2,ParameterDecl,0,22,pp,break_space,pp+1)
+	reduce(pp,2,ParameterDecl,pp,break_space,pp+1)
 } else if rollback(); isCat(pp,dot_dot_dot) &&  isCat(pp+1,Type) {
-	reduce(pp,2,ParameterDecl,0,22,pp,pp+1)
+	reduce(pp,2,ParameterDecl,pp,pp+1)
 } else if rollback(); isCat(pp,Type) {
-	reduce(pp,1,ParameterDecl,0,22,pp)
+	reduce(pp,1,ParameterDecl,pp)
 }
 
 break
@@ -3153,7 +3152,7 @@ if isCat(pp,dot_dot_dot) {
 if isCat(pp,Type) {
 	tok_mem=append(tok_mem,pp)
 	pp+=1
-	reduce(p,pp-p,ParameterDecl,0,22,tok_mem...)
+	reduce(p,pp-p,ParameterDecl,tok_mem...)
 }
 pp=p
 
@@ -3169,37 +3168,37 @@ if isCat(pp,interface_token) && isCat(pp+1,lbrace) {
 			}
 		}
 		tok_mem=append(tok_mem,outdent,pp+2+c)
-		reduce(pp,3+c,InterfaceType,0,23,tok_mem...)
+		reduce(pp,3+c,InterfaceType,tok_mem...)
 	}
 }
 
 @ @<Cases for |MethodSpec|@>=
 if isCat(pp,identifier) && isCat(pp+1,Signature) {
-	reduce(pp,2,MethodSpec,0,24,pp,pp+1)
+	reduce(pp,2,MethodSpec,pp,pp+1)
 } else if rollback(); isCat(pp,Type) {
-	reduce(pp,1,MethodSpec,0,24,pp)	
+	reduce(pp,1,MethodSpec,pp)	
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,MethodSpec,0,24,pp)	
+	reduce(pp,1,MethodSpec,pp)	
 }
 
 @ @<Cases for |SliceType|@>=
 if isCat(pp,lbracket) && isCat(pp+1,rbracket) && isCat(pp+2,Type) {
-	reduce(pp,3,SliceType,0,25,pp,pp+1,pp+2)
+	reduce(pp,3,SliceType,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |MapType|@>=
 if isCat(pp,map_token) && isCat(pp+1,lbracket) && isCat(pp+2,Type) && isCat(pp+3,rbracket) && isCat(pp+4,Type) {
-	reduce(pp,5,MapType,0,26,pp,pp+1,pp+2,pp+3,pp+4)
+	reduce(pp,5,MapType,pp,pp+1,pp+2,pp+3,pp+4)
 }
 
 @ @<Cases for |ChannelType|@>=
 if isCat(pp,direct) && isCat(pp+1,chan_token) && isCat(pp+2,Type) {
-	reduce(pp,3,ChannelType,0,27,pp,pp+1,break_space,pp+2)
+	reduce(pp,3,ChannelType,pp,pp+1,break_space,pp+2)
 } else if rollback(); isCat(pp,chan_token) { 
 	if isCat(pp+1,direct) && isCat(pp+2,Type) {
-		reduce(pp,3,ChannelType,0,27,pp,pp+1,pp+2)
+		reduce(pp,3,ChannelType,pp,pp+1,pp+2)
 	} else if isCat(pp+1,Type) {
-		reduce(pp,2,ChannelType,0,27,pp,break_space,pp+1)
+		reduce(pp,2,ChannelType,pp,break_space,pp+1)
 	}
 }
 
@@ -3211,7 +3210,7 @@ if isCat(pp,identifier) {
 	for i:=0;i<c;i++ {
 		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,IdentifierList,0,28,tok_mem...)
+	reduce(pp,1+c,IdentifierList,tok_mem...)
 } 
 
 @ @<Cases for |ExpressionList|@>=
@@ -3222,26 +3221,32 @@ if isCat(pp,Expression) {
 	for i:=0;i<c;i++ {
 		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,ExpressionList,0,29,tok_mem...)
+	reduce(pp,1+c,ExpressionList,tok_mem...)
 }
 
 @ @<Cases for |Expression|@>= 
-if isCat(pp,UnaryExpr) && isCat(pp+1,binary_op) && isCat(pp+2,UnaryExpr) {
-	reduce(pp,3,Expression,0,30,pp,pp+1,pp+2)
-} else if rollback(); isCat(pp,UnaryExpr) {
-	reduce(pp,1,Expression,0,30,pp)
+if isCat(pp,UnaryExpr) {
+	reduce(pp,1,Expression,pp)
+	for isCat(pp,Expression) {
+		if isCat(pp+1,binary_op) && isCat(pp+2,UnaryExpr) {
+			reduce(pp,3,Expression,pp,pp+1,pp+2)
+		} else {
+			break
+		}	
+	}
+	reduced_cat=Expression
 }
 
 @ @<Cases for |UnaryExpr|@>=
-if isCat(pp,unary_op) && isCat(pp+1,UnaryExpr) {
-	reduce(pp,2,UnaryExpr,0,31,pp,pp+1)
-} else if isCat(pp,PrimaryExpr) {
-	reduce(pp,1,UnaryExpr,0,31,pp)
+ if isCat(pp,PrimaryExpr) {
+	reduce(pp,1,UnaryExpr,pp)
+} else if isCat(pp,unary_op) && isCat(pp+1,UnaryExpr) {
+	reduce(pp,2,UnaryExpr,pp,pp+1)
 }
 
 @ @<Cases for |binary_op|@>=
 if isCat(pp,rel_op) || isCat(pp,add_op) || isCat(pp,mul_op) || isCat(pp,asterisk) {
-	reduce(pp,1,binary_op,0,32,pp)
+	reduce(pp,1,binary_op,pp)
 }
 
 @ @<Cases for |PrimaryExpr|@>=
@@ -3250,30 +3255,30 @@ if isCat(pp,BuiltinCall) || isCat(pp,Conversion) || isCat(pp,Operand) {
 	@<Making copy...@>
 	pp--
 	if isCat(pp+1,Selector) || isCat(pp+1,Index) || isCat(pp+1,Slice) || isCat(pp+1,TypeAssertion) || isCat(pp+1,Call) {
-		reduce(pp,2,PrimaryExpr,0,33,pp,pp+1)
+		reduce(pp,2,PrimaryExpr,pp,pp+1)
 	} else {
 		rollback()
-		reduce(pp,1,PrimaryExpr,0,33,pp)
+		reduce(pp,1,PrimaryExpr,pp)
 	}
 }
 
 @ @<Cases for |Operand|@>=
 if isCat(pp,str) || isCat(pp,constant) || isCat(pp,QualifiedIdent) || isCat(pp,CompositeLit) || isCat(pp,FunctionLit)  || isCat(pp,MethodExpr) {
-	reduce(pp,1,Operand,0,34,pp)
+	reduce(pp,1,Operand,pp)
 } else if rollback(); isCat(pp,lpar) && isCat(pp+1,Expression) && isCat(pp+2,rpar) {
-	reduce(pp,3,Operand,0,34,pp,pp+1,pp+2)
+	reduce(pp,3,Operand,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |CompositeLit|@>=
 if isCat(pp,LiteralType) && isCat(pp+1,LiteralValue) {
-	reduce(pp,2,CompositeLit,0,35,pp,break_space,pp+1)
+	reduce(pp,2,CompositeLit,pp,break_space,pp+1)
 }
 
 @ @<Cases for |LiteralType|@>=
 if isCat(pp,Type) {
-	reduce(pp,1,LiteralType,0,36,pp)
+	reduce(pp,1,LiteralType,pp)
 } else if rollback(); isCat(pp,lbracket) && isCat(pp+1,dot_dot_dot) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
-	reduce(pp,4,LiteralType,0,36,pp,pp+1,pp+2,pp+3)
+	reduce(pp,4,LiteralType,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |LiteralValue|@>=
@@ -3286,7 +3291,7 @@ if isCat(pp,lbrace) {
 			tok_mem=append(tok_mem,pp+1+i)
 		}
 		tok_mem=append(tok_mem,pp+1+c)
-		reduce(pp,2+c,LiteralValue,0,37,tok_mem...)
+		reduce(pp,2+c,LiteralValue,tok_mem...)
 	}
 }
 
@@ -3298,7 +3303,7 @@ if isCat(pp,Element) {
 	for i:=0;i<c;i++ {
 		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,ElementList,0,38,tok_mem...)
+	reduce(pp,1+c,ElementList,tok_mem...)
 }
 
 @ @<Cases for |Element|@>=
@@ -3307,22 +3312,22 @@ if (isCat(pp,identifier) || isCat(pp,Expression)) && isCat(pp+1,colon) {
 	@<Making copy...@>
 	pp-=2
 	if isCat(pp+2,Expression) {
-		reduce(pp,3,Element,0,39,pp,pp+1,break_space,pp+2)
+		reduce(pp,3,Element,pp,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+2,LiteralValue) {
-		reduce(pp,3,Element,0,39,pp,pp+1,break_space,pp+2)
+		reduce(pp,3,Element,pp,pp+1,break_space,pp+2)
 	}
 } else if isCat(pp,Expression) || isCat(pp,LiteralValue) {
-	reduce(pp,1,Element,0,39,pp)
+	reduce(pp,1,Element,pp)
 }
 
 @ @<Cases for |FunctionLit|@>=
 if isCat(pp,FunctionType) && isCat(pp+1,Block) {
-	reduce(pp,2,FunctionLit,0,40,pp,pp+1)
+	reduce(pp,2,FunctionLit,pp,pp+1)
 }
 
 @ @<Cases for |FunctionType|@>=
 if isCat(pp,func_token) && isCat(pp+1,Signature) {
-	reduce(pp,2,FunctionType,0,42,pp,pp+1)
+	reduce(pp,2,FunctionType,pp,pp+1)
 }
 
 @ @<Cases for |Block|@>=
@@ -3330,14 +3335,20 @@ if isCat(pp,lbrace) {
 	c:=0
 	isCats(pp+1,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
 	if isCat(pp+1+c,rbrace) {
-		tok_mem:=append([]interface{}{},pp,big_force,indent)
+		tok_mem:=append([]interface{}{},pp)
 		for i:=0;i<c;i++ {
+			if i==0 {
+				tok_mem=append(tok_mem,force,indent)
+			}
 			if isCat(pp+1+i,Statement) {
 				tok_mem=append(tok_mem,pp+1+i,force)
 			}
+			if i==c-1 {
+				tok_mem=append(tok_mem,outdent)
+			}
 		}
-		tok_mem=append(tok_mem,outdent,pp+1+c)
-		reduce(pp,2+c,Block,0,43,tok_mem...)
+		tok_mem=append(tok_mem,pp+1+c)
+		reduce(pp,2+c,Block,tok_mem...)
 	}
 }
 
@@ -3352,17 +3363,17 @@ if isCat(pp,lbrace) {
 
 @ @<Cases for |Statement|@>=
 if isCat(pp,ConstDecl) || isCat(pp,VarDecl) || isCat(pp,TypeDecl) ||
-	isCat(pp,LabeledStmt) || isCat(pp,SimpleStmt) ||
+	isCat(pp,LabeledStmt) ||
 	isCat(pp,GoStmt) || isCat(pp,ReturnStmt) || isCat(pp,BreakStmt) || isCat(pp,ContinueStmt) || 
 	isCat(pp,GotoStmt) || isCat(pp,fallthrough_token) || isCat(pp,Block) || isCat(pp,IfStmt) || 
 	isCat(pp,ExprSwitchStmt) || isCat(pp,TypeSwitchStmt) || isCat(pp,SelectStmt) || 
-	isCat(pp,ForStmt) || isCat(pp,DeferStmt) {
-	reduce(pp,1,Statement,0,44,pp)
+	isCat(pp,ForStmt) || isCat(pp,DeferStmt) || isCat(pp,SimpleStmt) || isCat(pp,section_scrap) {
+	reduce(pp,1,Statement,pp,big_force)
 }
 
 @ @<Cases for |LabeledStmt|@>=
 if isCat(pp,identifier) && isCat(pp+1,colon) && isCat(pp+2,Statement) {
-	reduce(pp,3,LabeledStmt,0,45,pp,pp+1,break_space,pp+2)
+	reduce(pp,3,LabeledStmt,pp,pp+1,force,pp+2)
 }
 
 
@@ -3375,12 +3386,12 @@ Error: log.Panic("error encountered")
 
 @ @<Cases for |SimpleStmt|@>=
 if isCat(pp,SendStmt) || isCat(pp,IncDecStmt) || isCat(pp,Assignment) || isCat(pp,ShortVarDecl) || isCat(pp,Expression) {
-	reduce(pp,1,SimpleStmt,0,46,pp)
+	reduce(pp,1,SimpleStmt,pp)
 } 
 
 @ @<Cases for |GoStmt|@>=
 if isCat(pp,go_token) && isCat(pp+1,Expression) {
-	reduce(pp,2,GoStmt,0,47,pp,break_space,pp+1)
+	reduce(pp,2,GoStmt,pp,break_space,pp+1)
 }
 
 @ Tests for |go|
@@ -3396,9 +3407,9 @@ go func(ch chan<- bool) { for { sleep(10); ch <- true; }} (c)
 
 @ @<Cases for |ReturnStmt|@>=
 if isCat(pp,return_token) && isCat(pp+1,ExpressionList) {
-	reduce(pp,2,ReturnStmt,0,48,pp,break_space,pp+1)
+	reduce(pp,2,ReturnStmt,pp,break_space,pp+1)
 } else if rollback();  isCat(pp,return_token) {
-	reduce(pp,1,ReturnStmt,0,48,pp)
+	reduce(pp,1,ReturnStmt,pp)
 }
 
 @ Tests for |return|
@@ -3418,9 +3429,9 @@ return complexF1()
 @ @<Cases for |BreakStmt|@>=
 if isCat(pp,break_token) {
 	if isCat(pp+1,identifier) {
-		reduce(pp,2,BreakStmt,0,49,pp,break_space,pp+1)
+		reduce(pp,2,BreakStmt,pp,break_space,pp+1)
 	} else {
-		reduce(pp,1,BreakStmt,0,49,pp)
+		reduce(pp,1,BreakStmt,pp)
 	}
 }
 
@@ -3447,9 +3458,9 @@ for i < n {
 
 @ @<Cases for |ContinueStmt|@>=
 if isCat(pp,continue_token) && isCat(pp+1,identifier) {
-	reduce(pp,2,ContinueStmt,0,50,pp,break_space,pp+1)
+	reduce(pp,2,ContinueStmt,pp,break_space,pp+1)
 } else if rollback(); isCat(pp,continue_token) {
-	reduce(pp,1,ContinueStmt,0,50,pp)
+	reduce(pp,1,ContinueStmt,pp)
 }
 
 @ Tests for |continue|
@@ -3475,7 +3486,7 @@ for i < n {
 
 @ @<Cases for |GotoStmt|@>=
 if isCat(pp,goto_token) && isCat(pp+1,identifier) {
-	reduce(pp,2,GotoStmt,0,51,pp,break_space,pp+1)
+	reduce(pp,2,GotoStmt,pp,break_space,pp+1)
 }
 
 @ Tests for |goto|
@@ -3507,8 +3518,7 @@ if isCat(pp,if_token) {
 		} else {
 			rollback()
 		}
-		pp++
-		reduce(p,pp-p,IfStmt,0,52,tok_mem...)
+		reduce(p,pp-p,IfStmt,tok_mem...)
 	} 
 }
 pp=p
@@ -3571,7 +3581,7 @@ if isCat(pp,switch_token) {
 			}
 			tok_mem=append(tok_mem,pp+1+c)
 			pp+=2+c
-			reduce(p,pp-p,ExprSwitchStmt,0,53,tok_mem...)
+			reduce(p,pp-p,ExprSwitchStmt,tok_mem...)
 		}
 	}
 }
@@ -3593,7 +3603,7 @@ if isCat(pp,case_token) && isCat(pp+1,ExpressionList) && isCat(pp+2,colon) {
 			tok_mem=append(tok_mem,outdent)
 		}
 	}
-	reduce(pp,3+c,ExprCaseClause,0,54,tok_mem...)
+	reduce(pp,3+c,ExprCaseClause,tok_mem...)
 } else if rollback(); isCat(pp,default_token) && isCat(pp+1,colon) {
 	c:=0
 	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
@@ -3609,9 +3619,9 @@ if isCat(pp,case_token) && isCat(pp+1,ExpressionList) && isCat(pp+2,colon) {
 			tok_mem=append(tok_mem,outdent)
 		}
 	}
-	reduce(pp,2+c,ExprCaseClause,0,54,tok_mem...)
+	reduce(pp,2+c,ExprCaseClause,tok_mem...)
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,ExprCaseClause,0,54,pp)
+	reduce(pp,1,ExprCaseClause,pp)
 }
 
 @ @<Cases for |TypeSwitchStmt|@>=
@@ -3640,7 +3650,7 @@ if isCat(pp,switch_token) {
 			}
 			tok_mem=append(tok_mem,pp+3+c)
 			pp+=4+c
-			reduce(p,pp-p,TypeSwitchStmt,0,55,tok_mem...)
+			reduce(p,pp-p,TypeSwitchStmt,tok_mem...)
 		}
 	}
 }
@@ -3648,9 +3658,9 @@ pp=p
 
 @ @<Cases for |TypeSwitchGuard|@>=
 if isCat(pp,identifier) && isCat(pp+1,col_eq) && isCat(pp+2,PrimaryExpr) && isCat(pp+3,dot) && isCat(pp+4,lpar) && isCat(pp+5,type_token) && isCat(pp+6,rpar){
-	reduce(pp,7,TypeSwitchGuard,0,56,pp,pp+1,pp+2,pp+3,pp+4,pp+5,pp+6)
+	reduce(pp,7,TypeSwitchGuard,pp,pp+1,pp+2,pp+3,pp+4,pp+5,pp+6)
 } else if rollback(); isCat(pp,PrimaryExpr) && isCat(pp+1,dot) && isCat(pp+2,lpar) && isCat(pp+3,type_token) && isCat(pp+4,rpar) {
-	reduce(pp,5,TypeSwitchGuard,0,56,pp,pp+1,pp+2,pp+3,pp+4)
+	reduce(pp,5,TypeSwitchGuard,pp,pp+1,pp+2,pp+3,pp+4)
 }
 
 @ @<Cases for |TypeCaseClause|@>=
@@ -3669,9 +3679,9 @@ if isCat(pp,TypeSwitchCase) && isCat(pp+1,colon) {
 			tok_mem=append(tok_mem,outdent)
 		}
 	}
-	reduce(pp,2+c,TypeCaseClause,0,57,tok_mem...)
+	reduce(pp,2+c,TypeCaseClause,tok_mem...)
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,TypeCaseClause,0,57,pp)
+	reduce(pp,1,TypeCaseClause,pp)
 }
 
 @ @<Cases for |TypeSwitchCase|@>=
@@ -3682,11 +3692,11 @@ if isCat(pp,case_token) && isCat(pp+1,Type) {
 	for i:=0;i<c;i++ {
 		tok_mem=append(tok_mem,pp+2+i)
 	}
-	reduce(pp,2+c,TypeSwitchCase,0,58,tok_mem...)
+	reduce(pp,2+c,TypeSwitchCase,tok_mem...)
 } else if rollback(); isCat(pp,default_token) {
-	reduce(pp,1,TypeSwitchCase,0,58,pp)
+	reduce(pp,1,TypeSwitchCase,pp)
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,TypeSwitchCase,0,58,pp)
+	reduce(pp,1,TypeSwitchCase,pp)
 }
 
 @ Tests for |switch|
@@ -3747,7 +3757,7 @@ if isCat(pp,select_token) && isCat(pp+1,lbrace){
 			}
 		}
 		tok_mem=append(tok_mem,pp+2+c)
-		reduce(pp,3+c,SelectStmt,0,59,tok_mem...)
+		reduce(pp,3+c,SelectStmt,tok_mem...)
 	}
 }
 
@@ -3767,32 +3777,32 @@ if isCat(pp,CommCase) && isCat(pp+1,colon) {
 			tok_mem=append(tok_mem,outdent)
 		}
 	}
-	reduce(pp,2+c,CommClause,0,60,tok_mem...)
+	reduce(pp,2+c,CommClause,tok_mem...)
 }
 
 @ @<Cases for |CommCase|@>=
 if isCat(pp,case_token) {
 	if isCat(pp+1,SendStmt) { 
-		reduce(pp,2,CommCase,0,61,pp,break_space,pp+1)
+		reduce(pp,2,CommCase,pp,break_space,pp+1)
 	} else if rollback(); isCat(pp+1,RecvStmt) {
-		reduce(pp,2,CommCase,0,61,pp,break_space,pp+1)
+		reduce(pp,2,CommCase,pp,break_space,pp+1)
 	}
 } else if rollback(); isCat(pp,default_token) {
-	reduce(pp,1,CommCase,0,61,pp)
+	reduce(pp,1,CommCase,pp)
 } else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,CommCase,0,61,pp)
+	reduce(pp,1,CommCase,pp)
 }
 
 @ @<Cases for |RecvStmt|@>=
 if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,Expression) {
-	reduce(pp,3,RecvStmt,0,62,pp,pp+1,pp+2)
+	reduce(pp,3,RecvStmt,pp,pp+1,pp+2)
 } else if isCat(pp,Expression) {
-	reduce(pp,1,RecvStmt,0,62,pp)
+	reduce(pp,1,RecvStmt,pp)
 }
 
 @ @<Cases for |SendStmt|@>=
 if isCat(pp,Expression) && isCat(pp+1,direct) && isCat(pp+2,Expression) {
-	reduce(pp,3,SendStmt,0,63,pp,pp+1,pp+2)
+	reduce(pp,3,SendStmt,pp,pp+1,pp+2)
 }
 
 @ Tests for |send|
@@ -3837,13 +3847,13 @@ select {}
 if isCat(pp,for_token) {
 	@<Making copy...@>
 	if isCat(pp+1,Expression) && isCat(pp+2,Block) {
-		reduce(pp,3,ForStmt,0,64,pp,break_space,pp+1,break_space,pp+2)
+		reduce(pp,3,ForStmt,pp,break_space,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+1,ForClause) && isCat(pp+2,Block) {
-		reduce(pp,3,ForStmt,0,64,pp,break_space,pp+1,break_space,pp+2)
+		reduce(pp,3,ForStmt,pp,break_space,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+1,RangeClause) && isCat(pp+2,Block) {
-		reduce(pp,3,ForStmt,0,64,pp,break_space,pp+1,break_space,pp+2)
+		reduce(pp,3,ForStmt,pp,break_space,pp+1,break_space,pp+2)
 	} else if rollback(); isCat(pp+1,Block) {
-		reduce(pp,2,ForStmt,0,64,pp,pp+1)
+		reduce(pp,2,ForStmt,pp,pp+1)
 	}   
 }
 
@@ -3876,14 +3886,14 @@ if isCat(pp,semi) {
 		} else {
 			rollback()
 		}
-		reduce(p,pp-p,ForClause,0,65,tok_mem...)
+		reduce(p,pp-p,ForClause,tok_mem...)
 	}
 }
 pp=p
 
 @ @<Cases for |RangeClause|@>=
 if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,range_token) && isCat(pp+3,Expression) {
-	reduce(pp,4,RangeClause,0,66,pp,pp+1,pp+2,break_space,pp+3)
+	reduce(pp,4,RangeClause,pp,pp+1,pp+2,break_space,pp+3)
 }
 
 @ Tests for |for|
@@ -3913,7 +3923,7 @@ for i, s := range a {
 
 @ @<Cases for |DeferStmt|@>=
 if isCat(pp,defer_token) && isCat(pp+1,Expression) {
-	reduce(pp,2,DeferStmt,0,67,pp,break_space,pp+1)
+	reduce(pp,2,DeferStmt,pp,break_space,pp+1)
 }
 
 @ Tests for |defer|
@@ -3931,7 +3941,7 @@ defer func() {
 
 @ @<Cases for |IncDecStmt|@>=
 if isCat(pp,Expression) && (isCat(pp+1,plus_plus) || isCat(pp+1,minus_minus)) {
-	reduce(pp,2,IncDecStmt,0,68,pp,pp+1)
+	reduce(pp,2,IncDecStmt,pp,pp+1)
 }
 
 @ Tests for |incdec|
@@ -3946,7 +3956,7 @@ j--
 
 @ @<Cases for |Assignment|@>=
 if isCat(pp,ExpressionList) && isCat(pp+1,assign_op) && isCat(pp+2,ExpressionList) {
-	reduce(pp,3,Assignment,0,69,pp,pp+1,pp+2)
+	reduce(pp,3,Assignment,pp,pp+1,pp+2)
 }
 
 @ Tests for assignments
@@ -4005,15 +4015,15 @@ i = 2
 x = []int{3, 5, 7}
 
 @ @<Cases for |assign_op|@>=
-if (isCat(pp,unary_op) || isCat(pp,mul_op) || isCat(pp,asterisk)) && isCat(pp+1,eq) {
-	reduce(pp,2,assign_op,0,70,math_rel,'{',pp,'}','{',pp+1,'}','}')
+if isCat(pp,binary_op) && isCat(pp+1,eq) {
+	reduce(pp,2,assign_op,math_rel,'{',pp,'}','{',pp+1,'}','}')
 } else if rollback(); isCat(pp,eq) {
-	reduce(pp,1,assign_op,0,70,pp)
+	reduce(pp,1,assign_op,pp)
 }
 
 @ @<Cases for |ShortVarDecl|@>=
 if isCat(pp,IdentifierList) && isCat(pp+1,col_eq) && isCat(pp+2,ExpressionList) {
-	reduce(pp,3,ShortVarDecl,0,71,pp,pp+1,pp+2)
+	reduce(pp,3,ShortVarDecl,pp,pp+1,pp+2)
 }
 
 @ Tests for short var declarations
@@ -4037,26 +4047,26 @@ _, y, _ := coord(p)
 
 @ @<Cases for |QualifiedIdent|@>=
 if (isCat(pp,identifier) || isCat(pp,PackageName)) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
-	reduce(pp,3,QualifiedIdent,0,72,pp,pp+1,pp+2)
+	reduce(pp,3,QualifiedIdent,pp,pp+1,pp+2)
 } else if rollback(); isCat(pp,identifier) {
-	reduce(pp,1,QualifiedIdent,0,72,pp)
+	reduce(pp,1,QualifiedIdent,pp)
 }
 
 @ @<Cases for |MethodExpr|@>=
 if isCat(pp,ReceiverType) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
-	reduce(pp,3,MethodExpr,0,73,pp,pp+1,pp+2)
+	reduce(pp,3,MethodExpr,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |ReceiverType|@>=
 if isCat(pp,Type) {
-	reduce(pp,1,ReceiverType,0,74,pp)
+	reduce(pp,1,ReceiverType,pp)
 } else if rollback(); isCat(pp,lpar) && isCat(pp+1,asterisk) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
-	reduce(pp,4,ReceiverType,0,74,pp,pp+1,pp+2,pp+3)
+	reduce(pp,4,ReceiverType,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |Conversion|@>=
 if isCat(pp,Type) && isCat(pp+1,lpar) && isCat(pp+2,Expression) && isCat(pp+3,rpar) {
-	reduce(pp,4,Conversion,0,75,pp,pp+1,pp+2,pp+3)
+	reduce(pp,4,Conversion,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |BuiltinCall|@>=
@@ -4069,7 +4079,7 @@ if isCat(pp,identifier) && isCat(pp+1,lpar) {
 			tok_mem=append(tok_mem,pp+2+i)
 		}
 		tok_mem=append(tok_mem,pp+2+c)
-		reduce(pp,3+c,BuiltinCall,0,76,tok_mem...)
+		reduce(pp,3+c,BuiltinCall,tok_mem...)
 	}
 }
 
@@ -4081,19 +4091,19 @@ if isCat(pp,Type) {
 	for i:=0;i<c;i++ {
 		tok_mem=append(tok_mem,pp+1+i)
 	}
-	reduce(pp,1+c,BuiltinArgs,0,77,tok_mem...)	
+	reduce(pp,1+c,BuiltinArgs,tok_mem...)	
 } else if rollback(); isCat(pp,ExpressionList) {
-	reduce(pp,1,BuiltinArgs,0,77,pp)	
+	reduce(pp,1,BuiltinArgs,pp)	
 }
 
 @ @<Cases for |Selector|@>= 
 if isCat(pp,dot) && isCat(pp+1,identifier) {
-	reduce(pp,2,Selector,0,78,pp,pp+1)
+	reduce(pp,2,Selector,pp,pp+1)
 }
 
 @ @<Cases for |Index|@>=
 if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) {
-	reduce(pp,3,Index,0,79,pp,pp+1,pp+2)
+	reduce(pp,3,Index,pp,pp+1,pp+2)
 }
 
 @ @<Cases for |Slice|@>=
@@ -4113,14 +4123,14 @@ if isCat(pp,lbracket) {
 				tok_mem=append(tok_mem,pp+2+c1+i)
 			}
 			tok_mem=append(tok_mem,pp+2+c1+c2)
-			reduce(pp,3+c1+c2,Slice,0,80,tok_mem...)
+			reduce(pp,3+c1+c2,Slice,tok_mem...)
 		}
 	}
 }
 
 @ @<Cases for |TypeAssertion|@>=
 if isCat(pp,dot) && isCat(pp+1,lpar) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
-	reduce(pp,4,TypeAssertion,0,81,pp,pp+1,pp+2,pp+3)
+	reduce(pp,4,TypeAssertion,pp,pp+1,pp+2,pp+3)
 }
 
 @ @<Cases for |Call|@>=
@@ -4133,19 +4143,19 @@ if isCat(pp,lpar) {
 			tok_mem=append(tok_mem,pp+1+i)
 		}
 		tok_mem=append(tok_mem,pp+1+c)
-		reduce(pp,2+c,Call,0,82,tok_mem...)
+		reduce(pp,2+c,Call,tok_mem...)
 	}	
 }
 
 @ @<Cases for |unary_op|@>=
 if isCat(pp,asterisk) || isCat(pp,direct) || isCat(pp,add_op) {
-	reduce(pp,1,unary_op,0,83,pp)
+	reduce(pp,1,unary_op,pp)
 }
 
 @ Now here's the |reduce| procedure used in our code for productions.
 
 @c
-func reduce(pp int, k int, c rune, d int, n int, s ...interface{}) {
+func reduce(pp int, k int, c rune, s ...interface{}) {
 	reduced=true
 	reduced_cat=c
 	var trans []interface{}
@@ -4204,7 +4214,7 @@ func reduce(pp int, k int, c rune, d int, n int, s ...interface{}) {
 		copy(scrap_info[pp+1:len(scrap_info)-1],scrap_info[pp+k:])
 		scrap_info = scrap_info[:len(scrap_info)-k+1]
 	}
-	f := "reduce"
+	f := cat_name[c]
 	@<Print a snapshot of the scrap list if debugging@>
 }
 
@@ -4244,7 +4254,7 @@ var tracing int32  /* can be used to show parsing details */
 @ @<Print a snapsh...@>=
 { 
 	if (tracing & 2) == 2 {
-		fmt.Printf("%s %d:", f, n)
+		fmt.Printf("%s %d:", f, pp)
 		for k, v:=range scrap_info {
 			if k==pp {
 				fmt.Print("*") 
