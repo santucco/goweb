@@ -479,7 +479,7 @@ var err error
 var buf[]byte
 var b[]byte
 buffer= nil
-for buf,prefix,err= fp.ReadLine();
+for buf,prefix,err= fp.ReadLine()
 err==nil&&prefix
 b,prefix,err= fp.ReadLine(){
 buf= append(buf,b...)
@@ -2402,6 +2402,12 @@ l:= loc
 loc++
 if l<=len(buffer){
 return direct
+}
+}else if nc=='='{
+l:= loc
+loc++
+if l<=len(buffer){
+return lt_eq
 }
 }
 case'&':
