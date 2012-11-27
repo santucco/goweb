@@ -132,7 +132,7 @@ func input_ln(fp *bufio.Reader) error {
 	var buf []byte
 	var b []byte
 	buffer = nil
-	for buf, prefix, err = fp.ReadLine(); 
+	for buf, prefix, err = fp.ReadLine() 
 		err == nil && prefix
 		b, prefix, err = fp.ReadLine(){
 		buf = append(buf, b...)
@@ -658,7 +658,7 @@ for i, _ := range hash {
 @c
 /* looks up a string in the identifier table */
 func id_lookup(
-	id []rune  /* string with id */,
+	id []rune,  /* string with id */
 	t int32 /* the |ilk|; used by \.{GOWEAVE} only */) int32 { 
 	@<Compute the hash code |h|@>
 	@<Compute the name location |p|@>
@@ -831,9 +831,9 @@ and \.{gotangle.w}.
 @ @c 
 /* install a new node in the tree */ 
 func add_section_name(
-	par int32/* parent of new node */,
-	c int /* right or left? */,
-	name []rune /* section name */,
+	par int32, /* parent of new node */
+	c int, /* right or left? */
+	name []rune, /* section name */
 	ispref  bool/* are we adding a prefix or a full name? */) int32 {
 	p:=int32(len(name_dir)) /* new node */
 	name_dir = append(name_dir, name_info{})
@@ -1507,6 +1507,12 @@ switch c {
 			loc++
 			if l <=len(buffer) {
 				return direct
+			}
+		} else if nc=='=' {
+			l := loc
+			loc++
+			if l <=len(buffer) {
+				return lt_eq
 			}
 		}
 	case '&': 

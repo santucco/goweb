@@ -226,7 +226,7 @@ type output_state struct {
 type stack_pointer int
 
 @ @<Global...@>=
-var cur_state output_state  /* |cur_state.byte_field|, |cur_state.name_field|, 
+var cur_state output_state  /* |cur_state.byte_field|, |cur_state.name_field|,
 |cur_state.repl_field|, and |cur_state.section_field| */
 var stack[]output_state /* info for non-current levels */
 

@@ -419,8 +419,7 @@ One simply skips to the next `\.{@@\ }' or `\.{@@*}' that begins a
 section; another passes over the \TEX/ text at the beginning of a
 section; the third passes over the \TEX/ text in a \GO/ comment;
 and the last, which is the most interesting, gets the next token of
-a \GO/ text.  They all use the pointers |limit| and |loc| into
-the line of input currently being studied.
+a \GO/ text. 
 
 @ Control codes in \.{CWEB}, which begin with `\.{@@}', are converted
 into a numeric code designed to simplify \.{GOWEAVE}'s logic; for example,
@@ -520,6 +519,8 @@ ccode['4']=trace
 ccode['5']=trace
 ccode['6']=trace
 ccode['7']=trace
+ccode['8']=trace
+ccode['9']=trace
 
 @ The |skip_limbo| routine is used on the first pass to skip through
 portions of the input that are not in any sections, i.e., that precede
@@ -573,12 +574,12 @@ func skip_TeX() rune {
 		if loc>=len(buffer) && !get_line() {
 			return new_section
 		}
-		for loc < len(buffer) && buffer[loc]!='@@' && buffer[loc]!='|' {
+		for loc<len(buffer) && buffer[loc]!='@@' && buffer[loc]!='|' {
 			loc++
 		}
 		l := loc
 		loc++
-		if l < len(buffer) && buffer[l] =='|' {
+		if l<len(buffer) && buffer[l]=='|' {
 			return '|' 
 		}
 		if loc<len(buffer) {
@@ -646,18 +647,23 @@ compilers even allow the dollar sign.
 func get_next() rune { 
 	for {
 		if loc>=len(buffer) {
-			if next_control==identifier ||
-				next_control==constant ||
-				next_control==str ||
-				next_control==break_token ||
-				next_control==continue_token ||
-				next_control==fallthrough_token ||
-				next_control==return_token ||
-				next_control==plus_plus ||
-				next_control==minus_minus ||
-				next_control==rpar ||
-				next_control==rbracket ||
-				next_control==rbrace {
+			// Looking for last non-|insert| scrap
+			i:=len(scrap_info)-1
+			for ;i>=0 && scrap_info[i].cat==insert;i-- {}
+			if i>=0 && 
+				(scrap_info[i].cat==identifier ||
+				scrap_info[i].cat==constant ||
+				scrap_info[i].cat==str ||
+				scrap_info[i].cat==break_token ||
+				scrap_info[i].cat==continue_token ||
+				scrap_info[i].cat==fallthrough_token ||
+				scrap_info[i].cat==return_token ||
+				scrap_info[i].cat==plus_plus ||
+				scrap_info[i].cat==minus_minus ||
+				scrap_info[i].cat==rpar ||
+				scrap_info[i].cat==rbracket ||
+				scrap_info[i].cat==rbrace ||
+				scrap_info[i].cat==Type) {
 				return pseudo_semi
 			}
 			if !get_line() {
@@ -1460,18 +1466,19 @@ line by putting a |'%'| just before the last character.
 	return
 }
 
-@ Here is a macro that outputs a section number in decimal notation.
-The number to be converted by |out_section| is known to be less than
+@ Here is a function that make a section number in decimal notation.
+The number to be converted by |section_str| is known to be less than
 |def_flag|, so it cannot have more than five decimal digits.  If
 the section is changed, we output `\.{\\*}' just after the number.
 
 @c
-func out_section(n int32) {
-	out_str(fmt.Sprintf("%d",n))
+func section_str(n int32) string {
+	s:=fmt.Sprintf("%d",n)
 	if changed_section[n] {
-		out_str ("\\*")
+		s= "\\*"
 @.\\*@>
 	}
+	return s
 }
 
 @ The |out_name| procedure is used to output an identifier or index
@@ -1604,7 +1611,7 @@ into the output buffer, this function copies it into the token memory
 /* copies \TEX/ code in comments */
 func copy_comment(
 	is_long_comment bool,
-	bal int /* brace balance */,
+	bal int, /* brace balance */
 	tok_mem []interface{} ) (int,[]interface{}) {
 	for {
 		if loc>=len(buffer) {
@@ -1709,7 +1716,7 @@ that we shall call {\it scraps}, where each scrap of information consists
 of two parts, its {\it category} and its {\it translation}. The category
 is essentially a syntactic class, and the translation is a token list that
 represents \TEX/ code. Rules of syntax and semantics tell us how to
-combine adjacent scraps into larger ones, and if we are lucky an entire
+combine adjacent scraps into larger sequence, and if we are lucky an entire
 \GO/ text that starts out as hundreds of small scraps will join
 together into one gigantic scrap whose translation is the desired \TEX/
 code. If we are unlucky, we will be left with several scraps that don't
@@ -2087,7 +2094,7 @@ corresponding respectively to
 |big_force|.
 However, a sequence of consecutive `\.\ ', |break_space|,
 |force|, and/or |big_force| tokens is first replaced by a single token
-(the maximum of the given ones).
+(the maximum of the given sequence).
 
 The token |math_rel| will be translated into
 \.{\\MRL\{}, and it will get a matching \.\} later.
@@ -2225,19 +2232,19 @@ scraps.
 
 We also attach a serial number to each production, so that additional
 information is available when debugging. For example, the program below
-contains the statement `|reduce(pp,3,exp,-2,4)|' when it implements
+contains the statement `|reduce(s,3,exp,-2,4)|' when it implements
 the production just mentioned.
 
 Before calling |reduce|, the program should have appended the tokens of
 the new translation to the |tok_mem| array. We commonly want to append
 copies of several existing translations, and few functions are defined to
-simplify these common cases. For example, \\{app2}|(pp)| will append the
+simplify these common cases. For example, \\{app2}|(0)| will append the
 translations of two consecutive scraps, |scrap_info[pp].trans| 
 and |scrap_info[pp+1].trans|, to
 the current token list. If the entire new translation is formed in this
 way, we write `|squash(j,k,c,d,n)|' instead of `|reduce(j,k,c,d,n)|'. For
-example, `|squash(pp,3,exp,-2,3)|' is an abbreviation for `\\{app3}|(pp);
-reduce(pp,3,exp,-2,3)|'.
+example, `|squash(pp,3,exp,-2,3)|' is an abbreviation for `\\{app3}|(0);
+reduce(s,3,exp,-2,3)|'.
 
 A couple more words of explanation:
 Both |big_app| and |app| append a token to the current token list.
@@ -2275,29 +2282,49 @@ const (
 	no_math rune = iota /* should be in horizontal mode */
 )
 
-@ The function |isCat| checks if the specified index |i| is inside 
+@ The function |one| checks if the specified index |i| is inside 
 the |scrap_info| and a corresponding scrap has the specified category |cat|
 
+@<Typedef declarations@>=
+type pair struct {
+	cat int32
+	mand bool
+}
+
+type reducing func()
+
+@ 
+@<Global var...@>=
+var shift = 0
+var empty reducing = func() {}
+
+@
 @c
-func isCat(pp int, cat int32) bool {
-	if pp < 0 || pp >=len(scrap_info) {
-		if (tracing & 4) == 4 {
-			fmt.Fprintf(os.Stdout, "%v; is out of range of the scrap_info\n", pp)
-		}
-		return false
+func call(fs []reducing) {
+	for i:=len(fs)-1; i>=0; i-- {
+		fs[i]()
 	}
+}
+
+@
+@c
+func one(ss []scrap, c rune) ([]scrap,reducing,bool) {
+	m:="found"
 	if (tracing & 4) == 4 {
-		fmt.Fprintf(os.Stdout, "%v; looking for a category %q\n", pp, cat_name[cat])
+		fmt.Printf("%*cLooking for %q...\n",shift,' ',cat_name[c])
+		shift+=5
+		defer func() { shift -=5; fmt.Printf("%*c%q is %s\n",shift,' ',cat_name[c],m) }()
+		f := cat_name[c]
+		fmt.Printf("%*c",shift,' ')
+		@<Print a snapshot of the scrap list if debugging@>
 	}
-	if scrap_info[pp].cat==cat {
-		if (tracing & 4) == 4 {
-			fmt.Fprintf(os.Stdout, "%v; +category %q has been found\n", pp, cat_name[cat])
-		}
-		return true
+	if len(ss) == 0 {
+		return ss,empty,false
 	}
-	@<Making copy of |scrap_info| and |rollback| function@>
-	reduced_cat=-1
-	switch cat {
+	if ss[0].cat==c {
+		return ss[1:],empty,true
+	}
+	switch c {
 		case ConstDecl: @<Cases for |ConstDecl|@>
 		case TypeDecl: @<Cases for |TypeDecl|@>
 		case VarDecl: @<Cases for |VarDecl|@>
@@ -2378,61 +2405,81 @@ func isCat(pp int, cat int32) bool {
 		case TypeAssertion: @<Cases for |TypeAssertion|@>
 		case Call: @<Cases for |Call|@>
 		case unary_op: @<Cases for |unary_op|@> 
-		default:
-			if (tracing & 4) == 4 {
-				fmt.Fprintf(os.Stdout, "%v; -category %q hasn't been found\n", pp, cat_name[cat])
-			}
-			rollback()
-			return false
 	}
-	if reduced_cat==cat {
-		if (tracing & 4) == 4 {
-			fmt.Fprintf(os.Stdout, "%v; +category %q has been found\n", pp, cat_name[cat])
-		}
-	} else { 
-		if (tracing & 4) == 4 {
-			fmt.Fprintf(os.Stdout, "%v; -category %q hasn't been found\n", pp, cat_name[cat])
-		}
-		rollback()
-	}
-	return reduced_cat==cat
+	m="not found"
+	return ss,empty,false
 }
 
-@ The function |isCats| checks if the specified index |pp| is inside 
-the |scrap_info| and a corresponding scraps have the specified sequence of categories |cats|.
+@ The function |sequence| checks if corresponding scraps from start of |s| 
+have the specified sequence of categories |cats|.
+All of the catigories |cats| is mandatory.
+
+@c
+func sequence(ss []scrap, cats ...rune) ([]scrap,[]reducing,bool) {
+	var fs []reducing
+	s:=ss
+	for _,v:=range cats {
+		f:=empty
+		ok:=false
+		if s,f,ok=one(s,v); !ok {
+			return ss,nil,false
+		}
+		fs=append(fs,f)
+	}
+	return s,fs,true
+}
+
+@ The function |any| checks if first of corresponding scraps from start of |s| 
+have the specified  category of categories |cats|.
+
+@c
+func any(s []scrap, cats ...rune) ([]scrap,reducing,bool) {
+	for _,v:=range cats {
+		if s,f,ok:=one(s,v); ok {
+			return s,f,ok
+		} 
+	}
+	return s,empty,false
+}
+
+
+@  The function |optional| checks if corresponding scraps from start of |s| 
+have the specified sequence of categories |cats|.
 Some of the catigories |cats| can be optional.
 
-@<Typedef declarations@>=
-type cat_pair struct {
-	cat int32
-	mand bool
-}
-
-@ @c
-func isCats(pp int, c *int, cats ...cat_pair) bool {
-	*c=0
-	res:=false
+@c
+func optional(ss []scrap, g int, cats ...pair) ([]scrap,[]reducing,[]int,bool) {
+	var trans []int
+	var funcs []reducing
+	ok:=false
 	exit:=false
-	for !exit && pp<len(scrap_info) {
-		r:=false
+	s:=ss
+	for !exit && len(s)>0 {
+		var t []int
+		var fs []reducing
 		for _,v:=range cats {
-			if isCat(pp,v.cat) {
-				r=true
-				*c++
-				pp++
+			f:=empty
+			if s,f,ok=one(s,v.cat); ok {
+				t=append(t,g)
+				fs=append(fs,f)
+				g++
 			} else if v.mand {
 				exit=true
 				break
 			}
 		}
-		if !res {
-			res=r
+		if len(fs)==0 {
+			break
 		}
-		if !r {
-			exit=true
-		}
+		funcs=append(funcs,fs...)
+		trans=append(trans,t...)
  	}
-	return res
+	ok=true
+	if len(funcs)==0 {
+		s=ss
+		ok=false
+	}
+	return s,funcs,trans,ok
 }
 
 
@@ -2448,41 +2495,14 @@ func isNotCat(i int, cat int32) bool {
 	return scrap_info[i].cat != cat
 }
 
-@ @<Making copy of |scrap_info| and |rollback| function@>=
-scraps_copy:=append([]scrap{},scrap_info[pp:]...)
-reduced_copy:=reduced
-reduced=false
-rollback:=func(){
-	if reduced {
-		scrap_info=scrap_info[:pp]
-		scrap_info=append(scrap_info,scraps_copy...)
-		f := "rollback"
-		@<Print a snapshot of the scrap list if debugging@>
-	}
-	reduced=reduced_copy
-}
-
-
 @ Let us consider the big switch for productions now, before looking
 at its context. We want to design the program so that this switch
 works, so we might as well not keep ourselves in suspense about exactly what
 code needs to be provided with a proper environment.
 
 @ @<Match a production at |pp|, or increase |pp| if there is no match@>= {
-	/* not a production with left side length 1 */	
-	if isCat(pp+1,insert) { 
-		reduce(pp,2,scrap_info[pp].cat,pp,pp+1)
-		pp--
-	} else if isCat(pp+2,insert) { 
-		reduce(pp+1,2,scrap_info[pp+1].cat,pp+1,pp+2)
-		pp--
-	} else if isCat(pp+3,insert) { 
-		reduce(pp+2,2,scrap_info[pp+2].cat,pp+2,pp+3)
-		pp--
-	} else {
-		switch scrap_info[pp].cat {
-			case insert: 
-				@<Cases for |insert|@>
+	_,f,ok:=func (ss []scrap) ([]scrap,reducing,bool) {
+		switch ss[0].cat {
 			case package_token:
 				@<Cases for |PackageClause|@>
 			case import_token:
@@ -2493,17 +2513,20 @@ code needs to be provided with a proper environment.
 				@<Cases for |InterfaceType|@>
 			case func_token:
 				@<Cases for |FunctionDecl|@> 
-				if reduced_cat == FunctionDecl {
-					break
-				}
 				@<Cases for |MethodDecl|@>
-				if reduced_cat == MethodDecl {
-					break
-				}
 				@<Cases for |FunctionType|@>
 			default:
-				@<Cases for |Statement|@>	
+				@<Cases for |Statement|@>
+				@<Cases for |ImportSpec|@>
+				@<Cases for |ConstSpec|@>
+				@<Cases for |VarSpec|@>
+				@<Cases for |TypeSpec|@>
+				@<Cases for |FieldDecl|@>
 		}
+		return ss,empty,false
+	} (scrap_info[pp:])
+	if ok {
+		f()
 	}
 	pp++ /* if no match was found, we move to the right */
 }
@@ -2555,8 +2578,8 @@ the |for| loop below.
 
 @c
 /* make the first identifier in |scrap_info[p].trans| like |c| */
-func make_reserved(p int, c rune) {
-	tok_ptr:=find_first_ident(scrap_info[p].trans)
+func make_reserved(s scrap, c rune) {
+	tok_ptr:=find_first_ident(s.trans)
 	if tok_ptr==nil {
 		return /* this should not happen */
 	}
@@ -2634,15 +2657,13 @@ with a particular type of scrap. Whenever a match is discovered,
 the |squash| or |reduce| funcs will cause the appropriate action
 to be performed, followed by |goto found|.
 
-@ @<Cases for |insert|@>=
-if isNotCat(pp+1,zero) {
-	reduce(pp,2,scrap_info[pp+1].cat,pp,pp+1)
-}
-
 @ @<Cases for |PackageClause|@>=
-if isCat(pp,package_token)  && isCat(pp+1,identifier) {
-	make_reserved(pp+1,PackageName)
-	reduce(pp,2,PackageClause,pp,break_space,pp+1,big_force)
+if s,f,ok:=sequence(ss,package_token,identifier); ok {
+	return s,func() {
+		call(f)
+		make_reserved(ss[1],PackageName)
+		reduce(ss,2,PackageClause,0,break_space,1,big_force)
+	},true
 }
 
 @ Test for |package|
@@ -2653,27 +2674,28 @@ if isCat(pp,package_token)  && isCat(pp+1,identifier) {
 package main
 
 @ @<Cases for |ConstDecl|@>= 
-if isCat(pp,const_token) {
-	if isCat(pp+1,ConstSpec) {
-		reduce(pp,2,ConstDecl,pp,break_space,pp+1,big_force)
-	} else if rollback(); isCat(pp+1,lpar) {
-		c:=0
-		isCats(pp+2,&c,cat_pair{cat:ConstSpec,mand:true},cat_pair{cat:semi,mand:false})	
-		if isCat(pp+2+c,rpar) {
-			tok_mem:=append([]interface{}{},pp,pp+1)
-			for i:=0;i<c;i++ {
-				if i==0 {
-					tok_mem=append(tok_mem,force,indent)
-				}
-				if isCat(pp+2+i,ConstSpec) {
-					tok_mem=append(tok_mem,pp+2+i,force)
-				}
-				if i==c-1 {
-					tok_mem=append(tok_mem,outdent)
-				}
-			}
-			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,ConstDecl,tok_mem...)
+if s,f1,ok:=one(ss,const_token); ok {
+	if s,f2,ok:=one(s,ConstSpec); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,ConstDecl,0,break_space,1,force)
+		},true
+	} else if s,f2,ok:=one(s,lpar); ok {
+		tok_mem:=append([]interface{}{},0,1)
+		s,f3,t,ok:=optional(s,2,pair{ConstSpec,true})
+		if ok {
+			tok_mem=append(tok_mem,force,indent,t,outdent)
+		}
+		if s,f4,ok:=one(s,rpar); ok {
+			tok_mem=append(tok_mem,2+len(f3),force)
+			return s,func() {
+				f4()
+				call(f3)
+				f2()
+				f1()
+				reduce(ss,3+len(f3),ConstDecl,tok_mem...)
+			},true
 		}	
 	}
 }
@@ -2701,27 +2723,28 @@ const a, b, c = 3, 4, "foo"
 const u, v float32 = 0, 3
 
 @ @<Cases for |TypeDecl|@>= 
-if isCat(pp,type_token) {
-	if isCat(pp+1,TypeSpec) {
-		reduce(pp,2,TypeDecl,pp,break_space,pp+1,big_force)
-	} else if rollback(); isCat(pp+1,lpar) {
-		c:=0
-		isCats(pp+2,&c,cat_pair{cat:TypeSpec,mand:true},cat_pair{cat:semi,mand:false})
-		if isCat(pp+2+c,rpar) {
-			tok_mem:=append([]interface{}{},pp,pp+1)
-			for i:=0;i<c;i++ {
-				if i==0 {
-					tok_mem=append(tok_mem,force,indent)
-				}
-				if isCat(pp+2+i,TypeSpec) {
-					tok_mem=append(tok_mem,pp+2+i,force)
-				}
-				if i==c-1 {
-					tok_mem=append(tok_mem,outdent)
-				}
-			}
-			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,TypeDecl,tok_mem...)
+if s,f1,ok:=one(ss,type_token); ok {
+	if s,f2,ok:=one(s,TypeSpec); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,TypeDecl,0,break_space,1,force)
+		},true
+	} else if s,f2,ok:=one(s,lpar); ok {
+		tok_mem:=append([]interface{}{},0,1)
+		s,f3,t,ok:=optional(s,2,pair{cat:TypeSpec,mand:true})
+		if ok {
+			tok_mem=append(tok_mem,force,indent,t,outdent)
+		}
+		if s,f4,ok:=one(s,rpar); ok {
+			tok_mem=append(tok_mem,2+len(f3),force)
+			return s,func(){
+				f4()
+				call(f3)
+				f2()
+				f1()
+				reduce(ss,3+len(f3),TypeDecl,tok_mem...)
+			},true
 		}
 	} 
 }
@@ -2753,27 +2776,28 @@ type Block interface {
 }
 
 @ @<Cases for |VarDecl|@>=
-if isCat(pp,var_token) {
-	if isCat(pp+1,VarSpec) {
-		reduce(pp,2,VarDecl,pp,break_space,pp+1,big_force)
-	} else if rollback(); isCat(pp+1,lpar) {
-		c:=0
-		isCats(pp+2,&c,cat_pair{cat:VarSpec,mand:true},cat_pair{cat:semi,mand:false}) 
-		if isCat(pp+2+c,rpar) {
-			tok_mem:=append([]interface{}{},pp,pp+1)
-			for i:=0;i<c;i++ {
-				if i==0 {
-					tok_mem=append(tok_mem,force,indent)
-				}
-				if isCat(pp+2+i,VarSpec) {
-					tok_mem=append(tok_mem,pp+2+i,force)
-				}
-				if i==c-1 {
-					tok_mem=append(tok_mem,outdent)
-				}
-			}
-			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,VarDecl,tok_mem...)
+if s,f1,ok:=one(ss,var_token); ok {
+	if s,f2,ok:=one(s,VarSpec); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,VarDecl,0,break_space,1,force)
+		},true
+	} else if s,f2,ok:=one(s,lpar); ok {
+		tok_mem:=append([]interface{}{},0,1)
+		s,f3,t,ok:=optional(s,2,pair{cat:VarSpec,mand:true}) 
+		if ok {
+			tok_mem=append(tok_mem,force,indent,t,outdent)
+		}
+		if s,f4,ok:=one(s,rpar); ok {
+			tok_mem=append(tok_mem,2+len(f3),force)
+			return s,func() {
+				f4()
+				call(f3)
+				f2()
+				f1()
+				reduce(ss,3+len(f3),VarDecl,tok_mem...)
+			},true
 		}
 	} 
 }
@@ -2807,28 +2831,28 @@ var re, im = complexSqrt(-1)
 var _, found = entries[name]
 
 @ @<Cases for |ImportDecl|@>=
-if isCat(pp,import_token) {
-	@<Making copy...@>
-	if isCat(pp+1,ImportSpec) {
-		reduce(pp,2,ImportDecl,pp,break_space,pp+1,big_force)
-	} else if rollback(); isCat(pp+1,lpar) {
-		c:=0
-		isCats(pp+2,&c,cat_pair{cat:ImportSpec,mand:true},cat_pair{cat:semi,mand:false})
-		if isCat(pp+2+c,rpar) {
-			tok_mem:=append([]interface{}{},pp,pp+1)
-			for i:=0;i<c;i++ {
-				if i==0 {
-					tok_mem=append(tok_mem,force,indent)
-				}
-				if isCat(pp+2+i,ImportSpec) {
-					tok_mem=append(tok_mem,pp+2+i,force)
-				}
-				if i==c-1 {
-					tok_mem=append(tok_mem,outdent)
-				}
-			}
-			tok_mem=append(tok_mem,pp+2+c,big_force)
-			reduce(pp,3+c,ImportDecl,tok_mem...)	
+if s,f1,ok:=one(ss,import_token); ok {
+	if s,f2,ok:=one(s,ImportSpec); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,ImportDecl,0,break_space,1,force)
+		},true
+	} else if s,f2,ok:=one(s,lpar); ok {
+		tok_mem:=append([]interface{}{},0,1)
+		s,f3,t,ok:=optional(s,2,pair{cat:ImportSpec,mand:true})
+		if ok {
+			tok_mem=append(tok_mem,force,indent,t,outdent)
+		}
+		if s,f4,ok:=one(s,rpar); ok {
+			tok_mem=append(tok_mem,2+len(f3),force)
+			return s,func() {
+				f4()
+				call(f3)
+				f2()
+				f1()
+				reduce(ss,3+len(f3),ImportDecl,tok_mem...)
+			},true	
 		} 
 	}
 }
@@ -2859,15 +2883,18 @@ import(
 
 
 @ @<Cases for |FunctionDecl|@>=
-if isCat(pp,func_token) && isCat(pp+1,identifier) && isCat(pp+2,Signature){
-	pp+=3
-	@<Making copy...@>
-	pp-=3
-	if isCat(pp+3,Block) {
-		reduce(pp,4,FunctionDecl,pp,break_space,pp+1,pp+2,pp+3)	
+if s,f1,ok:=sequence(ss,func_token,identifier,Signature); ok{
+	if s,f2,ok:=one(s,Block); ok {
+		return s,func() {
+			f2()
+			call(f1)
+			reduce(ss,4,FunctionDecl,0,break_space,1,2,3)
+		},true
 	} else {
-		rollback()
-		reduce(pp,3,FunctionDecl,pp,break_space,pp+1,pp+2)	
+		return s,func() {
+			call(f1)
+			reduce(ss,3,FunctionDecl,0,break_space,1,2)	
+		},true
 	}
 }
 
@@ -2887,15 +2914,18 @@ func min(x int, y int) int {
 func flushICache(begin, end uintptr)
 
 @ @<Cases for |MethodDecl|@>=
-if isCat(pp,func_token) && isCat(pp+1,Receiver) && isCat(pp+2,identifier) && isCat(pp+3,Signature) {
-	pp+=3
-	@<Making copy...@>
-	pp-=3
-	if isCat(pp+4,Block) {
-		reduce(pp,5,MethodDecl,pp,break_space,pp+1,break_space,pp+2,pp+3,pp+4,force)
+if s,f1,ok:=sequence(ss,func_token,Receiver,identifier,Signature); ok {
+	if s,f2,ok:=one(s,Block);ok {
+		return s,func() {
+			f2()
+			call(f1)
+			reduce(ss,5,MethodDecl,0,break_space,1,break_space,2,3,4)
+		},true
 	} else {
-		rollback()
-		reduce(pp,4,MethodDecl,pp,break_space,pp+1,break_space,pp+2,pp+3)
+		return s,func() {
+			call(f1)
+			reduce(ss,4,MethodDecl,0,break_space,1,break_space,2,3)
+		},true
 	}
 }
 
@@ -2916,133 +2946,311 @@ func (p *Point) Scale(factor float64) {
 
 
 @ @<Cases for |Receiver|@>=
-if isCat(pp,lpar) {
-	if isCat(pp+1,identifier) {
-		if isCat(pp+2,asterisk) && isCat(pp+3,identifier) && isCat(pp+4,rpar){
-			reduce(pp,5,Receiver,pp,pp+1,pp+2,pp+3,pp+4)
-		} else if rollback(); isCat(pp+2,identifier) && isCat(pp+3,rpar) {
-			reduce(pp,4,Receiver,pp,pp+1,pp+2,pp+3)
-		} else if rollback(); isCat(pp+2,rpar) {
-			reduce(pp,3,Receiver,pp,pp+1,pp+2)
+if s,f1,ok:=one(ss,lpar); ok {
+	if s,f2,ok:=one(s,identifier); ok {
+		if s,f3,ok:=sequence(s,asterisk,identifier,rpar); ok{
+			return s,func() {
+				call(f3)
+				f2()
+				f1()
+				reduce(ss,5,Receiver,0,1,2,3,4)
+			},true
+		} else if s,f,ok:=sequence(s,identifier,rpar); ok {
+			return s,func() {
+				call(f)
+				reduce(ss,4,Receiver,0,1,2,3)
+			},true
+		} else if s,f,ok:=one(s,rpar);ok {
+			return s,func() {
+				f()
+				reduce(ss,3,Receiver,0,1,2)
+			},true
 		}
-	} else if rollback(); isCat(pp+1,asterisk) && isCat(pp+2,identifier) && isCat(pp+3,rpar) {
-		reduce(pp,4,Receiver,pp,pp+1,pp+2,pp+3)
+	} else if s,f,ok:=sequence(s,asterisk,identifier,rpar); ok {
+		return s,func() {
+			call(f)
+			reduce(ss,4,Receiver,0,1,2,3)
+		},true
 	}
 }
 
 @ @<Cases for |ConstSpec|@>= 
-if isCat(pp,IdentifierList) {
-	pp++
-	@<Making copy...@>
-	pp--
-	if isCat(pp+1,Type) && isCat(pp+2,eq) && isCat(pp+3,ExpressionList) {
-		reduce(pp,4,ConstSpec,pp,break_space,pp+1,break_space,pp+2,break_space,pp+3)
-	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
-		reduce(pp,3,ConstSpec,pp,break_space,pp+1,break_space,pp+2)
+if s,f1,ok:=one(ss,IdentifierList); ok {
+	if s,f2,ok:=sequence(s,Type,eq,ExpressionList); ok {
+		if s,f3,ok:=one(s,semi); ok {
+			return s,func() {
+				f3()
+				call(f2)
+				f1()
+				reduce(ss,5,ConstSpec,0,break_space,1,break_space,2,break_space,3,4,force)
+			},true
+		} else if _,_,ok:=any(s,rpar,rbrace); ok {
+			return s,func() {
+				call(f2)
+				f1()
+				reduce(ss,4,ConstSpec,0,break_space,1,break_space,2,break_space,3,force)
+			},true
+		}
+	} else if s,f2,ok:=sequence(s,eq,ExpressionList); ok {
+		if s,f3,ok:=one(s,semi); ok {
+			return s,func() {
+				f3()
+				call(f2)
+				f1()
+				reduce(ss,4,ConstSpec,0,break_space,1,break_space,2,3,force)
+			},true
+		} else if _,_,ok:=any(s,rpar,rbrace); ok {
+			return s,func() {
+				call(f2)
+				f1()
+				reduce(ss,3,ConstSpec,0,break_space,1,break_space,2,force)
+			},true
+		}
 	}
-} else if rollback(); isCat(pp, section_scrap) {
-	reduce(pp,1,ConstSpec,pp)
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,ConstSpec,0,force)
+	},true
 }
 
 @ @<Cases for |TypeSpec|@>=
-if isCat(pp,identifier) && isCat(pp+1,Type) {
-	reduce(pp,2,TypeSpec,pp,break_space,pp+1)
-} else if rollback(); isCat(pp, section_scrap) {
-	reduce(pp,1,TypeSpec,pp)
+if s,f1,ok:=sequence(ss,identifier,Type); ok {
+	if s,f2,ok:=one(s,semi); ok {
+		return s,func() {
+			f2()
+			call(f1)
+			reduce(ss,3,TypeSpec,0,break_space,1,2,force)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		return s,func() {
+			call(f1)
+			reduce(ss,2,TypeSpec,0,break_space,1,force)
+		},true
+	}
+} else if s,f,ok:=one(ss, section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,TypeSpec,0,force)
+	},true
 }
 
 @ @<Cases for |VarSpec|@>=
-if isCat(pp,IdentifierList) {
-	pp++
-	@<Making copy...@>
-	pp--
-	if isCat(pp+1,Type) {
-		if isCat(pp+2,eq) && isCat(pp+3,ExpressionList) {
-			reduce(pp,4,VarSpec,pp,break_space,pp+1,pp+2,pp+3)
-		} else {
-			reduce(pp,2,VarSpec,pp,break_space,pp+1)
+if s,f1,ok:=one(ss,IdentifierList);ok {
+	if s,f2,ok:=one(s,Type); ok {
+		if s,f3,ok:=sequence(s,eq,ExpressionList); ok {
+			if s,f4,ok:=one(s,semi); ok {
+				return s,func() {
+					f4()
+					call(f3)
+					f2()
+					f1()
+					reduce(ss,5,VarSpec,0,break_space,1,2,3,4,force)
+				},true
+			} else if _,_,ok:=any(s,rpar,rbrace); ok {
+				return s,func() {
+					call(f3)
+					f2()
+					f1()
+					reduce(ss,4,VarSpec,0,break_space,1,2,3,force)
+				},true
+			}
+		} else if s,f3,ok:=one(s,semi); ok {
+			return s,func() {
+				f3()
+				f2()
+				f1()
+				reduce(ss,3,VarSpec,0,break_space,1,2,force)
+			},true
+		} else if _,_,ok:=any(s,rpar,rbrace); ok {
+			return s,func() {
+				f2()
+				f1()
+				reduce(ss,2,VarSpec,0,break_space,1,force)
+			},true
 		}
-	} else if rollback(); isCat(pp+1,eq) && isCat(pp+2,ExpressionList) {
-		reduce(pp,3,VarSpec,pp,pp+1,pp+2)
+	} else if s,f2,ok:=sequence(s,eq,ExpressionList); ok {
+		if s,f3,ok:=one(s,semi);ok {
+			return s,func() {
+				f3()
+				call(f2)
+				f1()
+				reduce(ss,4,VarSpec,0,1,2,3,force)
+			},true
+		} else if _,_,ok:=any(s,rpar,rbrace); ok {
+			return s,func() {
+				call(f2)
+				f1()
+				reduce(ss,3,VarSpec,0,1,2,force)
+			},true
+		}
 	}
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,VarSpec,pp)	
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,VarSpec,0,force)	
+	},true
 }
 
 @ @<Cases for |ImportSpec|@>=
-if isCat(pp,identifier) && isCat(pp+1,str) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
-	make_reserved(pp,PackageName)
-	reduce(pp,2+c,ImportSpec,pp,break_space,pp+1)
-} else if isCat(pp,dot) && isCat(pp+1,str) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:semi,mand:false})
-	reduce(pp,2+c,ImportSpec,pp,break_space,pp+1)
-} else if isCat(pp,str) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:semi,mand:false})
-	reduce(pp,1+c,ImportSpec,pp)
-} else if isCat(pp,section_scrap) {
-	reduce(pp,1,ImportSpec,pp)
+if s,f1,ok:=sequence(ss,identifier,str); ok {
+	if s,f2,ok:=one(s,semi); ok {
+		return s,func() {
+			f2()
+			call(f1)
+			make_reserved(ss[0],PackageName)
+			reduce(ss,3,ImportSpec,0,break_space,1,2,force)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		return s,func() {
+			call(f1)
+			make_reserved(ss[0],PackageName)
+			reduce(ss,2,ImportSpec,0,break_space,1,force)
+		},true
+	}
+} else if s,f1,ok:=sequence(ss,dot,str); ok {
+	if s,f2,ok:=one(s,semi); ok {
+		return s,func() {
+			f2()
+			call(f1)
+			reduce(ss,3,ImportSpec,0,break_space,1,2,force)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		return s,func() {
+			call(f1)
+			reduce(ss,2,ImportSpec,0,break_space,1,force)
+		},true
+	}
+} else if s,f1,ok:=sequence(ss,str); ok {
+	if s,f2,ok:=one(s,semi); ok {
+		return s,func() {
+			f2()
+			call(f1)
+			reduce(ss,2,ImportSpec,0,1,force)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		return s,func() {
+			call(f1)
+			reduce(ss,1,ImportSpec,0,force)
+		},true
+	}
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,ImportSpec,0,force)
+	},true
 }
 
 @ @<Cases for |FieldDecl|@>=
-if isCat(pp,IdentifierList) && isCat(pp+1,Type) {
-	tok_mem:=append([]interface{}{},pp,break_space,pp+1)
-	p:=pp+2
-	if isCat(p,str) {
-		tok_mem=append(tok_mem,break_space,pp+2)
-		p++
+if s,f1,ok:=sequence(ss,IdentifierList,Type); ok {
+	tok_mem:=append([]interface{}{},0,break_space,1)
+	c:=2
+	s,f2,ok:=one(s,str)
+	if ok {
+		tok_mem=append(tok_mem,break_space,2)
+		c++
 	}
-	reduce(pp,p-pp,FieldDecl,tok_mem...)
-} else if rollback(); isCat(pp,AnonymousField) {
-	tok_mem:=append([]interface{}{},pp)
-	p:=pp+1
-	if isCat(p,str) {
-		tok_mem=append(tok_mem,pp,break_space,pp+1,break_space,pp+1)
-		p++
+	if s,f3,ok:=one(s,semi); ok {
+		tok_mem=append(tok_mem,c,force)
+		c++
+		return s,func() {
+			f3()
+			f2()
+			call(f1)
+			reduce(ss,c,FieldDecl,tok_mem...)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		tok_mem=append(tok_mem,force)
+		return s,func() {
+			f2()
+			call(f1)
+			reduce(ss,c,FieldDecl,tok_mem...)
+		},true
 	}
-	reduce(pp,p-pp,FieldDecl,tok_mem...)
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,FieldDecl,pp)
+} else if s,f1,ok:=one(ss,AnonymousField); ok {
+	tok_mem:=append([]interface{}{},0)
+	c:=1
+	s,f2,ok:=one(s,str)
+	if ok {
+		tok_mem=append(tok_mem,break_space,1)
+		c++
+	}
+	tok_mem=append(tok_mem,force)
+	if s,f3,ok:=one(s,semi); ok {
+		c++
+		return s,func() {
+			f3()
+			f2()
+			f1()
+			reduce(ss,c,FieldDecl,tok_mem...)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,c,FieldDecl,tok_mem...)
+		},true
+	}
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,FieldDecl,0,force)
+	},true
 }
 
 @ @<Cases for |AnonymousField|@>=
-if isCat(pp,asterisk) && isCat(pp+1,Type) {
-	reduce(pp,2,AnonymousField,pp,pp+1)
-} else if rollback(); isCat(pp,Type) {
-	reduce(pp,1,AnonymousField,pp)
+if s,f,ok:=sequence(ss,asterisk,Type); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,AnonymousField,0,1)
+	},true
+} else if s,f,ok:=one(ss,Type); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,AnonymousField,0)
+	},true
 }
 
 @ @<Cases for |Type|@>=
-if  isCat(pp,ArrayType) || isCat(pp,StructType) || isCat(pp,PointerType) || 
-	isCat(pp,FunctionType) || isCat(pp,InterfaceType) || isCat(pp,SliceType) || 
-	isCat(pp,MapType) || isCat(pp,ChannelType) || isCat(pp,QualifiedIdent) {
-	reduce(pp,1,Type,pp)
+if s,f,ok:=any(ss,
+				ArrayType,
+				StructType,
+				PointerType,
+				FunctionType,
+				InterfaceType,
+				SliceType,
+				MapType,
+				ChannelType,
+				QualifiedIdent); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,Type,0)
+	},true
 }
 
 @ @<Cases for |ArrayType|@>=
-if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
-	reduce(pp,4,ArrayType,pp,pp+1,pp+2,pp+3)
+if s,f,ok:=sequence(ss,lbracket,Expression,rbracket,Type); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,4,ArrayType,0,1,2,3)
+	},true
 }
 
 @ @<Cases for |StructType|@>=
-if isCat(pp,struct_token) && isCat(pp+1,lbrace) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:FieldDecl,mand:true},cat_pair{cat:semi,mand:false})
-	if isCat(pp+2+c,rbrace) {
-		tok_mem:=append([]interface{}{},pp,pp+1)
-		for i:=0;i<c;i++ {
-			if i==0 {
-				tok_mem=append(tok_mem,force,indent)
-			}
-			if isCat(pp+2+i,FieldDecl) {
-				tok_mem=append(tok_mem,pp+2+i,force)
-			}
-		}
-		tok_mem=append(tok_mem,outdent,pp+2+c)
-		reduce(pp,3+c,StructType,tok_mem...)
+if s,f1,ok:=sequence(ss,struct_token,lbrace); ok {
+	tok_mem:=append([]interface{}{},0,1)
+	s,f2,t,ok:=optional(s,2,pair{cat:FieldDecl,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,force,indent,t,outdent)
+	}
+	if s,f3,ok:=one(s,rbrace); ok {
+		tok_mem=append(tok_mem,2+len(f2))
+		return s,func() {
+			f3()
+			call(f2)
+			call(f1)
+			reduce(ss,3+len(f2),StructType,tok_mem...)
+		},true
 	}
 }
 
@@ -3079,276 +3287,400 @@ struct {
 }
 
 @ @<Cases for |PointerType|@>=
-if isCat(pp,asterisk) && isCat(pp+1,Type) {
-	reduce(pp,2,PointerType,pp,pp+1)
+if s,f,ok:=sequence(ss,asterisk,Type); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,PointerType,0,1)
+	},true
 }
 
 @ @<Cases for |Signature|@>=
-if isCat(pp,Parameters) {
-	pp++
-	@<Making copy...@>
-	pp--
-	if isCat(pp+1,Type) || isCat(pp+1,Parameters) {
-		reduce(pp,2,Signature,pp,break_space,pp+1)
+if s,f1,ok:=one(ss,Parameters); ok {
+	if s,f2,ok:=any(s,Type,Parameters); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,Signature,0,break_space,1)
+		},true
 	} else {
-		rollback()
-		reduce(pp,1,Signature,pp)
+		return s,func() {
+			f1()
+			reduce(ss,1,Signature,0)
+		},true
 	}
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,Signature,pp)
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,Signature,0,force)
+	},true
 }
 
 @ @<Cases for |Parameters|@>=
-if isCat(pp,lpar) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:ParameterList,mand:true},cat_pair{cat:comma,mand:false})
- 	if isCat(pp+1+c,rpar) {
-		tok_mem:=append([]interface{}{},pp)
-		for i:=0;i<c;i++ {
-			tok_mem=append(tok_mem,pp+1+i)
-		}
-		tok_mem=append(tok_mem,pp+1+c)
-		reduce(pp,2+c,Parameters,tok_mem...)
+if s,f1,ok:=one(ss,lpar); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:ParameterList,mand:true},pair{cat:comma,mand:false})
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,Signature,pp)
+ 	if s,f3,ok:=one(s,rpar); ok {
+		tok_mem=append(tok_mem,1+len(f2))
+		return s,func() {
+			f3()
+			call(f2)
+			f1()
+			reduce(ss,2+len(f2),Parameters,tok_mem...)
+		},true
+	}
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,Signature,0,force)
+	},true
 }
 
 @ @<Cases for |ParameterList|@>=
-if isCat(pp,ParameterDecl) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ParameterDecl,mand:true})
-	tok_mem:=append([]interface{}{},pp)	
-	for i:=0;i<c;i++ {
-		tok_mem=append(tok_mem,pp+1+i)
+if s,f1,ok:=one(ss,ParameterDecl); ok {
+	tok_mem:=append([]interface{}{},0)	
+	s,f2,t,ok:=optional(s,1,pair{cat:comma,mand:true},pair{cat:ParameterDecl,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
-	reduce(pp,1+c,ParameterList,tok_mem...)
+	return s,func() {
+		call(f2)
+		f1()
+		reduce(ss,1+len(f2),ParameterList,tok_mem...)
+	},true
 }
 
 @ @<Cases for |ParameterDecl|@>=
-if isCat(pp,IdentifierList) && isCat(pp+1,dot_dot_dot) &&  isCat(pp+2,Type) {
-	reduce(pp,3,ParameterDecl,pp,break_space,pp+1,pp+2)
-} else if rollback(); isCat(pp,IdentifierList) && isCat(pp+1,Type) {
-	reduce(pp,2,ParameterDecl,pp,break_space,pp+1)
-} else if rollback(); isCat(pp,dot_dot_dot) &&  isCat(pp+1,Type) {
-	reduce(pp,2,ParameterDecl,pp,pp+1)
-} else if rollback(); isCat(pp,Type) {
-	reduce(pp,1,ParameterDecl,pp)
+if s,f,ok:=sequence(ss,IdentifierList,dot_dot_dot,Type); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,ParameterDecl,0,break_space,1,2)
+	},true
+} else if s,f,ok:=sequence(ss,IdentifierList,Type); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,ParameterDecl,0,break_space,1)
+	},true
+} else if s,f,ok:=sequence(ss,dot_dot_dot,Type); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,ParameterDecl,0,1)
+	},true
+} else if s,f,ok:=one(ss,Type); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,ParameterDecl,0)
+	},true
 }
-
-break
-p:=pp
-var tok_mem []interface{}
-if isCat(pp,IdentifierList) {
-	tok_mem=append(tok_mem,pp,break_space)
-	pp++
-} else {
-	rollback()
-}
-if isCat(pp,dot_dot_dot) {
-	tok_mem=append(tok_mem,pp)
-	pp++
-}
-if isCat(pp,Type) {
-	tok_mem=append(tok_mem,pp)
-	pp+=1
-	reduce(p,pp-p,ParameterDecl,tok_mem...)
-}
-pp=p
 
 @ @<Cases for |InterfaceType|@>=
-if isCat(pp,interface_token) && isCat(pp+1,lbrace) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:MethodSpec,mand:true},cat_pair{cat:semi,mand:false})
-	if isCat(pp+2+c,rbrace) {
-		tok_mem:=append([]interface{}{},pp,pp+1,force,indent)
-		for i:=0;i<c;i++ {
-			if isCat(pp+2+i,MethodSpec) {
-				tok_mem=append(tok_mem,pp+2+i,force)
-			}
-		}
-		tok_mem=append(tok_mem,outdent,pp+2+c)
-		reduce(pp,3+c,InterfaceType,tok_mem...)
+if s,f1,ok:=sequence(ss,interface_token,lbrace); ok {
+	tok_mem:=append([]interface{}{},0,1)
+	s,f2,t,ok:=optional(s,2,pair{cat:MethodSpec,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,force,indent,t,outdent)
+	}
+	if s,f3,ok:=one(s,rbrace); ok {
+		tok_mem=append(tok_mem,2+len(f2))
+		return s,func(){
+			f3()
+			call(f2)
+			call(f1)
+			reduce(ss,3+len(f2),InterfaceType,tok_mem...)
+		},true
 	}
 }
 
 @ @<Cases for |MethodSpec|@>=
-if isCat(pp,identifier) && isCat(pp+1,Signature) {
-	reduce(pp,2,MethodSpec,pp,pp+1)
-} else if rollback(); isCat(pp,Type) {
-	reduce(pp,1,MethodSpec,pp)	
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,MethodSpec,pp)	
+if s,f1,ok:=sequence(ss,identifier,Signature); ok {
+	if s,f2,ok:=one(s,semi); ok {
+		return s,func(){
+			f2()
+			call(f1)
+			reduce(ss,3,MethodSpec,0,1,2,force)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		return s,func(){
+			call(f1)
+			reduce(ss,2,MethodSpec,0,1,force)
+		},true
+	}
+} else if s,f1,ok:=sequence(ss,Type); ok {
+	if s,f2,ok:=one(s,semi); ok {
+		return s,func(){
+			f2()
+			call(f1)
+			reduce(ss,2,MethodSpec,0,1,force)	
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace); ok {
+		return s,func(){
+			call(f1)
+			reduce(ss,1,MethodSpec,0,force)	
+		},true
+	}
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func(){
+		f()
+		reduce(ss,1,MethodSpec,0,force)	
+	},true
 }
 
 @ @<Cases for |SliceType|@>=
-if isCat(pp,lbracket) && isCat(pp+1,rbracket) && isCat(pp+2,Type) {
-	reduce(pp,3,SliceType,pp,pp+1,pp+2)
+if s,f,ok:=sequence(ss,lbracket,rbracket,Type); ok {
+	return s,func(){
+		call(f)
+		reduce(ss,3,SliceType,0,1,2)
+	},true
 }
 
 @ @<Cases for |MapType|@>=
-if isCat(pp,map_token) && isCat(pp+1,lbracket) && isCat(pp+2,Type) && isCat(pp+3,rbracket) && isCat(pp+4,Type) {
-	reduce(pp,5,MapType,pp,pp+1,pp+2,pp+3,pp+4)
+if s,f,ok:=sequence(ss,map_token,lbracket,Type,rbracket,Type); ok {
+	return s,func(){
+		call(f)
+		reduce(ss,5,MapType,0,1,2,3,4)
+	},true
 }
 
 @ @<Cases for |ChannelType|@>=
-if isCat(pp,direct) && isCat(pp+1,chan_token) && isCat(pp+2,Type) {
-	reduce(pp,3,ChannelType,pp,pp+1,break_space,pp+2)
-} else if rollback(); isCat(pp,chan_token) { 
-	if isCat(pp+1,direct) && isCat(pp+2,Type) {
-		reduce(pp,3,ChannelType,pp,pp+1,pp+2)
-	} else if isCat(pp+1,Type) {
-		reduce(pp,2,ChannelType,pp,break_space,pp+1)
+if s,f,ok:=sequence(ss,direct,chan_token,Type); ok {
+	return s,func(){
+		call(f)
+		reduce(ss,3,ChannelType,0,1,break_space,2)
+	},true
+} else if s,f1,ok:=one(ss,chan_token); ok { 
+	if s,f2,ok:=sequence(s,direct,Type); ok {
+		return s,func(){
+			call(f2)
+			f1()
+			reduce(ss,3,ChannelType,0,1,2)
+		},true
+	} else if s,f2,ok:=one(s,Type); ok {
+		return s,func(){
+			f2()
+			f1()
+			reduce(ss,2,ChannelType,0,break_space,1)
+		},true
 	}
 }
 
 @ @<Cases for |IdentifierList|@>=
-if isCat(pp,identifier) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:identifier,mand:true}) 
-	tok_mem:=append([]interface{}{},pp)
-	for i:=0;i<c;i++ {
-		tok_mem=append(tok_mem,pp+1+i)
+if s,f1,ok:=one(ss,identifier); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:comma,mand:true},pair{cat:identifier,mand:true}) 
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
-	reduce(pp,1+c,IdentifierList,tok_mem...)
+	return s,func() {
+		call(f2)
+		f1()
+		reduce(ss,1+len(f2),IdentifierList,tok_mem...)
+	},true
 } 
 
 @ @<Cases for |ExpressionList|@>=
-if isCat(pp,Expression) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Expression,mand:true})	
-	tok_mem:=append([]interface{}{},pp)
-	for i:=0;i<c;i++ {
-		tok_mem=append(tok_mem,pp+1+i)
+if s,f1,ok:=one(ss,Expression); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:comma,mand:true},pair{cat:Expression,mand:true})	
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
-	reduce(pp,1+c,ExpressionList,tok_mem...)
+	return s,func() {
+		call(f2)
+		f1()
+		reduce(ss,1+len(f2),ExpressionList,tok_mem...)
+	},true
 }
 
 @ @<Cases for |Expression|@>= 
-if isCat(pp,UnaryExpr) {
-	reduce(pp,1,Expression,pp)
-	for isCat(pp,Expression) {
-		if isCat(pp+1,binary_op) && isCat(pp+2,UnaryExpr) {
-			reduce(pp,3,Expression,pp,pp+1,pp+2)
-		} else {
-			break
-		}	
+if s,f1,ok:=one(ss,UnaryExpr); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{binary_op,true},pair{UnaryExpr,true});
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
-	reduced_cat=Expression
+	return s,func() {
+		call(f2)
+		f1()
+		reduce(ss,1+len(f2),Expression,tok_mem...)
+	},true	
 }
-
+ 
 @ @<Cases for |UnaryExpr|@>=
- if isCat(pp,PrimaryExpr) {
-	reduce(pp,1,UnaryExpr,pp)
-} else if isCat(pp,unary_op) && isCat(pp+1,UnaryExpr) {
-	reduce(pp,2,UnaryExpr,pp,pp+1)
+if s,f,ok:=one(ss,PrimaryExpr); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,UnaryExpr,0)
+	},true
+} else if s,f,ok:=sequence(ss,unary_op,UnaryExpr); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,UnaryExpr,0,1)
+	},true
 }
 
 @ @<Cases for |binary_op|@>=
-if isCat(pp,rel_op) || isCat(pp,add_op) || isCat(pp,mul_op) || isCat(pp,asterisk) {
-	reduce(pp,1,binary_op,pp)
+if s,f,ok:=any(ss,rel_op,add_op,mul_op,asterisk); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,binary_op,0)
+	},true
 }
 
 @ @<Cases for |PrimaryExpr|@>=
-if isCat(pp,BuiltinCall) || isCat(pp,Conversion) || isCat(pp,Operand) {
-	pp++
-	@<Making copy...@>
-	pp--
-	if isCat(pp+1,Selector) || isCat(pp+1,Index) || isCat(pp+1,Slice) || isCat(pp+1,TypeAssertion) || isCat(pp+1,Call) {
-		reduce(pp,2,PrimaryExpr,pp,pp+1)
-	} else {
-		rollback()
-		reduce(pp,1,PrimaryExpr,pp)
+if s,f1,ok:=any(ss,BuiltinCall,Conversion,Operand); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:Selector,mand:false},
+							pair{cat:Index,mand:false},
+							pair{cat:Slice,mand:false},
+							pair{cat:TypeAssertion,mand:false},
+							pair{cat:Call,mand:false});
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
+	return s,func() {
+		call(f2)
+		f1()
+		reduce(ss,1+len(f2),PrimaryExpr,tok_mem...)
+	},true
+
 }
 
 @ @<Cases for |Operand|@>=
-if isCat(pp,str) || isCat(pp,constant) || isCat(pp,QualifiedIdent) || isCat(pp,CompositeLit) || isCat(pp,FunctionLit)  || isCat(pp,MethodExpr) {
-	reduce(pp,1,Operand,pp)
-} else if rollback(); isCat(pp,lpar) && isCat(pp+1,Expression) && isCat(pp+2,rpar) {
-	reduce(pp,3,Operand,pp,pp+1,pp+2)
+if s,f,ok:=any(ss,
+				CompositeLit,
+				FunctionLit,
+				MethodExpr,
+				str,
+				constant,
+				QualifiedIdent); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,Operand,0)
+	},true
+} else if s,f,ok:=sequence(ss,lpar,Expression,rpar); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,Operand,0,1,2)
+	},true
 }
 
 @ @<Cases for |CompositeLit|@>=
-if isCat(pp,LiteralType) && isCat(pp+1,LiteralValue) {
-	reduce(pp,2,CompositeLit,pp,break_space,pp+1)
+if s,f,ok:=sequence(ss,LiteralType,LiteralValue); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,CompositeLit,0,1)
+	},true
 }
 
 @ @<Cases for |LiteralType|@>=
-if isCat(pp,Type) {
-	reduce(pp,1,LiteralType,pp)
-} else if rollback(); isCat(pp,lbracket) && isCat(pp+1,dot_dot_dot) && isCat(pp+2,rbracket) && isCat(pp+3,Type) {
-	reduce(pp,4,LiteralType,pp,pp+1,pp+2,pp+3)
+if s,f,ok:=one(ss,Type); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,LiteralType,0)
+	},true
+} else if s,f,ok:=sequence(ss,lbracket,dot_dot_dot,rbracket,Type); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,4,LiteralType,0,1,2,3)
+	},true
 }
 
 @ @<Cases for |LiteralValue|@>=
-if isCat(pp,lbrace) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:ElementList,mand:true},cat_pair{cat:comma,mand:true})
-	if isCat(pp+1+c,rbrace) {
-		tok_mem:=append([]interface{}{},pp)
-		for i:=0;i<c;i++ {
-			tok_mem=append(tok_mem,pp+1+i)
-		}
-		tok_mem=append(tok_mem,pp+1+c)
-		reduce(pp,2+c,LiteralValue,tok_mem...)
+if s,f1,ok:=one(ss,lbrace); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:ElementList,mand:true},pair{cat:comma,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,t)
+	}
+	if s,f3,ok:=one(s,rbrace); ok {
+		tok_mem=append(tok_mem,1+len(f2))
+		return s,func() {
+			f3()
+			call(f2)
+			f1()
+			reduce(ss,2+len(f2),LiteralValue,tok_mem...)
+		},true
 	}
 }
 
 @ @<Cases for |ElementList|@>=
-if isCat(pp,Element) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Element,mand:true})
-	tok_mem:=append([]interface{}{},pp)
-	for i:=0;i<c;i++ {
-		tok_mem=append(tok_mem,pp+1+i)
+if s,f1,ok:=one(ss,Element); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:comma,mand:true},pair{cat:Element,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
-	reduce(pp,1+c,ElementList,tok_mem...)
+	return s,func() {
+		call(f2)
+		f1()
+		reduce(ss,1+len(f2),ElementList,tok_mem...)
+	},true
 }
 
 @ @<Cases for |Element|@>=
-if (isCat(pp,identifier) || isCat(pp,Expression)) && isCat(pp+1,colon) {
-	pp+=2
-	@<Making copy...@>
-	pp-=2
-	if isCat(pp+2,Expression) {
-		reduce(pp,3,Element,pp,pp+1,break_space,pp+2)
-	} else if rollback(); isCat(pp+2,LiteralValue) {
-		reduce(pp,3,Element,pp,pp+1,break_space,pp+2)
+s,f1,ok:=any(ss,identifier,Expression)
+f2:=empty
+if ok {
+	s,f2,ok=one(s,colon)
+}
+if ok {
+	if s,f3,ok:=one(s,Expression); ok {
+		return s,func() {
+			f3()
+			f2()
+			f1()
+			reduce(ss,3,Element,0,1,break_space,2)
+		},true
+	} else if s,f3,ok:=one(s,LiteralValue); ok {
+		return s,func() {
+			f3()
+			f2()
+			f1()
+			reduce(ss,3,Element,0,1,break_space,2)
+		},true
 	}
-} else if isCat(pp,Expression) || isCat(pp,LiteralValue) {
-	reduce(pp,1,Element,pp)
+} else if s,f3,ok:=any(s,Expression,LiteralValue); ok {
+	return s,func() {
+		f3()
+		f2()
+		f1()
+		reduce(ss,1,Element,0)
+	},true
 }
 
 @ @<Cases for |FunctionLit|@>=
-if isCat(pp,FunctionType) && isCat(pp+1,Block) {
-	reduce(pp,2,FunctionLit,pp,pp+1)
+if s,f,ok:=sequence(ss,FunctionType,Block); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,FunctionLit,0,1)
+	},true
 }
 
 @ @<Cases for |FunctionType|@>=
-if isCat(pp,func_token) && isCat(pp+1,Signature) {
-	reduce(pp,2,FunctionType,pp,pp+1)
+if s,f,ok:=sequence(ss,func_token,Signature); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,FunctionType,0,1)
+	},true
 }
 
 @ @<Cases for |Block|@>=
-if isCat(pp,lbrace) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	if isCat(pp+1+c,rbrace) {
-		tok_mem:=append([]interface{}{},pp)
-		for i:=0;i<c;i++ {
-			if i==0 {
-				tok_mem=append(tok_mem,force,indent)
-			}
-			if isCat(pp+1+i,Statement) {
-				tok_mem=append(tok_mem,pp+1+i,force)
-			}
-			if i==c-1 {
-				tok_mem=append(tok_mem,outdent)
-			}
-		}
-		tok_mem=append(tok_mem,pp+1+c)
-		reduce(pp,2+c,Block,tok_mem...)
+if s,f1,ok:=one(ss,lbrace); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:Statement,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,force,indent,t,outdent)
+	}
+	if s,f3,ok:=one(s,rbrace); ok {
+		tok_mem=append(tok_mem,1+len(f2))
+		return s,func() {
+			f3()
+			call(f2)
+			f1()
+			reduce(ss,2+len(f2),Block,tok_mem...)
+		},true
 	}
 }
 
@@ -3362,18 +3694,61 @@ if isCat(pp,lbrace) {
 }
 
 @ @<Cases for |Statement|@>=
-if isCat(pp,ConstDecl) || isCat(pp,VarDecl) || isCat(pp,TypeDecl) ||
-	isCat(pp,LabeledStmt) ||
-	isCat(pp,GoStmt) || isCat(pp,ReturnStmt) || isCat(pp,BreakStmt) || isCat(pp,ContinueStmt) || 
-	isCat(pp,GotoStmt) || isCat(pp,fallthrough_token) || isCat(pp,Block) || isCat(pp,IfStmt) || 
-	isCat(pp,ExprSwitchStmt) || isCat(pp,TypeSwitchStmt) || isCat(pp,SelectStmt) || 
-	isCat(pp,ForStmt) || isCat(pp,DeferStmt) || isCat(pp,SimpleStmt) || isCat(pp,section_scrap) {
-	reduce(pp,1,Statement,pp,big_force)
+if s,f,ok:=any(ss,
+				ImportDecl,
+				ConstDecl,
+				VarDecl,
+				TypeDecl,
+				LabeledStmt); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,Statement,0)
+	},true
+} else if s,f1,ok:=any(ss,
+				GoStmt,
+				ReturnStmt,
+				BreakStmt,
+				ContinueStmt,
+				GotoStmt,
+				fallthrough_token,
+				Block,
+				IfStmt,
+				ExprSwitchStmt,
+				TypeSwitchStmt,
+				SelectStmt,
+				ForStmt,
+				DeferStmt,
+				SimpleStmt); ok {
+	if s,f2,ok:=one(s,semi); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,Statement,0,1,force)
+		},true
+	} else if _,_,ok:=any(s,rpar,rbrace);ok {
+		return s,func() {
+			f1()
+			reduce(ss,1,Statement,0,force)
+		},true
+	}
+} else if s,f,ok:=one(ss,semi); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,Statement,0,force)
+	},true
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,Statement,0,force)
+	},true
 }
 
 @ @<Cases for |LabeledStmt|@>=
-if isCat(pp,identifier) && isCat(pp+1,colon) && isCat(pp+2,Statement) {
-	reduce(pp,3,LabeledStmt,pp,pp+1,force,pp+2)
+if s,f,ok:=sequence(ss,identifier,colon,Statement); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,LabeledStmt,0,1,force,2)
+	},true
 }
 
 
@@ -3385,13 +3760,24 @@ if isCat(pp,identifier) && isCat(pp+1,colon) && isCat(pp+2,Statement) {
 Error: log.Panic("error encountered")
 
 @ @<Cases for |SimpleStmt|@>=
-if isCat(pp,SendStmt) || isCat(pp,IncDecStmt) || isCat(pp,Assignment) || isCat(pp,ShortVarDecl) || isCat(pp,Expression) {
-	reduce(pp,1,SimpleStmt,pp)
+if s,f,ok:=any(ss,
+				SendStmt,
+				IncDecStmt,
+				Assignment,
+				ShortVarDecl,
+				Expression); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,SimpleStmt,0)
+	},true
 } 
 
 @ @<Cases for |GoStmt|@>=
-if isCat(pp,go_token) && isCat(pp+1,Expression) {
-	reduce(pp,2,GoStmt,pp,break_space,pp+1)
+if s,f,ok:=sequence(ss,go_token,Expression); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,GoStmt,0,break_space,1)
+	},true
 }
 
 @ Tests for |go|
@@ -3406,10 +3792,16 @@ go func(ch chan<- bool) { for { sleep(10); ch <- true; }} (c)
 
 
 @ @<Cases for |ReturnStmt|@>=
-if isCat(pp,return_token) && isCat(pp+1,ExpressionList) {
-	reduce(pp,2,ReturnStmt,pp,break_space,pp+1)
-} else if rollback();  isCat(pp,return_token) {
-	reduce(pp,1,ReturnStmt,pp)
+if s,f,ok:=sequence(ss,return_token,ExpressionList); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,ReturnStmt,0,break_space,1)
+	},true
+} else if s,f,ok:=one(ss,return_token); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,ReturnStmt,0)
+	},true
 }
 
 @ Tests for |return|
@@ -3427,11 +3819,18 @@ return complexF1()
 
 
 @ @<Cases for |BreakStmt|@>=
-if isCat(pp,break_token) {
-	if isCat(pp+1,identifier) {
-		reduce(pp,2,BreakStmt,pp,break_space,pp+1)
+if s,f1,ok:=one(ss,break_token); ok {
+	if s,f2,ok:=one(s,identifier); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,BreakStmt,0,break_space,1)
+		},true
 	} else {
-		reduce(pp,1,BreakStmt,pp)
+		return s,func() {
+			f1()
+			reduce(ss,1,BreakStmt,0)
+		},true
 	}
 }
 
@@ -3445,7 +3844,8 @@ for i < n {
 	case 5:
 	break
 	}
-}@@
+}
+@@
 @@c
 L:
 for i < n {
@@ -3457,10 +3857,16 @@ for i < n {
 
 
 @ @<Cases for |ContinueStmt|@>=
-if isCat(pp,continue_token) && isCat(pp+1,identifier) {
-	reduce(pp,2,ContinueStmt,pp,break_space,pp+1)
-} else if rollback(); isCat(pp,continue_token) {
-	reduce(pp,1,ContinueStmt,pp)
+if s,f,ok:=sequence(ss,continue_token,identifier); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,ContinueStmt,0,break_space,1)
+	},true
+} else if s,f,ok:=one(ss,continue_token); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,ContinueStmt,0)
+	},true
 }
 
 @ Tests for |continue|
@@ -3485,8 +3891,11 @@ for i < n {
 }
 
 @ @<Cases for |GotoStmt|@>=
-if isCat(pp,goto_token) && isCat(pp+1,identifier) {
-	reduce(pp,2,GotoStmt,pp,break_space,pp+1)
+if s,f,ok:=sequence(ss,goto_token,identifier); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,GotoStmt,0,break_space,1)
+	},true
 }
 
 @ Tests for |goto|
@@ -3497,31 +3906,45 @@ if isCat(pp,goto_token) && isCat(pp+1,identifier) {
 goto Label
 
 @ @<Cases for |IfStmt|@>=
-p:=pp
-if isCat(pp,if_token) {
-	tok_mem:=append([]interface{}{},pp,break_space)
-	pp++
-	@<Making copy...@>
-	if isCat(pp,SimpleStmt) && isCat(pp+1,semi) {
-		tok_mem=append(tok_mem,pp,pp+1,break_space)
-		pp+=2
-	} else {
-		rollback()
-	}
-	if isCat(pp,Expression) && isCat(pp+1,Block) {
-		tok_mem=append(tok_mem,pp,break_space,pp+1)
-		pp+=2
-		@<Making copy...@>
-		if isCat(pp,else_token) && (isCat(pp+1,IfStmt) || isCat(pp+1,Block)) {
-			tok_mem=append(tok_mem,break_space,pp,break_space,pp+1)
-			pp+=2
+if s,f1,ok:=one(ss,if_token); ok {
+	tok_mem:=append([]interface{}{},0)
+	c:=1
+	var f2,f3 []reducing
+	f4,f5:=empty,empty
+	s,f2,ok=sequence(s,SimpleStmt,semi)
+	if ok {
+		tok_mem=append(tok_mem,break_space,c)
+		if len(scrap_info[c+1].trans)!=0 {
+			tok_mem=append(tok_mem,break_space,c+1)
 		} else {
-			rollback()
+			tok_mem=append(tok_mem,';')
 		}
-		reduce(p,pp-p,IfStmt,tok_mem...)
+		c+=2
+	} 
+	s,f3,ok=sequence(s,Expression,Block)
+	if ok {
+		tok_mem=append(tok_mem,break_space,c,break_space,c+1)
+		c+=2
+		s,f4,ok=one(s,else_token)
+		if ok {
+			if s,f5,ok=any(s,IfStmt,Block); ok {
+				tok_mem=append(tok_mem,break_space,c,break_space,c+1)
+				c+=2
+			} else {
+				break
+			}
+		}
+		return s,func() { 
+			f5()
+			f4()
+			call(f3)
+			call(f2)
+			f1()
+			reduce(ss,c,IfStmt,tok_mem...)
+		},true
 	} 
 }
-pp=p
+
 
 @ Tests for |if|
 @(tests/if.w@>=
@@ -3541,162 +3964,175 @@ if x := f(); x < y {
 	return y
 }
 
-
 @ @<Cases for |ExprSwitchStmt|@>=
-p:=pp
-if isCat(pp,switch_token) {
-	tok_mem:=append([]interface{}{},pp)
-	pp++
-	{
-		@<Making copy...@>
-		if isCat(pp,SimpleStmt) && isCat(pp+1,semi) {
-			tok_mem=append(tok_mem,break_space,pp,pp+1)
-			pp+=2
+if s,f1,ok:=one(ss,switch_token); ok {
+	tok_mem:=append([]interface{}{},0)
+	c:=1
+	var f2 []reducing
+	f3,f4:=empty,empty
+	if s,f2,ok=sequence(s,SimpleStmt,semi); ok {
+		tok_mem=append(tok_mem,break_space,c,c+1)
+		if len(scrap_info[c+1].trans)!=0 {
+			tok_mem=append(tok_mem,break_space,c+1)
 		} else {
-			rollback()
+			tok_mem=append(tok_mem,';')
 		}
+		c+=2
 	}
-	{
-		@<Making copy...@>
-		if isCat(pp,Expression) {
-			tok_mem=append(tok_mem,break_space,pp,break_space)
-			pp++
-		} else {
-			rollback()
+	if s,f3,ok=one(s,Expression); ok {
+		tok_mem=append(tok_mem,break_space,c,break_space)
+		c++
+	} 
+	if s,f4,ok=one(s,lbrace); ok {
+		tok_mem=append(tok_mem,c)
+		c++
+		s,f5,t,ok:=optional(s,c,pair{cat:ExprCaseClause,mand:false})
+		if ok {
+			tok_mem=append(tok_mem,force,indent,t,outdent)
+			c+=len(f5)
 		}
-	}
-	if isCat(pp,lbrace) {
-		c:=0
-		isCats(pp+1,&c,cat_pair{cat:ExprCaseClause,mand:false})
-		if isCat(pp+1+c,rbrace) {
-			tok_mem=append(tok_mem,pp)
-			for i:=0;i<c;i++ {
-				if i==0 {
-					tok_mem=append(tok_mem,force,indent)
-				}
-				tok_mem=append(tok_mem,pp+1+i,force)
-				if i==c-1 {
-					tok_mem=append(tok_mem,outdent)
-				}
-			}
-			tok_mem=append(tok_mem,pp+1+c)
-			pp+=2+c
-			reduce(p,pp-p,ExprSwitchStmt,tok_mem...)
+		if s,f6,ok:=one(s,rbrace); ok {
+			tok_mem=append(tok_mem,c)
+			c++
+			return s,func() {
+				f6()
+				call(f5)
+				f4()
+				f3()
+				call(f2)
+				f1()
+				reduce(ss,c,ExprSwitchStmt,tok_mem...)
+			},true
 		}
 	}
 }
-pp=p
+
 
 @ @<Cases for |ExprCaseClause|@>=
-if isCat(pp,case_token) && isCat(pp+1,ExpressionList) && isCat(pp+2,colon) {
-	c:=0
-	isCats(pp+3,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	tok_mem:=append([]interface{}{},pp,break_space,pp+1,pp+2,force)
-	for i:=0;i<c;i++ {
-		if i==0 {
-			tok_mem=append(tok_mem,indent)
-		}
-		if isCat(pp+3+i,Statement) {
-			tok_mem=append(tok_mem,pp+3+i,force)
-		}
-		if i==c-1 {
-			tok_mem=append(tok_mem,outdent)
-		}
+if s,f1,ok:=sequence(ss,case_token,ExpressionList,colon); ok {
+	tok_mem:=append([]interface{}{},0,break_space,1,2)
+	s,f2,t,ok:=optional(s,3,pair{cat:Statement,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
-	reduce(pp,3+c,ExprCaseClause,tok_mem...)
-} else if rollback(); isCat(pp,default_token) && isCat(pp+1,colon) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	tok_mem:=append([]interface{}{},pp,pp+1,force)
-	for i:=0;i<c;i++ {
-		if i==0 {
-			tok_mem=append(tok_mem,indent)
-		}
-		if isCat(pp+2+i,Statement) {
-			tok_mem=append(tok_mem,pp+2+i,force)
-		}
-		if i==c-1 {
-			tok_mem=append(tok_mem,outdent)
-		}
+	return s,func() {
+		call(f2)
+		call(f1)
+		reduce(ss,3+len(f2),ExprCaseClause,tok_mem...)
+	},true
+} else if s,f1,ok:=sequence(ss,default_token,colon); ok {
+	tok_mem:=append([]interface{}{},0,1,force)
+	s,f2,t,ok:=optional(s,2,pair{cat:Statement,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
-	reduce(pp,2+c,ExprCaseClause,tok_mem...)
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,ExprCaseClause,pp)
+	return s,func() {
+		call(f2)
+		call(f1)
+		reduce(ss,2+len(f2),ExprCaseClause,tok_mem...)
+	},true
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,ExprCaseClause,0,force)
+	},true
 }
 
 @ @<Cases for |TypeSwitchStmt|@>=
-p:=pp
-if isCat(pp,switch_token) {
-	tok_mem:=append([]interface{}{},pp)
-	if isCat(pp+1,SimpleStmt) && isCat(pp+2,semi) {
-		tok_mem=append(tok_mem,break_space,pp+1,pp+2)
-		pp+=2
-	} else {
-		rollback()
+if s,f1,ok:=one(ss,switch_token); ok {
+	tok_mem:=append([]interface{}{},0)
+	c:=1
+	var f2 []reducing
+	if s,f2,ok=sequence(s,SimpleStmt,semi); ok {
+		tok_mem=append(tok_mem,break_space,c,c+1)
+		if len(scrap_info[c+1].trans)!=0 {
+			tok_mem=append(tok_mem,break_space,c+1)
+		} else {
+			tok_mem=append(tok_mem,';')
+		}
+		c+=2
 	}
-	if isCat(pp+1,TypeSwitchGuard) && isCat(pp+2,lbrace) {
-	 	c:=0
-		isCats(pp+3,&c,cat_pair{cat:TypeCaseClause,mand:true})
-		if isCat(pp+3+c,rbrace) {
-			tok_mem=append(tok_mem,break_space,pp+1,break_space,pp+2)
-			for i:=0;i<c;i++ {
-				if i==0 {
-					tok_mem=append(tok_mem,force,indent)
-				}
-				tok_mem=append(tok_mem,pp+3+i,force)
-				if i==c-1 {
-					tok_mem=append(tok_mem,outdent)
-				}
-			}
-			tok_mem=append(tok_mem,pp+3+c)
-			pp+=4+c
-			reduce(p,pp-p,TypeSwitchStmt,tok_mem...)
+	if s,f3,ok:=sequence(s,TypeSwitchGuard,lbrace); ok {
+		tok_mem=append(tok_mem,break_space,c,break_space,c+1)
+		c+=2
+		s,f4,t,ok:=optional(s,c,pair{cat:TypeCaseClause,mand:true})
+		if ok {
+			tok_mem=append(tok_mem,force,indent,t,outdent)
+			c+=len(f4)
+		}
+		if s,f5,ok:=one(s,rbrace); ok {
+			tok_mem=append(tok_mem,c)
+			c++
+			return s,func() {
+				f5()
+				call(f4)
+				call(f3)
+				call(f2)
+				f1()
+				reduce(ss,c,TypeSwitchStmt,tok_mem...)
+			},true
 		}
 	}
 }
-pp=p
 
 @ @<Cases for |TypeSwitchGuard|@>=
-if isCat(pp,identifier) && isCat(pp+1,col_eq) && isCat(pp+2,PrimaryExpr) && isCat(pp+3,dot) && isCat(pp+4,lpar) && isCat(pp+5,type_token) && isCat(pp+6,rpar){
-	reduce(pp,7,TypeSwitchGuard,pp,pp+1,pp+2,pp+3,pp+4,pp+5,pp+6)
-} else if rollback(); isCat(pp,PrimaryExpr) && isCat(pp+1,dot) && isCat(pp+2,lpar) && isCat(pp+3,type_token) && isCat(pp+4,rpar) {
-	reduce(pp,5,TypeSwitchGuard,pp,pp+1,pp+2,pp+3,pp+4)
+if s,f,ok:=sequence(ss,identifier,col_eq,PrimaryExpr,dot,lpar,type_token,rpar); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,7,TypeSwitchGuard,0,1,2,3,4,5,6)
+	},true
+} else if s,f,ok:=sequence(ss,PrimaryExpr,dot,lpar,type_token,rpar); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,5,TypeSwitchGuard,0,1,2,3,4)
+	},true
 }
 
 @ @<Cases for |TypeCaseClause|@>=
-if isCat(pp,TypeSwitchCase) && isCat(pp+1,colon) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	tok_mem:=append([]interface{}{},pp,pp+1,force)
-	for i:=0;i<c;i++ {
-		if i==0 {
-			tok_mem=append(tok_mem,indent)
-		}
-		if isCat(pp+2+i,Statement) {
-			tok_mem=append(tok_mem,pp+2+i,force)
-		}
-		if i==c-1 {
-			tok_mem=append(tok_mem,outdent)
-		}
+if s,f1,ok:=sequence(ss,TypeSwitchCase,colon); ok {
+	tok_mem:=append([]interface{}{},0,1,force)
+	s,f2,t,ok:=optional(s,2,pair{cat:Statement,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,indent,t,outdent)
 	}
-	reduce(pp,2+c,TypeCaseClause,tok_mem...)
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,TypeCaseClause,pp)
+	return s,func() {
+		call(f2)
+		call(f1)
+		reduce(ss,2+len(f2),TypeCaseClause,tok_mem...)
+	},true
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,TypeCaseClause,0,force)
+	},true
 }
 
 @ @<Cases for |TypeSwitchCase|@>=
-if isCat(pp,case_token) && isCat(pp+1,Type) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:Type,mand:true})
-	tok_mem:=append([]interface{}{},pp,break_space,pp+1)
-	for i:=0;i<c;i++ {
-		tok_mem=append(tok_mem,pp+2+i)
+if s,f1,ok:=sequence(ss,case_token); ok {
+	tok_mem:=append([]interface{}{},0)
+	if s,f2,ok:=any(s,Type,constant); ok {
+		tok_mem=append(tok_mem,break_space,1)
+		s,f3,t,ok:=optional(s,2,pair{cat:comma,mand:true},pair{cat:Type,mand:true})
+		if ok {
+			tok_mem=append(tok_mem,t)
+		}
+		return s,func() {
+			call(f3)
+			f2()
+			call(f1)
+			reduce(ss,2+len(f3),TypeSwitchCase,tok_mem...)
+		},true
 	}
-	reduce(pp,2+c,TypeSwitchCase,tok_mem...)
-} else if rollback(); isCat(pp,default_token) {
-	reduce(pp,1,TypeSwitchCase,pp)
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,TypeSwitchCase,pp)
+} else if s,f,ok:=one(ss,default_token); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,TypeSwitchCase,0)
+	},true
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,TypeSwitchCase,0,force)
+	},true
 }
 
 @ Tests for |switch|
@@ -3740,69 +4176,83 @@ default:
 }
 
 @ @<Cases for |SelectStmt|@>=
-if isCat(pp,select_token) && isCat(pp+1,lbrace){
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:CommClause,mand:false})
-	if isCat(pp+2+c,rbrace) {
-		tok_mem:=append([]interface{}{},pp,pp+1)
-		for i:=0;i<c;i++ {
-			if i==0 {
-				tok_mem=append(tok_mem,force,indent)
-			}
-			if isCat(pp+2+i,CommClause) {
-				tok_mem=append(tok_mem,pp+2+i)
-			}
-			if i==c-1 {
-				tok_mem=append(tok_mem,outdent)
-			}
-		}
-		tok_mem=append(tok_mem,pp+2+c)
-		reduce(pp,3+c,SelectStmt,tok_mem...)
+if s,f1,ok:=sequence(ss,select_token,lbrace); ok {
+	tok_mem:=append([]interface{}{},0,1)
+	s,f2,t,ok:=optional(s,2,pair{cat:CommClause,mand:false})
+	if ok {
+		tok_mem=append(tok_mem,force,indent,t,outdent)
+	}
+	if s,f3,ok:=one(s,rbrace); ok {
+		tok_mem=append(tok_mem,2+len(f2))
+		return s,func() {
+			f3()
+			call(f2)
+			call(f1)
+			reduce(ss,3+len(f2),SelectStmt,tok_mem...)
+		},true
 	}
 }
 
 @ @<Cases for |CommClause|@>=
-if isCat(pp,CommCase) && isCat(pp+1,colon) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:Statement,mand:true},cat_pair{cat:semi,mand:false})
-	tok_mem:=append([]interface{}{},pp,pp+1,force)
-	for i:=0;i<c;i++ {
-		if i==0 {
-			tok_mem=append(tok_mem,indent)
-		}
-		if isCat(pp+2+i,Statement) {
-			tok_mem=append(tok_mem,pp+2+i,force)
-		} 
-		if i==c-1 {
-			tok_mem=append(tok_mem,outdent)
-		}
+if s,f1,ok:=sequence(ss,CommCase,colon); ok {
+	tok_mem:=append([]interface{}{},0,1,force)
+	s,f2,t,ok:=optional(s,2,pair{cat:Statement,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,indent,t,outdent)
 	}
-	reduce(pp,2+c,CommClause,tok_mem...)
+	return s,func() {
+		call(f2)
+		call(f1)
+		reduce(ss,2+len(f2),CommClause,tok_mem...)
+	},true
 }
 
 @ @<Cases for |CommCase|@>=
-if isCat(pp,case_token) {
-	if isCat(pp+1,SendStmt) { 
-		reduce(pp,2,CommCase,pp,break_space,pp+1)
-	} else if rollback(); isCat(pp+1,RecvStmt) {
-		reduce(pp,2,CommCase,pp,break_space,pp+1)
+if s,f1,ok:=one(ss,case_token); ok {
+	if s,f2,ok:=any(s,SendStmt,RecvStmt); ok { 
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,CommCase,0,break_space,1)
+		},true
 	}
-} else if rollback(); isCat(pp,default_token) {
-	reduce(pp,1,CommCase,pp)
-} else if rollback(); isCat(pp,section_scrap) {
-	reduce(pp,1,CommCase,pp)
+} else if s,f,ok:=one(ss,default_token); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,CommCase,0)
+	},true
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,CommCase,0,force)
+	},true
 }
 
 @ @<Cases for |RecvStmt|@>=
-if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,Expression) {
-	reduce(pp,3,RecvStmt,pp,pp+1,pp+2)
-} else if isCat(pp,Expression) {
-	reduce(pp,1,RecvStmt,pp)
+if s,f1,ok:=one(ss,ExpressionList); ok{
+	if s,f2,ok:=any(s,eq,col_eq); ok {
+		if s,f3,ok:=one(s,Expression); ok {
+			return s,func() {
+				f3()
+				f2()
+				f1()
+				reduce(ss,3,RecvStmt,0,1,2)
+			},true
+		}
+	}
+} else if s,f,ok:=one(s,Expression); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,RecvStmt,0)
+	},true
 }
 
 @ @<Cases for |SendStmt|@>=
-if isCat(pp,Expression) && isCat(pp+1,direct) && isCat(pp+2,Expression) {
-	reduce(pp,3,SendStmt,pp,pp+1,pp+2)
+if s,f,ok:=sequence(ss,Expression,direct,Expression); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,SendStmt,0,1,2)
+	},true
 }
 
 @ Tests for |send|
@@ -3832,68 +4282,101 @@ default:
 	print("no communication\n")
 }
 @@
-@@2
 @@c
 select {
 	case c <- 0:  // note: no statement, no fallthrough, no folding of cases
 	case c <- 1:
 }
 @@
-@@2
 @@c
 select {}
 
 @ @<Cases for |ForStmt|@>=
-if isCat(pp,for_token) {
-	@<Making copy...@>
-	if isCat(pp+1,Expression) && isCat(pp+2,Block) {
-		reduce(pp,3,ForStmt,pp,break_space,pp+1,break_space,pp+2)
-	} else if rollback(); isCat(pp+1,ForClause) && isCat(pp+2,Block) {
-		reduce(pp,3,ForStmt,pp,break_space,pp+1,break_space,pp+2)
-	} else if rollback(); isCat(pp+1,RangeClause) && isCat(pp+2,Block) {
-		reduce(pp,3,ForStmt,pp,break_space,pp+1,break_space,pp+2)
-	} else if rollback(); isCat(pp+1,Block) {
-		reduce(pp,2,ForStmt,pp,pp+1)
+if s,f1,ok:=one(ss,for_token); ok {
+	if s,f2,ok:=sequence(s,Expression,Block); ok {
+		return s,func() {
+			call(f2)
+			f1()
+			reduce(ss,3,ForStmt,0,break_space,1,break_space,2)
+		},true
+	} else if s,f2,ok:=sequence(s,ForClause,Block); ok {
+		return s,func() {
+			call(f2)
+			f1()
+			reduce(ss,3,ForStmt,0,break_space,1,break_space,2)
+		},true
+	} else if s,f2,ok:=sequence(s,RangeClause,Block); ok {
+		return s,func() {
+			call(f2)
+			f1()
+			reduce(ss,3,ForStmt,0,break_space,1,break_space,2)
+		},true
+	} else if s,f2,ok:=one(s,Block); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,ForStmt,0,1)
+		},true
 	}   
 }
 
 @ @<Cases for |ForClause|@>=
-p:=pp
 var tok_mem []interface{}
-if isCat(pp,SimpleStmt) {
-	tok_mem=append(tok_mem,pp)
-	pp++
-} else {
-	rollback()
+c:=0
+s,f1,ok:=one(ss,SimpleStmt)
+if ok {
+	tok_mem=append(tok_mem,c)
+	c++
 }
-if isCat(pp,semi) {
-	tok_mem=append(tok_mem,pp)
-	pp++
-	@<Making copy...@>
-	if isCat(pp,Expression) {
-		tok_mem=append(tok_mem,break_space,pp)
-		pp++
+f2:=empty
+s,f2,ok=one(s,semi)
+if ok {
+	if len(scrap_info[c].trans)==0 {
+		tok_mem=append(tok_mem,c)
 	} else {
-		rollback()
+		tok_mem=append(tok_mem,';')
 	}
-	if isCat(pp,semi) {
-		tok_mem=append(tok_mem,pp)
-		pp++
-		@<Making copy...@>
-		if isCat(pp,SimpleStmt) {
-			tok_mem=append(tok_mem,break_space,pp)
-			pp++
+	c++
+	f3:=empty
+	if s,f3,ok=one(s,Expression); ok {
+		tok_mem=append(tok_mem,break_space,c)
+		c++
+	}
+	if s,f4,ok:=one(s,semi); ok {
+		if len(scrap_info[c].trans)==0 {
+			tok_mem=append(tok_mem,c)
 		} else {
-			rollback()
+			tok_mem=append(tok_mem,';')
 		}
-		reduce(p,pp-p,ForClause,tok_mem...)
+		c++
+		f5:=empty
+		if s,f5,ok=one(s,SimpleStmt); ok {
+			tok_mem=append(tok_mem,break_space,c)
+			c++
+		} 
+		return s,func() {
+			f5()
+			f4()
+			f3()
+			f2()
+			f1()
+			reduce(ss,c,ForClause,tok_mem...)
+		},true
 	}
 }
-pp=p
 
 @ @<Cases for |RangeClause|@>=
-if isCat(pp,ExpressionList) && (isCat(pp+1,eq) || isCat(pp+1,col_eq)) && isCat(pp+2,range_token) && isCat(pp+3,Expression) {
-	reduce(pp,4,RangeClause,pp,pp+1,pp+2,break_space,pp+3)
+if s,f1,ok:=one(ss,ExpressionList); ok {
+	if s,f2,ok:=any(s,eq,col_eq); ok {
+		if s,f3,ok:=sequence(s,range_token,Expression); ok {
+			return s,func() {
+				call(f3)
+				f2()
+				f1()
+				reduce(ss,4,RangeClause,0,1,2,break_space,3)
+			},true
+		}
+	}
 }
 
 @ Tests for |for|
@@ -3920,10 +4403,19 @@ for i, s := range a {
 	g(i, s)
 }
 
+@@
+@@c
+for{
+	sleep(10);
+	ch<-true;
+}
 
 @ @<Cases for |DeferStmt|@>=
-if isCat(pp,defer_token) && isCat(pp+1,Expression) {
-	reduce(pp,2,DeferStmt,pp,break_space,pp+1)
+if s,f,ok:=sequence(ss,defer_token,Expression); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,DeferStmt,0,break_space,1)
+	},true
 }
 
 @ Tests for |defer|
@@ -3935,13 +4427,19 @@ defer unlock(l)
 @@
 @@c
 defer func() {
-                result++
-        }()
+	result++
+}()
 
 
 @ @<Cases for |IncDecStmt|@>=
-if isCat(pp,Expression) && (isCat(pp+1,plus_plus) || isCat(pp+1,minus_minus)) {
-	reduce(pp,2,IncDecStmt,pp,pp+1)
+if s,f1,ok:=one(ss,Expression); ok {
+	if s,f2,ok:=any(s,plus_plus,minus_minus); ok {
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,IncDecStmt,0,1)
+		},true
+	}
 }
 
 @ Tests for |incdec|
@@ -3955,8 +4453,11 @@ i++
 j--
 
 @ @<Cases for |Assignment|@>=
-if isCat(pp,ExpressionList) && isCat(pp+1,assign_op) && isCat(pp+2,ExpressionList) {
-	reduce(pp,3,Assignment,pp,pp+1,pp+2)
+if s,f,ok:=sequence(ss,ExpressionList,assign_op,ExpressionList); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,Assignment,0,1,2)
+	},true
 }
 
 @ Tests for assignments
@@ -4015,15 +4516,24 @@ i = 2
 x = []int{3, 5, 7}
 
 @ @<Cases for |assign_op|@>=
-if isCat(pp,binary_op) && isCat(pp+1,eq) {
-	reduce(pp,2,assign_op,math_rel,'{',pp,'}','{',pp+1,'}','}')
-} else if rollback(); isCat(pp,eq) {
-	reduce(pp,1,assign_op,pp)
+if s,f,ok:=sequence(ss,binary_op,eq); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,assign_op,math_rel,'{',0,'}','{',1,'}','}')
+	},true
+} else if s,f,ok:=one(ss,eq); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,assign_op,0)
+	},true
 }
 
 @ @<Cases for |ShortVarDecl|@>=
-if isCat(pp,IdentifierList) && isCat(pp+1,col_eq) && isCat(pp+2,ExpressionList) {
-	reduce(pp,3,ShortVarDecl,pp,pp+1,pp+2)
+if s,f,ok:=sequence(ss,IdentifierList,col_eq,ExpressionList); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,ShortVarDecl,0,1,2)
+	},true
 }
 
 @ Tests for short var declarations
@@ -4046,118 +4556,204 @@ r, w := os.Pipe(fd)
 _, y, _ := coord(p)
 
 @ @<Cases for |QualifiedIdent|@>=
-if (isCat(pp,identifier) || isCat(pp,PackageName)) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
-	reduce(pp,3,QualifiedIdent,pp,pp+1,pp+2)
-} else if rollback(); isCat(pp,identifier) {
-	reduce(pp,1,QualifiedIdent,pp)
+if s,f1,ok:=any(ss,identifier,PackageName); ok {
+	if s,f2,ok:=sequence(s,dot,identifier); ok {
+		return s,func() {
+			call(f2)
+			f1()
+			reduce(ss,3,QualifiedIdent,0,1,2)
+		},true
+	} else {
+		return s,func() {
+			f1()
+			reduce(ss,1,QualifiedIdent,0)
+		},true
+	}
 }
 
 @ @<Cases for |MethodExpr|@>=
-if isCat(pp,ReceiverType) && isCat(pp+1,dot) && isCat(pp+2,identifier) {
-	reduce(pp,3,MethodExpr,pp,pp+1,pp+2)
+if s,f,ok:=sequence(ss,ReceiverType,dot,identifier); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,MethodExpr,0,1,2)
+	},true
 }
 
 @ @<Cases for |ReceiverType|@>=
-if isCat(pp,Type) {
-	reduce(pp,1,ReceiverType,pp)
-} else if rollback(); isCat(pp,lpar) && isCat(pp+1,asterisk) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
-	reduce(pp,4,ReceiverType,pp,pp+1,pp+2,pp+3)
+if s,f,ok:=one(ss,Type); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,ReceiverType,0)
+	},true
+} else if s,f,ok:=sequence(ss,lpar,asterisk,Type,rpar); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,4,ReceiverType,0,1,2,3)
+	},true
 }
 
 @ @<Cases for |Conversion|@>=
-if isCat(pp,Type) && isCat(pp+1,lpar) && isCat(pp+2,Expression) && isCat(pp+3,rpar) {
-	reduce(pp,4,Conversion,pp,pp+1,pp+2,pp+3)
+if s,f,ok:=sequence(ss,Type,lpar,Expression,rpar); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,4,Conversion,0,1,2,3)
+	},true
 }
 
 @ @<Cases for |BuiltinCall|@>=
-if isCat(pp,identifier) && isCat(pp+1,lpar) {
-	c:=0
-	isCats(pp+2,&c,cat_pair{cat:BuiltinArgs,mand:true},cat_pair{cat:comma,mand:false}) 
-	if isCat(pp+2+c,rpar) {
-		tok_mem:=append([]interface{}{},pp,pp+1)
-		for i:=0;i<c;i++ {
-			tok_mem=append(tok_mem,pp+2+i)
-		}
-		tok_mem=append(tok_mem,pp+2+c)
-		reduce(pp,3+c,BuiltinCall,tok_mem...)
+if s,f1,ok:=sequence(ss,identifier,lpar); ok {
+	tok_mem:=append([]interface{}{},0,1)
+	s,f2,t,ok:=optional(s,2,pair{cat:BuiltinArgs,mand:true},pair{cat:comma,mand:false}) 
+	if ok {
+		tok_mem=append(tok_mem,t)
+	}
+	if s,f3,ok:=one(s,rpar); ok {
+		tok_mem=append(tok_mem,2+len(f2))
+		return s,func() {
+			f3()
+			call(f2)
+			call(f1)
+			reduce(ss,3+len(f2),BuiltinCall,tok_mem...)
+		},true
 	}
 }
 
 @ @<Cases for |BuiltinArgs|@>=
-if isCat(pp,Type) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:comma,mand:true},cat_pair{cat:ExpressionList,mand:true})
-	tok_mem:=append([]interface{}{},pp)
-	for i:=0;i<c;i++ {
-		tok_mem=append(tok_mem,pp+1+i)
+if s,f1,ok:=one(ss,Type); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t,ok:=optional(s,1,pair{cat:comma,mand:true},pair{cat:ExpressionList,mand:true})
+	if ok {
+		tok_mem=append(tok_mem,t)
 	}
-	reduce(pp,1+c,BuiltinArgs,tok_mem...)	
-} else if rollback(); isCat(pp,ExpressionList) {
-	reduce(pp,1,BuiltinArgs,pp)	
+	return s,func() {
+		call(f2)
+		f1()
+		reduce(ss,1+len(f2),BuiltinArgs,tok_mem...)	
+	},true
+} else if s,f,ok:=one(s,ExpressionList); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,BuiltinArgs,0)	
+	},true
 }
 
 @ @<Cases for |Selector|@>= 
-if isCat(pp,dot) && isCat(pp+1,identifier) {
-	reduce(pp,2,Selector,pp,pp+1)
+if s,f,ok:=sequence(ss,dot,identifier); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,2,Selector,0,1)
+	},true
 }
 
 @ @<Cases for |Index|@>=
-if isCat(pp,lbracket) && isCat(pp+1,Expression) && isCat(pp+2,rbracket) {
-	reduce(pp,3,Index,pp,pp+1,pp+2)
+if s,f,ok:=sequence(ss,lbracket,Expression,rbracket); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,3,Index,0,1,2)
+	},true
 }
 
 @ @<Cases for |Slice|@>=
-if isCat(pp,lbracket) {
-	c1:=0
-	isCats(pp+1,&c1, cat_pair{cat:Expression,mand:false})
-	if isCat(pp+1+c1,colon) {
-		c2 := 0
-		isCats(pp+2+c1,&c2, cat_pair{cat:Expression,mand:false})
-		if isCat(pp+2+c1+c2,rbracket) {
-			tok_mem:=append([]interface{}{},pp)
-			for i:=0;i<c1;i++ {
-				tok_mem=append(tok_mem,pp+1+i)
-			}
-			tok_mem=append(tok_mem,pp+1+c1)
-			for i:=0;i<c2;i++ {
-				tok_mem=append(tok_mem,pp+2+c1+i)
-			}
-			tok_mem=append(tok_mem,pp+2+c1+c2)
-			reduce(pp,3+c1+c2,Slice,tok_mem...)
+if s,f1,ok:=one(ss,lbracket); ok {
+	tok_mem:=append([]interface{}{},0)
+	s,f2,t1,ok:=optional(s,1,pair{cat:Expression,mand:false})
+	if ok {
+		tok_mem=append(tok_mem,t1)
+	}
+	if s,f3,ok:=one(s,colon); ok {
+		tok_mem=append(tok_mem,1+len(t1))
+		s,f4,t2,ok:=optional(s,1+len(t1)+1,pair{cat:Expression,mand:false})
+		if ok {
+			tok_mem=append(tok_mem,t2)
+		}
+		if s,f5,ok:=one(s,rbracket); ok {
+			tok_mem=append(tok_mem,2+len(t1)+len(t2))
+			return s,func() {
+				f5()
+				call(f4)
+				f3()
+				call(f2)
+				f1()
+				reduce(ss,3+len(t1)+len(t2),Slice,tok_mem...)
+			},true
 		}
 	}
 }
 
 @ @<Cases for |TypeAssertion|@>=
-if isCat(pp,dot) && isCat(pp+1,lpar) && isCat(pp+2,Type) && isCat(pp+3,rpar) {
-	reduce(pp,4,TypeAssertion,pp,pp+1,pp+2,pp+3)
+if s,f,ok:=sequence(ss,dot,lpar,Type,rpar); ok {
+	return s,func() {
+		call(f)
+		reduce(ss,4,TypeAssertion,0,1,2,3)
+	},true
 }
 
 @ @<Cases for |Call|@>=
-if isCat(pp,lpar) {
-	c:=0
-	isCats(pp+1,&c,cat_pair{cat:ExpressionList,mand:false}, cat_pair{cat:dot_dot_dot,mand:false})
-	if isCat(pp+1+c,rpar) {
-		tok_mem:=append([]interface{}{},pp)
-		for i:=0;i<c;i++ {
-			tok_mem=append(tok_mem,pp+1+i)
+if s,f1,ok:=one(ss,lpar); ok {
+	tok_mem:=append([]interface{}{},0)
+	c:=1
+	s,f2,ok:=one(s,ExpressionList)
+	f3:=empty
+	if ok {
+		tok_mem=append(tok_mem,c)
+		c++
+		s,f3,ok=one(s,dot_dot_dot)
+		if ok {
+			tok_mem=append(tok_mem,c)
+			c++
 		}
-		tok_mem=append(tok_mem,pp+1+c)
-		reduce(pp,2+c,Call,tok_mem...)
+	}
+	if s,f4,ok:=one(s,rpar); ok {
+		tok_mem=append(tok_mem,c)
+		c++
+		return s,func() {
+			f4()
+			f3()
+			f2()
+			f1()
+			reduce(ss,c,Call,tok_mem...)
+		},true
 	}	
 }
 
 @ @<Cases for |unary_op|@>=
-if isCat(pp,asterisk) || isCat(pp,direct) || isCat(pp,add_op) {
-	reduce(pp,1,unary_op,pp)
+if s,f,ok:=any(ss,asterisk,direct,add_op); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,unary_op,0)
+	},true
 }
 
 @ Now here's the |reduce| procedure used in our code for productions.
 
-@c
-func reduce(pp int, k int, c rune, s ...interface{}) {
-	reduced=true
-	reduced_cat=c
+@<Making translation for an element |v| of scrap sequence@>=
+switch s.mathness % 4 { /* left boundary */
+	case no_math:
+		if cur_mathness==maybe_math {
+			init_mathness=no_math
+		} else if cur_mathness==yes_math { 
+			trans=append(trans,"{}$") 
+		}
+		cur_mathness=s.mathness / 4 /* right boundary */
+	case yes_math:
+		if cur_mathness==maybe_math { 
+			init_mathness=yes_math 
+		} else if cur_mathness==no_math {
+			trans=append(trans,"${}")
+		}
+		cur_mathness=s.mathness / 4 /* right boundary */
+	case maybe_math: /* no changes */
+}
+trans=append(trans,s.trans...)
+/*if len(s.trans)==1 {
+	trans=append(trans,s.trans[0])
+} else {
+	trans=append(trans,s.trans)
+}
+*/
+
+@ @c
+func reduce(ss []scrap, k int, c rune, s ...interface{}) {
 	var trans []interface{}
 	cur_mathness:=maybe_math
 	init_mathness:=maybe_math
@@ -4173,49 +4769,43 @@ func reduce(pp int, k int, c rune, s ...interface{}) {
 					}
 					cur_mathness=no_math
 				} else {
-					if scrap_info[pp].mathness==maybe_math { 
+					if ss[0].mathness==maybe_math { 
 						init_mathness=yes_math
-					} else if scrap_info[pp].mathness==no_math { 
+					} else if ss[0].mathness==no_math { 
 						trans=append(trans,"${}") 
 					}
 					cur_mathness=yes_math
 				}
 				trans=append(trans,v)
-			case int: 
-				switch scrap_info[v].mathness % 4 { /* left boundary */
-					case no_math:
-						if cur_mathness==maybe_math {
-							init_mathness=no_math
-						} else if cur_mathness==yes_math { 
-							trans=append(trans,"{}$") 
-						}
-						cur_mathness=scrap_info[v].mathness / 4 /* right boundary */
-					case yes_math:
-						if cur_mathness==maybe_math { 
-							init_mathness=yes_math 
-						} else if cur_mathness==no_math {
-							trans=append(trans,"${}")
-						}
-						cur_mathness=scrap_info[v].mathness / 4 /* right boundary */
-					case maybe_math: /* no changes */
+			case int:
+				s:=ss[v]
+				@<Making translation...@>
+			case []int:
+				for _,v:=range v {
+					if v == -1 {
+						continue
+					}
+					s:=ss[v]
+					@<Making translation...@>
 				}
-				trans=append(trans,scrap_info[v].trans)
 			default:
 				panic(fmt.Sprintf( "Invalid type of translation: %T(%v)",v,v))
 		}
 	}
-	if k==1 {
-		scrap_info[pp].cat=c
-	} else {
-		if init_mathness==maybe_math && cur_mathness!=maybe_math {
-			init_mathness=cur_mathness
-		}
-		scrap_info[pp] = scrap{cat: c, trans: trans, mathness: 4*cur_mathness+init_mathness,}
-		copy(scrap_info[pp+1:len(scrap_info)-1],scrap_info[pp+k:])
+	if init_mathness==maybe_math && cur_mathness!=maybe_math {
+		init_mathness=cur_mathness
+	}
+	ss[0]= scrap{cat: c, trans: trans, mathness: 4*cur_mathness+init_mathness,}
+	if k>1 {
+		copy(ss[1:],ss[k:])
+		ss = ss[:len(ss)-k+1]
 		scrap_info = scrap_info[:len(scrap_info)-k+1]
 	}
-	f := cat_name[c]
+	f := fmt.Sprintf("reduce %q %v",cat_name[c],k)
 	@<Print a snapshot of the scrap list if debugging@>
+	if (tracing & 8) == 8 {
+		fmt.Printf("translation of %s: %v\n",cat_name[c],trans)
+	}
 }
 
 @ And here now is the code that applies productions as long as possible.
@@ -4226,14 +4816,6 @@ to hold the appended tokens and texts.  Here we use a very
 conservative test; it's more important to make sure the program
 will still work if we change the production rules (within reason)
 than to squeeze the last bit of space from the memory arrays.
-
-@ A variable |reduced_cat| is a category was applied.
-@<Global...@>=
-var reduced_cat rune = -1
-
-@ A variable |reduced| is a flag of reducing was made.
-@<Global...@>=
-var reduced bool = false
 
 @ @<Reduce the scraps using the productions until no more rules apply@>=
 for  {
@@ -4254,10 +4836,10 @@ var tracing int32  /* can be used to show parsing details */
 @ @<Print a snapsh...@>=
 { 
 	if (tracing & 2) == 2 {
-		fmt.Printf("%s %d:", f, pp)
-		for k, v:=range scrap_info {
-			if k==pp {
-				fmt.Print("*") 
+		fmt.Printf("%s:", f)
+		for i, v:=range scrap_info {
+			if i == len(scrap_info) - len(ss) {
+				fmt.Print(" *")
 			} else {
 				fmt.Print(" ")
 			}
@@ -4288,6 +4870,7 @@ the given sequence of scraps.
 func translate() []interface{} {
 	pp:=0
 	@<If tracing, print an indication of where we are@>
+	@<Reduce |insert| productions@>
 	@<Reduce the scraps...@>
 	@<Combine the irreducible scraps that remain@>
 }
@@ -4332,6 +4915,20 @@ if (tracing & 2) == 2 {
 	mark_harmless()
 @.Tracing after...@>
 }
+
+@ @<Reduce |insert| productions@>=
+for i:=1; i<len(scrap_info); {
+	if scrap_info[i].cat==insert {
+		reduce(scrap_info[i-1:],2,scrap_info[i-1].cat,0,1)
+		continue
+	}
+	i++
+}
+	
+if len(scrap_info)>1 && scrap_info[0].cat==insert && scrap_info[1].cat!=zero {
+	reduce(scrap_info,2,scrap_info[1].cat,0,1)
+}
+
 
 @* Initializing the scraps.
 If we are going to use the powerful production mechanism just developed, we
@@ -4485,7 +5082,7 @@ switch (next_control) {
 }
 
 @ Some nonstandard characters may have entered \.{GOWEAVE} by means of
-standard ones. They are converted to \TEX/ control sequences so that it is
+standard sequence. They are converted to \TEX/ control sequences so that it is
 possible to keep \.{GOWEAVE} from outputting unusual |rune| codes.
 
 @<Cases involving nonstandard...@>=
@@ -4697,7 +5294,7 @@ func outer_parse() {
 				}
 			}
 			tok_mem=append(tok_mem,force)
-			app_scrap(insert,no_math,tok_mem...)
+			//app_scrap(insert,no_math,tok_mem...)
 				/* the full comment becomes a scrap */
 		}
 	}
@@ -5004,7 +5601,7 @@ if a<break_space {
 @.\\4@>
 @.\\8@>
 		if a==opt {
-			b=get_output(); /* |opt| is followed by a digit */
+			b=get_output() /* |opt| is followed by a digit */
 			if b!='0' || flags['f']==false { 
 				out(b) 
 			} else {
@@ -5096,12 +5693,12 @@ input buffer and the translation process uses the end of the active
 		an_output=false
 	}
 	if xmem[cur_xref].num>=def_flag {
-		out_section(xmem[cur_xref].num-def_flag)
+		out_str(section_str(xmem[cur_xref].num-def_flag))
 		if phase==3 {
 			cur_xref=xmem[cur_xref].xlink
 			for xmem[cur_xref].num>=def_flag {
 				out_str(", ")
-				out_section(xmem[cur_xref].num-def_flag)
+				out_str(section_str(xmem[cur_xref].num-def_flag))
 				cur_xref=xmem[cur_xref].xlink
 			}
 		}
@@ -5131,8 +5728,7 @@ for i := 0; i < len(scratch); {
 	}
 	if an_output {
 		switch b {
-			case  ' ','\\','#','%', '$', '^',
-			'{','}','~','&','_':
+			case  ' ','\\','#','%', '$', '^','{','}','~','&','_':
 				out('\\')
 				fallthrough
 @.\\\ @>
@@ -5323,7 +5919,7 @@ if loc-1 >= len(buffer) || buffer[loc-1]!='*' {
 	os.Stdout.Sync() /* print a progress report */
 }
 out_str("{")
-out_section(section_count)
+out_str(section_str(section_count))
 out_str("}")
 
 @ In the \TEX/ part of a section, we simply copy the source text, except that
@@ -5573,7 +6169,7 @@ if xmem[xmem[q].xlink].num>flag {
 	out('s') /* plural */
 }
 for {
-	out_section(xmem[cur_xref].num-flag)
+	out_str(section_str(xmem[cur_xref].num-flag))
 	cur_xref=xmem[cur_xref].xlink /* point to the next cross-reference to output */
 	if xmem[cur_xref].num<=flag {
 		break
@@ -5678,11 +6274,11 @@ the index section itself.
 	for k_section++;!changed_section[k_section];k_section++ {}
 	out_str("\\ch ")
 @.\\ch@>
-	out_section(k_section)
+	out_str(section_str(k_section))
 	for k_section<section_count {
 		for k_section++;!changed_section[k_section];k_section++ {}
 		out_str(", ")
-		out_section(k_section)
+		out_str(section_str(k_section))
 	}
 	out('.')
 }
@@ -5930,10 +6526,10 @@ for {
 	out_str(", ")
 	cur_val=xmem[cur_xref].num
 	if cur_val<def_flag {
-		out_section(cur_val)
+		out_str(section_str(cur_val))
 	} else {
 		out_str("\\[")
-		out_section(cur_val-def_flag)
+		out_str(section_str(cur_val-def_flag))
 		out(']')
 	}
 @.\\[@>
