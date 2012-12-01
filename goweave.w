@@ -791,9 +791,6 @@ delimiters if they are protected by a backslash.
 		section_text = append(section_text, '@@')
 	}
 	section_text = append(section_text, delim)
-	if delim=='<' {
-		 delim='>' /* for file names in |#include| lines */
-	}
 	for {
 		if loc>=len(buffer) {
 			if !get_line()  {
@@ -1563,7 +1560,8 @@ We don't copy spaces or tab marks into the beginning of a line. This
 makes the test for empty lines in |finish_line| work.
 
 @ @f copy_TeX TeX
-@c
+
+@ @c
 func copy_TeX() rune {
 	for {
 		if loc>=len(buffer) {
@@ -1876,14 +1874,14 @@ const (
 	var_token rune = iota /* \&{var} */
 	range_token rune = iota /* \&{range} */
 	map_token rune = iota /* \&{map} */
-	chan_token rune = iota /* \&{cnah} */
+	chan_token rune = iota /* \&{chan} */
 	dot rune = iota /* \&{.} */
 	eq rune = iota /* denotes an assign operator '=' */
-	binary_op rune = iota /* "||" | "&&" | rel_op | add_op | mul_op  */
-	rel_op rune = iota /* "==" | "!=" | "<" | "<=" | ">" | ">=" */
-	add_op rune = iota	/* "+" | "-" | "|" | "^" . */
-	mul_op rune = iota /*  "/" | "%" | "<<" | ">>" | "&" | "&^"  */
-	unary_op rune = iota /* "+" | "-" | "!" | "^" | "*" | "&" | "<-" */
+	binary_op rune = iota /* "\\V","\\W",rel_op, add_op,mul_op  */
+	rel_op rune = iota /* "==","!=","<","<=",">",">=" */
+	add_op rune = iota	/* "+","-","\\OR","^"*/
+	mul_op rune = iota /*  "/","%","<<",">>","\\AND","&^"  */
+	unary_op rune = iota /* "+","-","!","^","*","\\AND","<-" */
 	asterisk rune = iota /* "*" */
 	assign_op rune = iota
 
@@ -2522,6 +2520,9 @@ code needs to be provided with a proper environment.
 				@<Cases for |VarSpec|@>
 				@<Cases for |TypeSpec|@>
 				@<Cases for |FieldDecl|@>
+				@<Cases for |ExprCaseClause|@>
+				@<Cases for |TypeCaseClause|@>
+				@<Cases for |CommClause|@>
 		}
 		return ss,empty,false
 	} (scrap_info[pp:])
@@ -2781,7 +2782,7 @@ if s,f1,ok:=one(ss,var_token); ok {
 		return s,func() {
 			f2()
 			f1()
-			reduce(ss,2,VarDecl,0,break_space,1,force)
+			reduce(ss,2,VarDecl,0,break_space,1)
 		},true
 	} else if s,f2,ok:=one(s,lpar); ok {
 		tok_mem:=append([]interface{}{},0,1)
@@ -2884,16 +2885,17 @@ import(
 
 @ @<Cases for |FunctionDecl|@>=
 if s,f1,ok:=sequence(ss,func_token,identifier,Signature); ok{
-	if s,f2,ok:=one(s,Block); ok {
+	if s,f2,ok:=sequence(s,Block,semi); ok {
+		return s,func() {
+			call(f2)
+			call(f1)
+			reduce(ss,5,FunctionDecl,0,break_space,1,2,3,4,big_force)
+		},true
+	} else if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			reduce(ss,4,FunctionDecl,0,break_space,1,2,3)
-		},true
-	} else {
-		return s,func() {
-			call(f1)
-			reduce(ss,3,FunctionDecl,0,break_space,1,2)	
+			reduce(ss,4,FunctionDecl,0,break_space,1,2,3,big_force)	
 		},true
 	}
 }
@@ -4745,12 +4747,6 @@ switch s.mathness % 4 { /* left boundary */
 	case maybe_math: /* no changes */
 }
 trans=append(trans,s.trans...)
-/*if len(s.trans)==1 {
-	trans=append(trans,s.trans[0])
-} else {
-	trans=append(trans,s.trans)
-}
-*/
 
 @ @c
 func reduce(ss []scrap, k int, c rune, s ...interface{}) {
@@ -4924,7 +4920,7 @@ for i:=1; i<len(scrap_info); {
 	}
 	i++
 }
-	
+
 if len(scrap_info)>1 && scrap_info[0].cat==insert && scrap_info[1].cat!=zero {
 	reduce(scrap_info,2,scrap_info[1].cat,0,1)
 }
@@ -5237,6 +5233,7 @@ func Go_translate() []interface{} {
 		err_print("! Missing '|' after Go text")
 @.Missing '|'...@>
 	}
+	app_scrap(semi,no_math)
 	app_scrap(insert,maybe_math,cancel)
 				/* place a |cancel| token as a final ``comment'' */
 	p:=translate() /* make the translation */
@@ -5294,7 +5291,7 @@ func outer_parse() {
 				}
 			}
 			tok_mem=append(tok_mem,force)
-			//app_scrap(insert,no_math,tok_mem...)
+			app_scrap(insert,no_math,tok_mem...)
 				/* the full comment becomes a scrap */
 		}
 	}
@@ -5427,8 +5424,8 @@ restart:
 			cur_name = int32(tok)
 			return section_code /* |a==section_flag+cur_name| */
 		case inner_list_token: 	/* |a==inner_tok_flag+cur_name| */
-			cur_state.mode_field=inner
 			push_level(tok)
+			cur_state.mode_field=inner
 			goto restart
 		case list_token: /* |a==tok_flag+cur_name| */
 			push_level(tok)
@@ -6022,6 +6019,7 @@ func finish_Go(visible bool) {
 		if next_control==identifier {
 			tok_mem=append(tok_mem,id_token(id_lookup(id,normal)))
 			app_scrap(Expression,maybe_math,tok_mem...)
+			app_scrap(semi,maybe_math)
 			next_control=get_next()
 		}
 	}
