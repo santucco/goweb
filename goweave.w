@@ -857,6 +857,7 @@ because the section name might (for example) follow \&{int}.
 
 @<Scan the section name...@>= {
 	section_text = section_text[0:0]
+	cur_section_char=nc
 	@<Put section name into |section_text|@>
 	if len(section_text)>3 && 
 		compare_runes(section_text[len(section_text)-3:],[]rune("..."))==0 {	
@@ -2876,12 +2877,14 @@ if s,f1,ok:=sequence(ss,func_token,identifier,Signature); ok{
 		return s,func() {
 			call(f2)
 			call(f1)
+			make_underlined(1)
 			reduce(ss,5,FunctionDecl,0,break_space,1,2,3,4,big_force)
 		},true
 	} else if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
 			call(f1)
+			make_underlined(1)
 			reduce(ss,4,FunctionDecl,0,break_space,1,2,3,big_force)	
 		},true
 	}
@@ -2908,11 +2911,13 @@ if s,f1,ok:=sequence(ss,func_token,Receiver,identifier,Signature); ok {
 		return s,func() {
 			f2()
 			call(f1)
+			make_underlined(2)
 			reduce(ss,5,MethodDecl,0,break_space,1,break_space,2,3,4)
 		},true
 	} else {
 		return s,func() {
 			call(f1)
+			make_underlined(2)
 			reduce(ss,4,MethodDecl,0,break_space,1,break_space,2,3)
 		},true
 	}
