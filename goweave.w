@@ -587,6 +587,9 @@ func skip_TeX() rune {
 			loc++
 			return ccode[buffer[l]]
 		}
+		if l<len(buffer) && buffer[l]=='@@' {
+			return new_section
+		}
 	}
 	return 0
 }
@@ -1113,7 +1116,6 @@ for {
 			continue
 		case '|': 
 			Go_xref(section_name)
-			break
 		case xref_roman, xref_wildcard, xref_typewriter, noop, section_name:
 			loc-=2
 			next_control=get_next() /* scan to \.{@@>} */
@@ -1121,7 +1123,6 @@ for {
 				@<Replace |"@@@@"| by |"@@"| @>
 				new_xref(id_lookup(id,next_control-identifier))
 			}
-			break
 	}
 	if next_control>=format_code {
 		break
@@ -1877,12 +1878,12 @@ const (
 	chan_token rune = iota /* \&{chan} */
 	dot rune = iota /* \&{.} */
 	eq rune = iota /* denotes an assign operator '=' */
-	binary_op rune = iota /* "\\V","\\W",rel_op, add_op,mul_op  */
-	rel_op rune = iota /* "==","!=","<","<=",">",">=" */
-	add_op rune = iota	/* "+","-","\\OR","^"*/
-	mul_op rune = iota /*  "/","%","<<",">>","\\AND","&^"  */
-	unary_op rune = iota /* "+","-","!","^","*","\\AND","<-" */
-	asterisk rune = iota /* "*" */
+	binary_op rune = iota
+	rel_op rune = iota
+	add_op rune = iota
+	mul_op rune = iota
+	unary_op rune = iota
+	asterisk rune = iota
 	assign_op rune = iota
 
 	lbrace rune = iota /* denotes a left brace */
@@ -2189,20 +2190,6 @@ items for \TEX/ output.
 
 \item{$\bullet$}|inner_tok_flag+p| represents token list number |p|, to be
 translated without line-break controls.
-
-@<Constants@>=
-//const (
-//	id_flag rune = unicode.UpperLower /* signifies an identifier */
-//	res_flag rune = 2*id_flag /* signifies a reserved word */
-//	section_flag rune = 4*id_flag /* signifies a section name */
-//	tok_flag rune = 6*id_flag /* signifies a token list */
-//	inner_tok_flag rune = 8*id_flag /* signifies a token list in `\pb' */
-//)
-
-
-
-
-
 
 @ The production rules listed above are embedded directly into \.{GOWEAVE},
 since it is easier to do this than to write an interpretive system
