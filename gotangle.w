@@ -175,7 +175,7 @@ last_unnamed=0
 text_info = append(text_info, text{})
 text_info[0].text_link=0
 
-@ \{GOTANGLE} operates with UTF8 encoding texts and represents a text in
+@ \.{GOTANGLE} operates with UTF8 encoding texts and represents a text in
 4-bytes unicode code points internally. If the first byte of a token is 
 less than |unicode.UpperLower|, this is usual character. Otherwise
 if it is equal |unicode.UpperLower+0211|, the next rune is a section number;
@@ -299,7 +299,8 @@ var cur_val rune /* additional information corresponding to output token */
 |stack_ptr==0|.
 @^high-bit character handling@>
 
-@ @c
+@
+@c
 /* sends next token to |out_char| */
 func get_output() {
 restart: 
