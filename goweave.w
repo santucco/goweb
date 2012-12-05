@@ -61,7 +61,8 @@ is modified.
 @<Constants@>=
 const banner = "This is GOWEAVE (Version 0.1)\n"
 
-@ @c
+@
+@c
 package main
 
 import (
@@ -83,7 +84,8 @@ file, finally it sorts and outputs the index.
 Please read the documentation for \.{common}, the set of routines common
 to \.{GOTANGLE} and \.{GOWEAVE}, before proceeding further.
 
-@ @c
+@
+@c
 func main () {
 	flags['x']=true
 	flags['f']=true
@@ -230,7 +232,8 @@ func unindexed(p int32) bool {
 	return p<res_wd_end && name_dir[p].ilk>=custom
 }
 
-@ @c
+@
+@c
 func new_xref(p int32){
 	if flags['x']==false {
 		return
@@ -531,7 +534,8 @@ There's a complication that we will postpone until later: If the \.{@@s}
 operation appears in limbo, we want to use it to adjust the default
 interpretation of identifiers.
 
-@ @c
+@
+@c
 func skip_limbo() {
 	for {
 		if loc>=len(buffer) && !get_line() {
@@ -645,7 +649,8 @@ that branches to the various special cases that can arise.
 \GO/ allows underscores to appear in identifiers, and some \GO/
 compilers even allow the dollar sign.
 
-@ @c
+@
+@c
 /* produces the next input token */
 func get_next() rune { 
 	for {
@@ -934,7 +939,8 @@ if c=='@@' {
 
 @ This function skips over a restricted context at relatively high speed.
 
-@ @c
+@
+@c
 func skip_restricted() {
 	id_first:=loc
 false_alarm:
@@ -996,7 +1002,8 @@ var next_control rune /* control code waiting to be acting upon */
 @ The overall processing strategy in phase one has the following
 straightforward outline.
 
-@ @c
+@
+@c
 func phase_one() {
 	phase=1
 	reset_input()
@@ -1050,7 +1057,8 @@ the relations |xref_roman==identifier+roman| and |xref_wildcard==identifier
 +wildcard| and |xref_typewriter==identifier+typewriter|,
 as well as |normal==0|.
 
-@ @c
+@
+@c
 /* makes cross-references for \GO/ identifiers */
 func Go_xref(spec_ctrl rune) {
 	for next_control<format_code || next_control==spec_ctrl {
@@ -1078,7 +1086,8 @@ func Go_xref(spec_ctrl rune) {
 with |next_control!='|'| and ends with |next_control>=format_code|. Thus, it
 handles \GO/ text with embedded comments.
 
-@ @c
+@
+@c
 /* extension of |Go_xref| */
 func outer_xref() {
 	for next_control<format_code {
@@ -1267,7 +1276,8 @@ var an_output bool /* did |file_flag| precede |cur_xref|? */
 walks through the tree of section names and prints out anomalies.
 @^recursion@>
 
-@ @c
+@
+@c
 /* print anomalies in subtree |p| */
 func section_check(p int32) {
 	if p != -1 {
@@ -1400,7 +1410,8 @@ full.  If we want to append more than one character at once, we say
 A line break will occur at a space or after a single-nonletter
 \TEX/ control sequence.
 
-@ @c
+@
+@c
 func out(c rune) {
 	if out_ptr>=out_buf_end {
 		break_out()
@@ -1409,7 +1420,8 @@ func out(c rune) {
 	out_buf[out_ptr]=c
 }
 
-@ @c
+@
+@c
 /* output characters from |s| to end of string */
 func out_str(s string) {
 	for _, v := range s {
@@ -1428,7 +1440,8 @@ out_buf[0]='\\'
 preceded by another backslash. In the latter case, a |'%'| is output at
 the break.
 
-@ @c
+@
+@c
 /* finds a way to break the output line */
 func break_out() {
 	k:=out_ptr /* pointer into |out_buf| */
@@ -1563,7 +1576,8 @@ makes the test for empty lines in |finish_line| work.
 
 @ @f copy_TeX TeX
 
-@ @c
+@
+@c
 func copy_TeX() rune {
 	for {
 		if loc>=len(buffer) {
@@ -1607,7 +1621,8 @@ Instead of copying the \TEX/ material
 into the output buffer, this function copies it into the token memory
 (in phase two only).
 
-@ @c
+@
+@c
 /* copies \TEX/ code in comments */
 func copy_comment(
 	is_long_comment bool,
@@ -2534,7 +2549,8 @@ If the first identifier found is a keyword like `\&{case}', we
 return the special value |case_found|; this prevents underlining
 of identifiers in case labels.
 
-@ @c
+@
+@c
 func find_first_ident(p []interface{}) []interface{} {
 	for i, j:= range p {
 		switch r := j.(type) {
@@ -2601,7 +2617,8 @@ because this would just make a new cross-reference at the end of the list.
 We actually have to search through the list for the existing
 cross-reference.
 
-@ @c
+@
+@c
 func underline_xref(p id_token) {
 	q:=name_dir[p].xref /* pointer to cross-reference being examined */
 	if flags['x']==false {
@@ -2650,7 +2667,6 @@ to be performed, followed by |goto found|.
 if s,f,ok:=sequence(ss,package_token,identifier); ok {
 	return s,func() {
 		call(f)
-		make_reserved(ss[1],PackageName)
 		reduce(ss,2,PackageClause,0,break_space,1,big_force)
 	},true
 }
@@ -4740,7 +4756,8 @@ switch s.mathness % 4 { /* left boundary */
 }
 trans=append(trans,s.trans...)
 
-@ @c
+@
+@c
 func reduce(ss []scrap, k int, c rune, s ...interface{}) {
 	var trans []interface{}
 	cur_mathness:=maybe_math
@@ -5189,7 +5206,8 @@ app_scrap(insert,no_math,tok_mem...)
 @ The function |app_cur_id| appends the current identifier to the
 token list; it also builds a new scrap if |scrapping==true|.
 
-@ @c
+@
+@c
 func app_cur_id() {
 	p:=id_lookup(id,normal)
 	if name_dir[p].ilk<=custom { /* not a reserved word */
@@ -5342,7 +5360,8 @@ type output_state struct {
 	mode_field mode /* interpretation of control tokens */
 }
 
-@ @c func init_stack() {
+@
+@c func init_stack() {
 	stack=make([]output_state, 0, 100)
 	cur_state.mode_field=outer
 }
@@ -5394,7 +5413,8 @@ const (
 	section_code rune = 0243 /* returned by |get_output| for section names */
 )
 
-@ @c
+@
+@c
 /* returns the next token of output */
 func get_output() rune {
 restart: 
@@ -5472,7 +5492,8 @@ func output_Go() {
 
 @ Here is \.{GOWEAVE}'s major output handler.
 
-@ @c
+@
+@c
 /* outputs the equivalents of tokens */
 func make_output(p interface{}) {
 	var c int /* count of |indent| and |outdent| tokens */
@@ -5810,7 +5831,8 @@ is analogous to phase one, except that more work is involved because we must
 actually output the \TEX/ material instead of merely looking at the
 \.{CWEB} specifications.
 
-@ @c
+@
+@c
 func phase_two() {
 	reset_input()
 	if show_progress() {
@@ -5965,7 +5987,8 @@ takes place, so that the translation will normally end with \.{\\6} or
 \.{\\7} (the \TEX/ macros for |force| and |big_force|). This \.{\\6} or
 \.{\\7} is replaced by the concluding \.{\\par} or by \.{\\Y\\par}.
 
-@ @c
+@
+@c
 /* finishes a definition or a \GO/ part */
 /* visible is nonzero if we should produce \TEX/ output */
 func finish_Go(visible bool) {
@@ -6126,7 +6149,8 @@ leaves |cur_xref| pointing to the first element not printed.  Typical outputs:
 Note that the output of \.{GOWEAVE} is not English-specific; users may
 supply new definitions for the macros \.{\\A}, \.{\\As}, etc.
 
-@ @c
+@
+@c
 /* outputs section cross-references */
 func footnote(flag int32) {
 	if xmem[cur_xref].num<=flag {
@@ -6189,7 +6213,8 @@ If the user has set the |flags['x']==0| flag (the \.{-x} option on the command l
 just finish off the page, omitting the index, section name list, and table of
 contents.
 
-@ @c
+@
+@c
 func phase_three() {
 	if !flags['x'] {
 		finish_line()
@@ -6377,7 +6402,8 @@ regarded as identical.
 @<Constants@>=
 const infinity = -1  /* $\infty$ (approximately) */
 
-@ @c
+@
+@c
 /* empties buckets having depth |d| */
 func unbucket(d int32) {
 	/* index into |bucket|; cannot be a simple |char| because of sign
@@ -6556,7 +6582,8 @@ for {
 prints them.
 @^recursion@>
 
-@ @c
+@
+@c
 /* print all section names in subtree |p| */
 func section_print(p int32) {
 	if p != -1{

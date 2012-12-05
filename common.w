@@ -124,7 +124,8 @@ var id []rune /* slice pointed to the current identifier */
 "io"
 "bytes"
 
-@ @c
+@
+@c
 /* copies a line into |buffer| or returns error */
 func input_ln(fp *bufio.Reader) error {
 	var prefix bool
@@ -439,7 +440,8 @@ var change_pending bool /* if the current change is not yet recorded in
   |changed_section[section_count]| */
 var print_where bool = false /* should \.{GOTANGLE} print line and file info? */
 
-@ @c
+@
+@c
 func get_line() bool { /* inputs the next line */
 restart:
 	if changing && include_depth==change_depth {
@@ -737,7 +739,8 @@ The second chunk will begin at the name pointer |name_dir[p+1].llink|,
 and if it too is a prefix (ending with blank) its |llink| will point
 to additional chunks in the same way. Null links are represented by -1.
 
-@ @c
+@
+@c
 func print_section_name(p int32) {
 	q := p+1
 	for p!=-1 {
@@ -755,7 +758,8 @@ func print_section_name(p int32) {
 	}
 }
 
-@ @c
+@
+@c
 func sprint_section_name(p int32) []rune{
 	q := p+1
 	var dest []rune
@@ -771,7 +775,8 @@ func sprint_section_name(p int32) []rune{
 	return dest
 }
 
-@ @c
+@
+@c
 func print_prefix_name(p int32) {
 	l := name_dir[p].name[0]
 	fmt.Print(string(name_dir[p].name[1:]))
@@ -790,7 +795,8 @@ greater = 2 /* the first name is lexicographically greater than the second */
 prefix = 3 /* the first name is a proper prefix of the second */
 extension = 4 /* the first name is a proper extension of the second */
 
-@ @c
+@
+@c
 /* fuller comparison than |strcmp| */
 func web_strcmp(
 	j []rune, /* first string */
@@ -828,7 +834,8 @@ differently in \.{GOWEAVE} and \.{GOTANGLE}; hence the
 |init_node| procedure, which is defined differently in \.{goweave.w}
 and \.{gotangle.w}.
 
-@ @c 
+@
+@c 
 /* install a new node in the tree */ 
 func add_section_name(
 	par int32, /* parent of new node */
@@ -862,7 +869,8 @@ func add_section_name(
 	return p
 }
 
-@ @c
+@
+@c
 func extend_section_name(
 	p int32, /* index name to be extended */
 	text []rune, /* extension text */
@@ -1005,7 +1013,8 @@ us to regard \.{@@<foo...@@>} as an ``extension'' of itself.
 @<Common constants@>=
 bad_extension = 5
 
-@ @c 
+@
+@c 
 func section_name_cmp(
 	name []rune, /* comparison string */
 	r int32 /* section name being compared */) (int, int) {
@@ -1070,14 +1079,16 @@ harmless_message = 1 /* |history| value when non-serious info was printed */
 error_message = 2 /* |history| value when an error was noted */
 fatal_message = 3 /* |history| value when we had to stop prematurely */
 
-@ @c 
+@
+@c 
 func mark_harmless () {
 	if history==spotless { 
 		history=harmless_message 
 	}
 }
 
-@ @c 
+@
+@c 
 func mark_error() {
 	history=error_message
 }
@@ -1092,7 +1103,8 @@ Note that no period follows the error message, since the error routine
 will automatically supply a period. A newline is automatically supplied
 if the string begins with |"!"|.
 
-@ @c
+@
+@c
 /* prints `\..' and location of error message */
 func err_print(s string) { 
 	var l int /* pointers into |buffer| */
@@ -1235,22 +1247,26 @@ of the program. The various file name variables contain strings with
 the names of those files. Most of the 128 flags are undefined but available
 for future extensions.
 
-@ @c
+@
+@c
 func show_banner() bool {
 	return flags['b'] /* should the banner line be printed? */
 }
 
-@ @c
+@
+@c
 func show_progress() bool {
 	return flags['p'] /* should progress reports be printed? */
 }
 
-@ @c
+@
+@c
 func show_stats() bool {
 	return flags['s'] /* should statistics be printed at end of run? */
 }
 
-@ @c
+@
+@c
 func show_happiness() bool { 
 	return flags['h'] /* should lack of errors be announced? */
 }
@@ -1286,7 +1302,8 @@ when no changes are desired.
 
 If there's a third file name, it will be the output file.
 
-@ @c
+@
+@c
 func scan_args() {
 	dot_pos := -1 /* position of |'.'| in the argument */
 	name_pos := 0 /* file name beginning, sans directory */
