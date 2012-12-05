@@ -55,7 +55,8 @@ is modified.
 @<Constants@>=
 banner = "This is GOTANGLE (Version 0.1)\n"
 
-@ @c
+@
+@c
 package main
 
 import (
@@ -443,7 +444,8 @@ complain we're out of room@>=
 @* The big output switch.  Here then is the routine that does the
 output.
 
-@ @c
+@
+@c
 func phase_two () {
 	line[include_depth]=1
 	@<Initialize the output stacks@>
@@ -511,7 +513,8 @@ is not called if |out_state==verbatim|, except perhaps with arguments
 |'\n'| (protect the newline), |string| (end the string), or |constant|
 (end the constant).
 
-@ @c
+@
+@c
 func out_char(cur_char rune) {
 	switch (cur_char) {
 		case '\n': 
@@ -751,7 +754,8 @@ No comment, long or short, is allowed to contain `\.{@@\ }' or `\.{@@*}'.
 @<Global...@>=
 var comment_continues bool=false /* are we scanning a comment? */
 
-@ @c
+@
+@c
  /* skips over comments */
 func skip_comment(is_long_comment bool) bool {
 	for true {
@@ -805,7 +809,8 @@ var no_where bool /* suppress |print_where|? */
 @ As one might expect, |get_next| consists mostly of a big switch
 that branches to the various special cases that can arise.
 
-@ @c
+@
+@c
 /* produces the next input token */
 func get_next() rune {
 	for true {
@@ -1136,7 +1141,8 @@ macro = 0
 var cur_text int32  /* replacement text formed by |scan_repl| */
 var next_control rune
 
-@ @c
+@
+@c
 /* creates a replacement text */
 func scan_repl(t rune) {
 	var a int32 /* the current token */
@@ -1454,7 +1460,8 @@ if p==-1 { /* unnamed section, or bad section name */
 text_info[cur_text].text_link=max_texts
   /* mark this replacement text as a nonmacro */
 
-@ @c
+@
+@c
 func phase_one() {
 	phase=1
 	section_count=0
@@ -1509,7 +1516,8 @@ func skip_limbo() {
 	}
 }
 
-@ @c
+@
+@c
 func print_stats() {
     fmt.Print("\nMemory usage statistics:\n")
     fmt.Printf("%v names\n", len(name_dir))
