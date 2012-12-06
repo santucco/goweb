@@ -5512,11 +5512,11 @@ func optional(ss[]scrap,g int,cats...pair)([]scrap,[]reducing,[]int,bool){
 var trans[]int
 var funcs[]reducing
 ok:= false
-exit:= false
-s:= ss
-for!exit&&len(s)> 0{
+for len(ss)> 0{
 var t[]int
 var fs[]reducing
+s:= ss
+exit:= false
 for _,v:= range cats{
 f:= empty
 if s,f,ok= one(s,v.cat);ok{
@@ -5528,18 +5528,18 @@ exit= true
 break
 }
 }
-if len(fs)==0{
+if exit||len(fs)==0{
 break
 }
 funcs= append(funcs,fs...)
 trans= append(trans,t...)
+ss= s
 }
 ok= true
 if len(funcs)==0{
-s= ss
 ok= false
 }
-return s,funcs,trans,ok
+return ss,funcs,trans,ok
 }
 
 
