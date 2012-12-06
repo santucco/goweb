@@ -3859,16 +3859,16 @@ call(f1)
 reduce(ss,2,ImportSpec,0,break_space,1,force)
 },true
 }
-}else if s,f1,ok:= sequence(ss,str);ok{
+}else if s,f1,ok:= one(ss,str);ok{
 if s,f2,ok:= one(s,semi);ok{
 return s,func(){
 f2()
-call(f1)
+f1()
 reduce(ss,2,ImportSpec,0,1,force)
 },true
 }else if _,_,ok:= any(s,rpar,rbrace);ok{
 return s,func(){
-call(f1)
+f1()
 reduce(ss,1,ImportSpec,0,force)
 },true
 }
@@ -6075,16 +6075,16 @@ call(f1)
 reduce(ss,2,ImportSpec,0,break_space,1,force)
 },true
 }
-}else if s,f1,ok:= sequence(ss,str);ok{
+}else if s,f1,ok:= one(ss,str);ok{
 if s,f2,ok:= one(s,semi);ok{
 return s,func(){
 f2()
-call(f1)
+f1()
 reduce(ss,2,ImportSpec,0,1,force)
 },true
 }else if _,_,ok:= any(s,rpar,rbrace);ok{
 return s,func(){
-call(f1)
+f1()
 reduce(ss,1,ImportSpec,0,force)
 },true
 }
