@@ -3925,7 +3925,7 @@ if s,f1,ok:=one(ss,if_token); ok {
 	if ok {
 		tok_mem=append(tok_mem,break_space,c)
 		if len(scrap_info[c+1].trans)!=0 {
-			tok_mem=append(tok_mem,break_space,c+1)
+			tok_mem=append(tok_mem,c+1)
 		} else {
 			tok_mem=append(tok_mem,';')
 		}
@@ -5005,9 +5005,9 @@ switch (next_control) {
 		next_control=add_op
 @.\\OR@>
 	case '^': 
-		app_scrap(add_op,yes_math,"\\XOR")
+		app_scrap(add_op,yes_math,"\\CF")
 		next_control=add_op
-@.\\XOR@>
+@.\\CF@>
 	case '%': 
 		app_scrap(mul_op,yes_math,"\\MOD")
 		next_control=mul_op
@@ -5127,10 +5127,12 @@ case dot_dot_dot:
 @.\\ldots@>
 case col_eq: 
 	@+app_scrap(col_eq,yes_math,":\\K")
+@.:\\K@>
 case direct:
 	@+app_scrap(direct,yes_math,"\\leftarrow")
+@.\\leftarrow@>
 case and_not:
-	@+app_scrap(mul_op,yes_math,"\\AND\\XOR")
+	@+app_scrap(mul_op,yes_math,"\\AND\\CF")
 
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
