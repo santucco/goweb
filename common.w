@@ -15,6 +15,8 @@
 % entire resulting derived work is given a different name and distributed
 % under the terms of a permission notice identical to this one.
 
+\def\v{\char'174} % vertical (|) in typewriter font
+
 @** Introduction in common code.  Next few sections contain code common
 to both \.{GOTANGLE} and \.{GOWEAVE}, which roughly concerns the following
 problems: character uniformity, input routines, error handling and
