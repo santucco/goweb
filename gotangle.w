@@ -2,7 +2,7 @@
 % This program by Alexander Sychev 
 % is based on a program CWEB by Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.1 --- Marth 2012
+% Version 0.2 --- December 2012
 
 % Copyright (C) 2012 Alexander Sychev
 
@@ -22,11 +22,11 @@
 \mathchardef\RA="3221 % right arrow
 \mathchardef\BA="3224 % double arrow
 
-\def\title{GOTANGLE (Version 0.1)}
+\def\title{GOTANGLE (Version 0.2)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont GOTANGLE} processor}
   \vskip 15pt
-  \centerline{(Version 0.1)}
+  \centerline{(Version 0.2)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -53,7 +53,7 @@ The ``banner line'' defined here should be changed whenever \.{GOTANGLE}
 is modified.
 
 @<Constants@>=
-banner = "This is GOTANGLE (Version 0.1)\n"
+banner = "This is GOTANGLE (Version 0.2)\n"
 
 @
 @c
@@ -72,14 +72,8 @@ const (
 @<Global variables@>@/
 
 @ \.{GOTANGLE} has a fairly straightforward outline.  It operates in
-two phases: First it reads the source file, saving the \GO/ code in
+two phases: first it reads the source file, saving the \GO/ code in
 compressed form; then it shuffles and outputs the code.
-
-Please read the documentation for \.{common}, the set of routines common
-to \.{GOTANGLE} and \.{GOWEAVE}, before proceeding further.
-
-@ <@Import...@>=
-"fmt"
 
 @c
 func main () {
@@ -96,16 +90,16 @@ func main () {
 @ @<Constants@>=
 max_texts = 2500 /* number of replacement texts, must be less than 10240 */
 
-@ The next few sections contain stuff from the file |"common.w"| that must
-be included in both |"gotangle.w"| and |"goweave.w"|. 
+@ The next few sections contain stuff from the file |common.w| that must
+be included in both |gotangle.w| and |goweave.w|. 
 
 @i common.w
 
 
-@* Data structures exclusive to {\tt GOTANGLE}.
-A \&{text} variable is a structure containing a token into
+@** Data structures exclusive to {\tt GOTANGLE}.
+A |text| is a structure containing a token into
 |token|, and an integer |text_link|, which, as we shall see later, is used to connect
-pieces of text that have the same name.  All the \&{text}s are stored in
+pieces of text that have the same name.  All the |text| are stored in
 the array |text_info|.
 
 @<Typed...@>=
@@ -113,13 +107,12 @@ type text struct {
 	token []rune	/* pointer into |tok_mem| */
 	text_link int32		/* relates replacement texts */
 }
-type text_pointer int
 
 @ @<Glob...@>=
 var text_info []text
 var tok_mem []rune
 
-@ If |p| is an index of a section name, |p->equiv| is an index of its
+@ If |p| is an index of a section name, |p.equiv| is an index of its
 replacement text, an element of the array |text_info|.
 
 @<More elements of |name...@>=
@@ -139,25 +132,25 @@ func names_match(
 	return compare_runes(id, name_dir[p].name) == 0
 }
 
-@ The common lookup routine refers to separate routines |init_node| and
-|init_p| when the data structure grows. Actually |init_p| is called only by
-\.{GOWEAVE}, but we need to declare a dummy version so that
-the loader won't complain of its absence.
+@ The common lookup routine refers to separate routines |init_node| when the data structure grows.
 
 @c
 func init_node(node int32) {
     name_dir[node].equiv=-1
 }
 
-func init_p(int32, int32){}
+@ Actually \.{GOTANGLE} haven't got any specific code for initialization
+a new identifier, so we declare an empty corresponding section.
 
-@* Tokens.
+@<Initialization of a new identifier@>=
+
+
+@** Tokens.
 Replacement texts, which represent \GO/ code in a compressed format,
 appear in |tok_mem| as mentioned above. The codes in
-these texts are called `tokens'; some tokens occupy two consecutive
-eight-bit byte positions, and the others take just one byte.
+these texts are called `tokens'..
 
-If $p$ is an index of a replacement text, |p->token| contains code of that text.
+If $p$ is an index of a replacement text, |p.token| contains code of that text.
 If |text_info[p].text_link==0|, this is the replacement text for a macro,
 otherwise it is the replacement text for a section. 
 In the latter case |text_info[p].text_link| is either equal to
@@ -224,7 +217,6 @@ type output_state struct {
 	repl_field int32	/* |token| index for text being output */
 	section_field int32	/* section number or zero if not a section */
 } 
-type stack_pointer int
 
 @ @<Global...@>=
 var cur_state output_state  /* |cur_state.byte_field|, |cur_state.name_field|,
@@ -295,10 +287,6 @@ identifier = 0212 /* code returned by |get_output| for identifiers */
 
 @ @<Global...@>=
 var cur_val rune /* additional information corresponding to output token */
-
-@ If |get_output| finds that no more output remains, it returns with
-|stack_ptr==0|.
-@^high-bit character handling@>
 
 @
 @c
@@ -867,7 +855,6 @@ mistake:
 		unicode.IsDigit(buffer[loc]) || 
 		buffer[loc]=='_' || 
 		buffer[loc]=='$') { 
-		@^ need consideration@>
 		loc++
 	}
 	id = buffer[id_first: loc]
@@ -1173,7 +1160,7 @@ done:
 	tok_mem = nil
 }
 
-@ Here is the code for the line number: first a |int| equal
+@ Here is the code for the line number: a first element is equal
 to |unicode.UpperLower| plus |line_number|; then the numeric line number; then a pointer to the
 file name.
 
@@ -1221,9 +1208,9 @@ case definition, format_code, begin_code:
 	if t!=section_name {
 		goto done
 	} else {
-		err_print("! @@d, @@f and @@c are ignored in C text")
+		err_print("! @@d, @@f and @@c are ignored in Go text")
 		continue
-		@.@@d, @@f and @@c are ignored in C text@>
+		@.@@d, @@f and @@c are ignored in Go text@>
 	}
 case new_section: 
 	goto done
@@ -1352,7 +1339,7 @@ func scan_section() {
 	var q int32 = 0 /* text for the current section */
 	var a int32 = 0 /* token for left-hand side of definition */
 	section_count++
-	@+ no_where=true
+	no_where=true
 	if loc < len(buffer) && buffer[loc-1]=='*' && show_progress() { /* starred section */
 		fmt.Printf("*%d",section_count)
 		os.Stdout.Sync()
