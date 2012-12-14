@@ -2,7 +2,7 @@
 % This program by Alexander Sychev 
 % is based on a program CWEB by Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.1 --- Marth 2012
+% Version 0.2 --- December 2012
 
 % Copyright (C) 2012 Alexander Sychev
 
@@ -14,33 +14,6 @@
 % document under the conditions for verbatim copying, provided that the
 % entire resulting derived work is given a different name and distributed
 % under the terms of a permission notice identical to this one.
-
-\def\v{\char'174} % vertical (||) in typewriter font
-
-\def\title{Common code for GOTANGLE and GOWEAVE (Version 0.1)}
-\def\topofcontents{\null\vfill
-  \centerline{\titlefont Common code for {\ttitlefont GOTANGLE} and
-    {\ttitlefont GOWEAVE}}
-  \vskip 15pt
-  \centerline{(Version 0.1)}
-  \vfill}
-\def\botofcontents{\vfill
-\noindent
-Copyright \copyright\ 2012 Alexander Sychev
-\bigskip\noindent
-Permission is granted to make and distribute verbatim copies of this
-document provided that the copyright notice and this permission notice
-are preserved on all copies.
-
-\smallskip\noindent
-Permission is granted to copy and distribute modified versions of this
-document under the conditions for verbatim copying, provided that the
-entire resulting derived work is given a different name and distributed
-under the terms of a permission notice identical to this one.
-}
-
-\pageno=\contentspagenumber \advance\pageno by 1
-\let\maybe=\iftrue
 
 @** Introduction in common code.  Next few sections contain code common
 to both \.{GOTANGLE} and \.{GOWEAVE}, which roughly concerns the following
@@ -81,14 +54,9 @@ an extension of ASCII code originally developed at MIT and explained in
 Appendix~C of {\sl The \TEX/book\/}; thus, users who have such a
 character set can type things like \.{\char'32} and \.{\char'4} instead
 of \.{!=} and \.{\&\&}. (However, their files will not be too portable
-until more people adopt the extended code.)
+until more people adopt the extended code.). Actually, for \.{GOWEB} these 
+codes is not significant, because \.{GOWEB} operates with UTF8 encoded sources.
 
-If the character set is not ASCII, the definitions given here may conflict
-with existing characters; in such cases, other arbitrary codes should be
-substituted. The indexes to \.{GOTANGLE} and \.{GOWEAVE} mention every
-case where similar codes may have to be changed in order to
-avoid character conflicts. Look for the entry ``ASCII code dependencies''
-in those indexes.
 
 @ @<Common constants@>=
 and_and rune = 04 /* `\.{\&\&}'\,; corresponds to MIT's {\tentex\char'4} */
@@ -96,19 +64,19 @@ lt_lt rune = 020 /* `\.{<<}'\,;  corresponds to MIT's {\tentex\char'20} */
 gt_gt rune = 021 /* `\.{>>}'\,;  corresponds to MIT's {\tentex\char'21} */
 plus_plus rune = 0200 /* `\.{++}'\,;  corresponds to MIT's {\tentex\char'13} */
 minus_minus rune = 0201 /* `\.{--}'\,;  corresponds to MIT's {\tentex\char'1} */
-col_eq rune = 0207 /* `\.{:=}'\,;  corresponds to MIT's {\tentex\char'30} */
+col_eq rune = 0207 /* `\.{:=}'\, */
 not_eq rune = 032 /* `\.{!=}'\,;  corresponds to MIT's {\tentex\char'32} */
 lt_eq rune = 034 /* `\.{<=}'\,;  corresponds to MIT's {\tentex\char'34} */
 gt_eq rune = 035 /* `\.{>=}'\,;  corresponds to MIT's {\tentex\char'35} */
 eq_eq rune = 036 /* `\.{==}'\,;  corresponds to MIT's {\tentex\char'36} */
 or_or rune = 037 /* `\.{\v\v}'\,;  corresponds to MIT's {\tentex\char'37} */
-dot_dot_dot rune = 0202 /* `\.{...}'\,;  corresponds to MIT's {\tentex\char'16} */
+dot_dot_dot rune = 0202 /* `\.{...}' */
 begin_comment rune = '\t' /* tab marks will not appear */
 and_not rune = 010  /*`\.{\&\^}'\,;*/
 direct rune = 0203 /*`\.{<-}'\,;*/
 begin_short_comment rune = 031 /* short comment */
 
-@** Input routines.  The lowest level of input to the \.{GOWEB} programs
+@ Input routines.  The lowest level of input to the \.{GOWEB} programs
 is performed by |input_ln|, which must be told which file to read from.
 The return value of |input_ln| is nil if the read is successful and not nil 
 otherwise (generally this means the file has ended). The |buffer| always contains
@@ -152,7 +120,7 @@ func input_ln(fp *bufio.Reader) error {
 
 @ Now comes the problem of deciding which file to read from next.
 Recall that the actual text that \.{GOWEB} should process comes from two
-streams: a |file[0]|, which can contain possibly nested include
+|bufio.Reader|: a |file[0]|, which can contain possibly nested include
 commands \.{@@i}, and a |change_file|, which might also contain
 includes.  The |file[0]| together with the currently open include
 files form a stack |file|, whose names are stored in a parallel stack
@@ -278,7 +246,8 @@ func if_section_start_make_pending(b bool) {
 	}
 }
 
-@ We need a function to compare buffers of runes 
+@ We need a function to compare buffers of runes. It behaves like the classic |strcmp| function:
+it returns -1, 0 or 1 if a left buffer is less, equal or more of a right buffer.
 @c
 func compare_runes(l []rune, r []rune) int{
 	i := 0
@@ -479,9 +448,8 @@ stop reading it and start reading from the named include file.  The
 \.{@@i} line should give a complete file name with or without
 double quotes.
 If the environment variable \.{GOWEBINPUTS} is set
-\.{GOWEB} will look for include files in the directory thus named, if
-it cannot find them in the current directory.
-(Colon-separated paths are not supported.)
+\.{GOWEB} will look for include files in the colon-separated directories thus named, if
+it cannot find them in the current directory. 
 The remainder of the \.{@@i} line after the file name is ignored.
 
 @<Import...@>=
@@ -610,14 +578,13 @@ func check_complete(){
 	}
 }
 
-@** Storage of names and strings.
+@* Storage of names and strings.
 Both \.{GOWEAVE} and \.{GOTANGLE} store identifiers, section names and
 other strings in a large array |name_dir|, whose
 elements are structures of type |name_info|, containing a slice of runes
 with text information and other data.
 
-@
-@<Definitions that...@>=
+@ @<Definitions that...@>=
 type name_info struct{
   name []rune 
   @<More elements of |name_info| structure@>
@@ -645,8 +612,7 @@ it is inserted into the table.
 @<Common constants@>=
 hash_size = 353 /* should be prime */
 
-@
-@<Defini...@>=
+@ @<Defini...@>=
 var  hash[hash_size] int32 /* heads of hash lists */
 var  h int32 /* index into hash-head array */
 
@@ -679,7 +645,6 @@ h:=id[0]
 for i := 1; i<len(id); i++ {
 	h=(h+h+id[i]) % hash_size
 }
-@^high-bit character handling@>
 
 @ If the identifier is new, it will be placed in the end of |name_dir|,
 otherwise |p| will point to its existing location.
@@ -699,13 +664,13 @@ if p==-1 {
 }
 
 @ The information associated with a new identifier must be initialized
-in a slightly different way in \.{GOWEAVE} than in \.{GOTANGLE}; hence the
-|init_p| procedure.
+in a slightly different way in \.{GOWEAVE} than in \.{GOTANGLE}; both should
+implement the \.{Initialization of a new identifier} section.
 
 @ @<Enter a new name...@>= 
 p=int32(len(name_dir)-1)
 name_dir[p].name = append(name_dir[p].name, id...)
-init_p(p, t)
+@<Initialization of a new identifier@>
 
 @ The names of sections are stored in |name_dir| together
 with the identifier names, but a hash table is not used for them because
@@ -730,7 +695,7 @@ name, the name may need to be stored in chunks, because it may
 the full name.  Furthermore we need to know the length of the shortest
 prefix of the name that was ever encountered.
 
-We solve this problem by inserting int32 at |name_dir[p].name|,
+We solve this problem by inserting |int32| at |name_dir[p].name|,
 representing the length of the shortest prefix, when |p| is a
 section name. Furthermore, the |ispref| field will be true
 if |p| is a prefix. In the latter case, the name pointer
@@ -1063,7 +1028,7 @@ func section_name_cmp(
 	return -2, -1
 }
 
-@** Reporting errors to the user.
+@* Reporting errors to the user.
 A global variable called |history| will contain one of four values
 at the end of every run: |spotless| means that no unusual messages were
 printed; |harmless_message| means that a message of possible interest
@@ -1203,9 +1168,9 @@ switch history {
 } /* there are no other cases */
 
 @ When there is no way to recover from an error, the |fatal| subroutine is
-invoked. This happens most often when |overflow| occurs.
+invoked.
 
-@ The two parameters to |fatal| are strings that are essentially
+The two parameters to |fatal| are strings that are essentially
 concatenated to print the final error message.
 
 @c 
@@ -1218,27 +1183,7 @@ func fatal(s string, t string) {
 	os.Exit(wrap_up())
 }
 
-@ An overflow stop occurs if \.{GOWEB}'s tables aren't large enough.
-
-@c 
-func overflow(t string){
-	fmt.Printf("\n! Sorry, %s capacity exceeded",t)
-	fatal("","")
-}
-@.Sorry, capacity exceeded@>
-
-@ Sometimes the program's behavior is far different from what it should be,
-and \.{GOWEB} prints an error message that is really for the \.{GOWEB}
-maintenance person, not the user. In such cases the program says
-|confusion("indication of where we are")|.
-
-@c 
-func confusion(s string) {
-	fatal("! This can't happen: ", s)
-	@.This can't happen@>
-}
-
-@** Command line arguments.
+@* Command line arguments.
 The user calls \.{GOWEAVE} and \.{GOTANGLE} with arguments on the command line.
 These are either file names or flags to be turned off (beginning with |"-"|)
 or flags to be turned on (beginning with |"+"|).
@@ -1344,7 +1289,7 @@ func scan_args() {
 	}
 }
 
-@ We use all of |*argv| for the |file_name[0]| if there is a |'.'| in it,
+@ We use all of |arg| for the |file_name[0]| if there is a |'.'| in it,
 otherwise we add |".w"|. If this file can't be opened, we prepare an
 |alt_file_name| by adding |"web"| after the dot.
 The other file names come from adding other things
@@ -1412,7 +1357,7 @@ after the dot.  We must check that there is enough room in
 	}
 }
 
-@** Output. Here is the code that opens the output file:
+@* Output. Here is the code that opens the output file:
 
 @<Defin...@>=
 var go_file io.WriteCloser /* where output of \.{GOTANGLE} goes */
