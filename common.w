@@ -15,7 +15,7 @@
 % entire resulting derived work is given a different name and distributed
 % under the terms of a permission notice identical to this one.
 
-\def\v{\char'174} % vertical (|) in typewriter font
+\def\v{\char'174} % vertical in typewriter font
 
 @** Introduction in common code.  Next few sections contain code common
 to both \.{GOTANGLE} and \.{GOWEAVE}, which roughly concerns the following
@@ -298,7 +298,7 @@ func check_change() {
 			changing=false
 			return
 		}
-		if (len(buffer)>1 && buffer[0]=='@@') {
+		if len(buffer)>1 && buffer[0]=='@@' {
 			var xyz_code rune 
 			if unicode.IsUpper(buffer[1]) {
 				xyz_code = unicode.ToLower(buffer[1]) 
