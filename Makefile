@@ -1,26 +1,38 @@
-#.INTERMEDIATE: gotangle/gotangle.go goweave/goweave.go
+.INTERMEDIATE: $(patsubst %.w, %.idx, $(wildcard *.w) $(wildcard goweave/*.w)) $(patsubst %.w, %.toc, $(wildcard *.w) $(wildcard goweave/*.w)) $(patsubst %.w, %.scn, $(wildcard *.w) $(wildcard goweave/*.w)) $(patsubst %.w, %.log, $(wildcard *.w) $(wildcard goweave/*.w)) 
+
+TEXP?=xetex
 gcflags=-gcflags '-N -l'
 
-all: gotangle goweave
+all: gotangle/gotangle goweave/goweave doc
 
-gotangle: gotangle/gotangle.go
+gotangle/gotangle: gotangle/gotangle.go
 	(cd gotangle; go build $(gcflags))
 
-goweave: goweave/goweave.go
+goweave/goweave: goweave/goweave.go
 	(cd goweave; go build  $(gcflags))
+
+doc: gotangle.pdf goweave.pdf
 
 gotangle/gotangle.go: gotangle.w common.w
 	-mkdir -p gotangle
 	gotangle $< - $@
 
-goweave/goweave.go: goweave.w prod.w common.w
+goweave/goweave.go: goweave.w common.w
 	-mkdir -p goweave
 	gotangle $< - $@
+
+%.pdf %.idx %.toc %.log: %.tex gowebmac.tex
+	$(TEXP) -output-directory $(dir $<) $<
+
+%.tex %.scn: %.w common.w
+	goweave/goweave $< - $(patsubst %.w, %, $<)
 
 install: gotangle goweave
 	(cd gotangle; go install)
 	(cd goweave; go install)
 
 clean:
-	rm -f *.scn *.idx *.tex *.toc *.log
-	rm -rf gotangle/ goweave/
+	rm -rf *.pdf gotangle goweave goweave/*.w goweave/*.pdf
+
+tests: $(patsubst %.w, %.pdf, $(wildcard goweave/*.w))
+
