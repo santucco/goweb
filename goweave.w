@@ -2,7 +2,7 @@
 % This program by Alexander Sychev
 % is based on a program CWEAVE by Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.1 --- April 2012
+% Version 0.2 --- December 2012
 
 % Copyright (C) 2012 Alexander Sychev
 
@@ -27,11 +27,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.1)}
+\def\title{GOWEAVE (Version 0.2)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.1)}
+	\centerline{(Version 0.2)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -49,7 +49,7 @@ under the terms of a permission notice identical to this one.
 }
 \pageno=\contentspagenumber \advance\pageno by 1
 \let\maybe=\iftrue
-@s not_eq normal @q unreserve a C++ keyword @>
+@s not_eq normal
 
 @** Introduction.
 This is the \.{GOWEAVE} program by Alexander Sychev
@@ -59,7 +59,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.1)\n"
+const banner = "This is GOWEAVE (Version 0.2)\n"
 
 @
 @c
@@ -80,9 +80,6 @@ import (
 three phases: First it inputs the source file and stores cross-reference
 data, then it inputs the source once again and produces the \TEX/ output
 file, finally it sorts and outputs the index.
-
-Please read the documentation for \.{common}, the set of routines common
-to \.{GOTANGLE} and \.{GOWEAVE}, before proceeding further.
 
 @
 @c
@@ -108,18 +105,18 @@ handle \TEX/, so they should be sufficient for most applications of \.{GOWEAVE}.
 @<Constants@>=
 const (
 	max_names = 4000 /* number of identifiers, strings, section names
-		must be less than 10240; used in |"common.w"| */
+		must be less than 10240*/
 	line_length = 80 /* lines of \TEX/ output have at most this many characters
 		should be less than 256 */
 )
 
-@ The next few sections contain stuff from the file |"common.w"| that must
-be included in both |"gotangle.w"| and |"goweave.w"|. 
+@ The next few sections contain stuff from the file |common.w| that must
+be included in both |gotangle.w| and |goweave.w|. 
 
 @i common.w
 
-@* Data structures exclusive to {\tt GOWEAVE}.
-As explained in \.{common.w}, the field of a |name_info| structure
+@** Data structures exclusive to {\tt GOWEAVE}.
+As explained above, the field of a |name_info| structure
 that contains the |rlink| of a section name is used for a completely
 different purpose in the case of identifiers. It is then called the
 |ilk| of the identifier, and it is used to
@@ -141,8 +138,8 @@ will be typeset in special ways.
 \yskip\hang |typewriter| identifiers are index entries that appear after
 \.{@@.} in the \.{CWEB} file.
 
-\yskip\hang |alfop|, \dots
-identifiers are \GO/ reserved words whose |ilk|
+\yskip\hang |zero|, \dots
+identifiers are \GO/ reserved words and productions whose |ilk|
 explains how they are to be treated when \GO/ code is being
 formatted.
 
@@ -167,12 +164,12 @@ or |cite_flag| plus a section number where |p| is mentioned,
 or |def_flag| plus a section number where |p| is defined;
 and |xmem[x].xlink| points to the next such cross-reference for |p|,
 if any. This list of cross-references is in decreasing order by
-section number. The linked list ends at |0|.
+section number. The linked list ends at |-1|.
 
 The global variable |xref_switch| is set either to |def_flag| or to zero,
 depending on whether the next cross-reference to an identifier is to be
 underlined or not in the index. This switch is set to |def_flag| when
-\.{@@!} or \.{@@d} is scanned, and it is cleared to zero when
+\.{@@!} is scanned, and it is cleared to zero when
 the next identifier or index entry cross-reference has been made.
 Similarly, the global variable |section_xref_switch| is either
 |def_flag| or |cite_flag| or zero, depending
@@ -194,7 +191,7 @@ has a special first cross-reference whose |num| field is |file_flag|.
 
 @ @<Constants@>=
 const (
-	cite_flag = 10240 /* must be strictly larger than |max_sections| */
+	cite_flag = 10240 
 	file_flag = 3*cite_flag
 	def_flag = 2*cite_flag
 )
@@ -223,10 +220,15 @@ func append_xref(c int32) {
 	xmem[len(xmem)-1].xlink=0
 }
 
+
+@
+@c
 func is_tiny(p int32) bool {
 	return p<int32(len(name_dir)) && len(name_dir[p].name) == 1
 }
 
+@
+@c
 /* tells if uses of a name are to be indexed */ 
 func unindexed(p int32) bool {
 	return p<res_wd_end && name_dir[p].ilk>=custom
@@ -307,7 +309,7 @@ func set_file_flag(p int32) {
 	name_dir[p].xref = int32(len(xmem)-1)
 }
 
-@ Here are the three procedures needed to complete |id_lookup|:
+@ Here are the procedure needed to complete |id_lookup|:
 @c
 func names_match(
 	p int32, /* points to the proposed match */
@@ -316,26 +318,29 @@ func names_match(
 	if len(name_dir[p].name)!=len(id) {
 		return false
 	}
-	if name_dir[p].ilk!=t && !(t==normal && name_dir[p].ilk>typewriter) {
+	if name_dir[p].ilk!=t && !(t==normal && name_dir[p].ilk>zero) {
 		return false
 	}
 	return compare_runes(id,name_dir[p].name) == 0
 }
 
-func init_p(p int32, t int32) {
-	name_dir[p].ilk=t
-	name_dir[p].xref=0
-}
-
+@ |init_node| is used in |common.w| to init a new node
+@c
 func init_node(p int32){
 	name_dir[p].xref=0
 }
 
+@ With a next code \.{GOWEAVE} makes a specific initialization of a new identifier.
+.
+@<Initialization of a new identifier@>=
+name_dir[p].ilk=t
+name_dir[p].xref=0
+
+
 @ We have to get \GO/'s
 reserved words into the hash table, and the simplest way to do this is
 to insert them every time \.{GOWEAVE} is run.  Fortunately there are relatively
-few reserved words. (Some of these are not strictly ``reserved,'' but
-are defined in header files of the ISO Standard \GO/ Library.)
+few reserved words.
 @^reserved words@>
 
 @<Store all the reserved words@>=
@@ -415,7 +420,7 @@ id_lookup([]rune("recover"),identifier)
 res_wd_end=int32(len(name_dir))
 id_lookup([]rune("TeX"),custom)
 
-@* Lexical scanning.
+@** Lexical scanning.
 Let us now consider the subroutines that read the \.{CWEB} source file
 and break it into meaningful units. There are four such procedures:
 One simply skips to the next `\.{@@\ }' or `\.{@@*}' that begins a
@@ -431,7 +436,6 @@ milestones, and the code of |new_section| should be the largest of
 all. Some of these numeric control codes take the place of |rune|
 control codes that will not otherwise appear in the output of the
 scanning routines.
-@^ASCII code dependencies@>
 
 @ @<Constants@>=
 const (
@@ -509,22 +513,20 @@ ccode[';']=pseudo_semi
 ccode['\'']=ord
 @<Special control codes for debugging@>
 
-@ Users can write
-\.{@@2}, \.{@@1}, and \.{@@0} to turn tracing fully on, partly on,
-and off, respectively.
+@ Users can write from \.{@@0} to \.{@@9} to turn sets of different levels of tracing.
+The levels can be used like a bitmask combination.
 
 @<Special control codes...@>=
-ccode['0']=trace
-ccode['1']=trace
-ccode['2']=trace
+ccode['0']=trace // turn the tracing off
+ccode['1']=trace // turn on a printing of irreducible scraps
+ccode['2']=trace // turn on a printing of a snapshot of the |scrap_info|
+ccode['4']=trace // turn on a printing of a category name is looking for
+ccode['8']=trace // turh on a printing of a resulting translation of a scrap
 ccode['3']=trace
-ccode['4']=trace
 ccode['5']=trace
 ccode['6']=trace
 ccode['7']=trace
-ccode['8']=trace
 ccode['9']=trace
-
 @ The |skip_limbo| routine is used on the first pass to skip through
 portions of the input that are not in any sections, i.e., that precede
 the first section. After this procedure has been called, the value of
@@ -598,7 +600,7 @@ func skip_TeX() rune {
 	return 0
 }
 
-@*1 Inputting the next token.
+@* Inputting the next token.
 As stated above, \.{GOWEAVE}'s most interesting lexical scanning routine is the
 |get_next| function that inputs the next token of \GO/ input. However,
 |get_next| is not especially complicated.
@@ -631,6 +633,9 @@ preceded by \.{@@(} instead of \.{@@<}.
 
 \yskip\noindent If |get_next| sees `\.{@@!}'
 it sets |xref_switch| to |def_flag| and goes on to the next token.
+
+In some cases a |pseudo_semi| will be added in end of line to help parse tokens more
+accurately.
 
 @ @<Constants@>=
 const (
@@ -785,7 +790,7 @@ is a slice of the array |section_text|, not of |buffer|.
 	return constant
 }
 
-@ \GO/ strings and character constants, delimited by double and single
+@ \GO/ strings and character constants, delimited by double, single or back
 quotes, respectively, can contain newlines or instances of their own
 delimiters if they are protected by a backslash.
 
@@ -968,7 +973,7 @@ false_alarm:
 }
 
 @ At the present point in the program we
-have |*(loc-1)==verbatim|; we set |id| to the string itself.
+have |buffer[loc-1]==verbatim|; we set |id| to the string itself.
 We also set |loc| to the position just after the ending delimiter.
 
 @<Scan a verbatim string@>= {
@@ -1310,7 +1315,8 @@ func section_check(p int32) {
 	}
 }
 
-@ @<Print error messages about un...@>=section_check(name_root)
+@ @<Print error messages about un...@>=
+section_check(name_root)
 
 @* Low-level output routines.
 The \TEX/ output is supposed to appear in lines at most |line_length|
@@ -1708,8 +1714,7 @@ if c=='@@' {
 	loc++
 }
 
-@ We output
-enough right braces to keep \TEX/ happy.
+@ We output enough right braces to keep \TEX/ happy.
 
 @<Clear |bal|...@>=
 if phase==2 {
@@ -1722,9 +1727,10 @@ return 0,tok_mem
 @** Parsing.
 The most intricate part of \.{GOWEAVE} is its mechanism for converting
 \GO/-like code into \TEX/ code, and we might as well plunge into this
-aspect of the program now. A ``bottom up'' approach is used to parse the
-\GO/-like material, since \.{GOWEAVE} must deal with fragmentary
-constructions whose overall ``part of speech'' is not known.
+aspect of the program now. Parsing in \.{GOWEAVE} is different from parsing
+in \.{CWEAVE}. I decided to make a full parsing of \GO/-grammar, because
+the old variant seems to be quite difficult for me to reuse 
+for parsing of \GO/ grammar.
 
 At the lowest level, the input is represented as a sequence of entities
 that we shall call {\it scraps}, where each scrap of information consists
@@ -1737,8 +1743,8 @@ together into one gigantic scrap whose translation is the desired \TEX/
 code. If we are unlucky, we will be left with several scraps that don't
 combine; their translations will simply be output, one by one.
 
-The combination rules are given as context-sensitive productions that are
-applied from left to right. Suppose that we are currently working on the
+The combination rules are given as productions that are applied recursively 
+from left to right. Suppose that we are currently working on the
 sequence of scraps $s_1\,s_2\ldots s_n$. We try first to find the longest
 production that applies to an initial substring $s_1\,s_2\ldots\,$; but if
 no such productions exist, we try to find the longest production
@@ -1746,16 +1752,16 @@ applicable to the next substring $s_2\,s_3\ldots\,$; and if that fails, we
 try to match $s_3\,s_4\ldots\,$, etc.
 
 A production applies if the category codes have a given pattern. For
-example, one of the productions (see rule~3) is
-$$\hbox{|exp| }\left\{\matrix{\hbox{|binary_op|}}\right\}
-\hbox{ |exp| }\RA\hbox{ |exp|}$$
+example, one of the productions is
+$$\hbox{|UnaryExpr| }\left\{\matrix{\hbox{|binary_op|}}\right\}
+\hbox{ |UnaryExpr| }\RA\hbox{ |Expression|}$$
 and it means that three consecutive scraps whose respective categories are
-|exp|, |binary_op|
-and |exp| are converted to one scrap whose category
-is |exp|.  The translations of the original
+|UnaryExpr|, |binary_op|
+and |UnaryExpr| are converted to one scrap whose category
+is |Expression|.  The translations of the original
 scraps are simply concatenated.  The case of
-$$\hbox{|exp| |comma| |exp| $\RA$ |exp|} \hskip4emE_1C\,\\{opt}9\,E_2$$
-(rule 4) is only slightly more complicated:
+$$\hbox{|Expression| |comma| |Expression| $\RA$ |ExpressionList|} \hskip4emE_1C\,\\{opt}9\,E_2$$
+ is only slightly more complicated:
 Here the resulting |exp| translation
 consists not only of the three original translations, but also of the
 tokens |opt| and 9 between the translations of the
@@ -1763,18 +1769,12 @@ tokens |opt| and 9 between the translations of the
 In the \TEX/ file, this will specify an optional line break after the
 comma, with penalty 90.
 
-At each opportunity the longest possible production is applied.  For
-example, if the current sequence of scraps is |int| |cast|
-|lbrace|, rule 31 is applied; but if the sequence is |int| |cast|
-followed by anything other than |lbrace|, rule 32 takes effect.
-
 Translation rules such as `$E_1C\,\\{opt}9\,E_2$' above use subscripts
 to distinguish between translations of scraps whose categories have the
 same initial letter; these subscripts are assigned from left to right.
 
 @ Here is a list of the category codes that scraps can have.
-(A few others, like |int|, have already been defined; the
-|cat_name| array contains a complete list.)
+(The |cat_name| array contains a complete list.)
 
 @<Constants@>=
 const (
@@ -1864,7 +1864,6 @@ const (
 	RecvStmt rune = iota
 	BuiltinArgs rune = iota
 	PackageClause rune = iota
-	PackageName rune = iota
 	ImportDecl rune = iota
 	ImportSpec rune = iota
 	Type rune = iota
@@ -2004,7 +2003,6 @@ cat_name[CommCase]="CommCase"
 cat_name[RecvStmt]="RecvStmt"
 cat_name[BuiltinArgs]="BuiltinArgs"
 cat_name[PackageClause]="PackageClause"
-cat_name[PackageName]="PackageName"
 cat_name[ImportDecl]="ImportDecl"
 cat_name[ImportSpec]="ImportSpec"
 
@@ -2138,36 +2136,19 @@ const (
 	inserted rune = 0260 /* sentinel to mark translations of inserts */
 )
 
-@ The raw input is converted into scraps according to the following table,
-which gives category codes followed by the translations.
-\def\stars {\.{**}}%
-The symbol `\stars' stands for `\.{\\\&\{{\rm identifier}\}}',
-i.e., the identifier itself treated as a reserved word.
-The right-hand column is the so-called |mathness|, which is explained
-further below.
-
-An identifier |c| of length 1 is translated as \.{\\\v c} instead of
-as \.{\\\\\{c\}}. An identifier \.{CAPS} in all caps is translated as
-\.{\\.\{CAPS\}} instead of as \.{\\\\\{CAPS\}}. An identifier that has
-become a reserved word via |typedef| is translated with \.{\\\&} replacing
-\.{\\\\} and |int_type| replacing |exp|.
-
-A string of length greater than 20 is broken into pieces of size at most~20
-with discretionary breaks in between.
-
-\smallskip
-The construction \.{@@t}\thinspace stuff\/\thinspace\.{@@>} contributes
-\.{\\hbox\{}\thinspace  stuff\/\thinspace\.\} to the following scrap.
-
-@i prod.w
-
 @* Implementing the productions.
-More specifically, a scrap is a structure consisting of a category
+Parsing of \GO/ code in \.{GOWEAVE} is different from one in {CWEAVE}.
+A scrap sequence to be reduced is been looking at the current position in the |scrap_info|
+recursively, but a reducing has to be proceeded if and only if a full sequence is found. 
+Each search of the scrap sequence may initiate other search of a nested scrap sequence and so on.
+After the scrap sequence is found, a reducing closure is provided, that may calls other nested closures.
+@^recursion@>
+
+@ More specifically, a |scrap| is a structure consisting of a category
 |cat| and a |trans|, which contains the translation.
-When \GO/ text is to be processed with the grammar above,
+When \GO/ text is to be processed with the grammar,
 we form an array |scrap_info| containing the initial scraps.
 
-@ Here different types of token are defined
 @<Type...@>=
 type scrap struct {
 	cat int32
@@ -2175,16 +2156,6 @@ type scrap struct {
 	trans []interface{}
 	@<Rest of |scrap| struct@>
 }
-
-type id_token int 
-
-type res_token int
-
-type section_token int32
-
-type list_token []interface{}
-
-type inner_list_token []interface{}
 
 
 @ @<Global...@>=
@@ -2196,102 +2167,35 @@ items for \TEX/ output.
 \yskip\item{$\bullet$}Character codes and special codes like |force| and
 |math_rel| represent themselves;
 
-\item{$\bullet$}|id_flag+p| represents \.{\\\\\{{\rm identifier $p$}\}};
+\item{$\bullet$}a type |id_token| represents \.{\\\\\{{\rm identifier}\}};
 
-\item{$\bullet$}|res_flag+p| represents \.{\\\&\{{\rm identifier $p$}\}};
+\item{$\bullet$}a type |res_token| represents \.{\\\&\{{\rm identifier}\}};
 
-\item{$\bullet$}|section_flag+p| represents section name |p|;
+\item{$\bullet$}a type |section_token| represents section name;
 
-\item{$\bullet$}|tok_flag+p| represents token list number |p|;
+\item{$\bullet$}a type |list_token| represents list of tokens;
 
-\item{$\bullet$}|inner_tok_flag+p| represents token list number |p|, to be
+\item{$\bullet$}a type |inner_list_token| represents list of token, to be
 translated without line-break controls.
 
-@ The production rules listed above are embedded directly into \.{GOWEAVE},
-since it is easier to do this than to write an interpretive system
-that would handle production systems in general. Several helper functions
+@<Type...@>=
+type id_token int 
+
+type res_token int
+
+type section_token int32
+
+type list_token []interface{}
+
+type inner_list_token []interface{}
+
+
+
+@ Several helper functions
 are defined here so that the program for each production is fairly short.
 
-All of our productions conform to the general notion that some |k|
-consecutive scraps starting at some position |j| are to be replaced by a
-single scrap of some category |c| whose translation is composed from the
-translations of the disappearing scraps. After this production has been
-applied, the production pointer |pp| should change by an amount |d|. Such
-a production can be represented by the quadruple |(j,k,c,d)|. For example,
-the production `|exp@,comma@,exp| $\RA$ |exp|' would be represented by
-`|(pp,3,exp,-2)|'; in this case the pointer |pp| should decrease by 2
-after the production has been applied, because some productions with
-|exp| in their second or third positions might now match,
-but no productions have
-|exp| in the fourth position of their left-hand sides. Note that
-the value of |d| is determined by the whole collection of productions, not
-by an individual one.
-The determination of |d| has been
-done by hand in each case, based on the full set of productions but not on
-the grammar of \GO/ or on the rules for constructing the initial
-scraps.
-
-We also attach a serial number to each production, so that additional
-information is available when debugging. For example, the program below
-contains the statement `|reduce(s,3,exp,-2,4)|' when it implements
-the production just mentioned.
-
-Before calling |reduce|, the program should have appended the tokens of
-the new translation to the |tok_mem| array. We commonly want to append
-copies of several existing translations, and few functions are defined to
-simplify these common cases. For example, \\{app2}|(0)| will append the
-translations of two consecutive scraps, |scrap_info[pp].trans| 
-and |scrap_info[pp+1].trans|, to
-the current token list. If the entire new translation is formed in this
-way, we write `|squash(j,k,c,d,n)|' instead of `|reduce(j,k,c,d,n)|'. For
-example, `|squash(pp,3,exp,-2,3)|' is an abbreviation for `\\{app3}|(0);
-reduce(s,3,exp,-2,3)|'.
-
-A couple more words of explanation:
-Both |big_app| and |app| append a token to the current token list.
-The difference between |big_app| and |app| is simply that |big_app|
-checks whether there can be a conflict between math and non-math
-tokens, and intercalates a `\.{\$}' token if necessary.  When in
-doubt what to use, use |big_app|.
-
-The |mathness| is an attribute of scraps that says whether they are
-to be printed in a math mode context or not.  It is separate from the
-``part of speech'' (the |cat|) because to make each |cat| have
-a fixed |mathness| (as in the original \.{WEAVE}) would multiply the
-number of necessary production rules.
-
-The low two bits (i.e. |mathness % 4|) control the left boundary.
-(We need two bits because we allow cases |yes_math|, |no_math| and
-|maybe_math|, which can go either way.)
-The next two bits (i.e. |mathness / 4|) control the right boundary.
-If we combine two scraps and the right boundary of the first has
-a different mathness from the left boundary of the second, we
-insert a \.{\$} in between.  Similarly, if at printing time some
-irreducible scrap has a |yes_math| boundary the scrap gets preceded
-or followed by a \.{\$}. The left boundary is |maybe_math| if and
-only if the right boundary is.
-
-The code below is an exact translation of the production rules into
-\GO/, using such macros, and the reader should have no difficulty
-understanding the format by comparing the code with the symbolic
-productions as they were listed earlier.
-
-@<Constants@>=
-const (
-	maybe_math rune = iota /* works in either horizontal or math mode */
-	yes_math rune = iota /* should be in math mode */
-	no_math rune = iota /* should be in horizontal mode */
-)
-
-@ The function |one| checks if the specified index |i| is inside 
-the |scrap_info| and a corresponding scrap has the specified category |cat|
-
+@
 @<Typedef declarations@>=
-type pair struct {
-	cat int32
-	mand bool
-}
-
 type reducing func()
 
 @ 
@@ -2299,7 +2203,7 @@ type reducing func()
 var shift = 0
 var empty reducing = func() {}
 
-@
+@ The function |call| is a helper to call all functions in a slice |fs| one by one.
 @c
 func call(fs []reducing) {
 	for i:=len(fs)-1; i>=0; i-- {
@@ -2307,7 +2211,13 @@ func call(fs []reducing) {
 	}
 }
 
-@
+@ The function |one| checks of slice of scraps |ss| has the specified category |c|.
+It returns a resting slice of scraps, a closure should be called 
+to make a reducing of a found category |c| and a flag that |c| has been found.
+It returns a |[]scrap| slice of a rest of scraps, a |reducing| closure and a |bool| flag
+points out the |c| is found.
+Actually, it is a heart of the parsing proccess.
+
 @c
 func one(ss []scrap, c rune) ([]scrap,reducing,bool) {
 	m:="found"
@@ -2413,7 +2323,10 @@ func one(ss []scrap, c rune) ([]scrap,reducing,bool) {
 
 @ The function |sequence| checks if corresponding scraps from start of |s| 
 have the specified sequence of categories |cats|.
-All of the catigories |cats| is mandatory.
+All of the catigories |cats| is mandatory. A resulting |[]scraps| contains a rest of 
+scraps, a |[]reducing| slice contains a chain of reducing closures
+should be called one by one to make a reducing full sequence. 
+A |bool| points out the sequence of |cats| is found.
 
 @c
 func sequence(ss []scrap, cats ...rune) ([]scrap,[]reducing,bool) {
@@ -2431,7 +2344,10 @@ func sequence(ss []scrap, cats ...rune) ([]scrap,[]reducing,bool) {
 }
 
 @ The function |any| checks if first of corresponding scraps from start of |s| 
-have the specified  category of categories |cats|.
+have the specified  category of categories |cats|. A resulting |[]scraps| contains a rest of 
+scraps, a |reducing| is a reducing closure
+should be called one by one to make a reducing full sequence. 
+A |bool| points out one a category from |cats| is found.
 
 @c
 func any(s []scrap, cats ...rune) ([]scrap,reducing,bool) {
@@ -2444,9 +2360,21 @@ func any(s []scrap, cats ...rune) ([]scrap,reducing,bool) {
 }
 
 
-@  The function |optional| checks if corresponding scraps from start of |s| 
-have the specified sequence of categories |cats|.
-Some of the catigories |cats| can be optional.
+@ The |pair| struct helps to point out an optionality of a category |cat| by a flag |mand|
+
+@<Typedef declarations@>=
+type pair struct {
+	cat int32
+	mand bool
+}
+
+@ The function |optional| checks if corresponding scraps from start of |ss| 
+have the specified sequence of categories |cats|. |g| is a start index of future scraps.
+Some of the catigories |cats| can be optional. A resulting |[]scraps| contains a rest of 
+scraps, a |[]reducing| slice contains a chain of reducing closures
+should be called one by one to make a reducing full sequence.
+An |int| slice is contains indexes of scraps in a scrap sequence after processing of the reducing closure.
+A |bool| points out sequences of |cats| is found.
 
 @c
 func optional(ss []scrap, g int, cats ...pair) ([]scrap,[]reducing,[]int,bool) {
@@ -2483,18 +2411,6 @@ func optional(ss []scrap, g int, cats ...pair) ([]scrap,[]reducing,[]int,bool) {
 	return ss,funcs,trans,ok
 }
 
-
-@ The function |isNotCat| checks if the specified index |i| is outside 
-the |scrap_info| or a corresponding scrap hasn't the specified category |cat|
-
-
-@c
-func isNotCat(i int, cat int32) bool {
-	if i < 0 || i >=len(scrap_info) {
-		return false
-	}
-	return scrap_info[i].cat != cat
-}
 
 @ Let us consider the big switch for productions now, before looking
 at its context. We want to design the program so that this switch
@@ -2535,7 +2451,7 @@ code needs to be provided with a proper environment.
 	pp++ /* if no match was found, we move to the right */
 }
 
-@ In \GO/, new specifier names can be defined via |typedef|, and we want
+@ In \GO/, new specifier names can be defined via |type|, and we want
 to make the parser recognize future occurrences of the identifier thus
 defined as specifiers.  This is done by the procedure |make_reserved|,
 which changes the |ilk| of the relevant identifier.
@@ -2544,10 +2460,7 @@ We first need a procedure to recursively seek the first
 identifier in a token list, because the identifier might
 be enclosed in parentheses, as when one defines a function
 returning a pointer.
-
-If the first identifier found is a keyword like `\&{case}', we
-return the special value |case_found|; this prevents underlining
-of identifiers in case labels.
+@^recursion@>
 
 @
 @c
@@ -2583,28 +2496,27 @@ the |for| loop below.
 
 @c
 /* make the first identifier in |scrap_info[p].trans| like |c| */
-func make_reserved(s scrap, c rune) {
+func make_reserved(s scrap) {
 	tok_ptr:=find_first_ident(s.trans)
 	if tok_ptr==nil {
 		return /* this should not happen */
 	}
-	name_dir[tok_ptr[0].(id_token)].ilk=c
 	tok_ptr[0]=res_token(tok_ptr[0].(id_token))
 }
 
 @ In the following situations we want to mark the occurrence of
 an identifier as a definition: when |make_reserved| is just about to be
-used; after a specifier, as in |char **argv|;
+used; after a specifier, as in |argv []string|;
 before a colon, as in \\{found}:; and in the declaration of a function,
 as in \\{main}()$\{\ldots;\}$.  This is accomplished by the invocation
 of |make_underlined| at appropriate times.  Notice that, in the declaration
 of a function, we find out that the identifier is being defined only after
-it has been swallowed up by an |exp|.
+it has been swallowed up by an |Expression|.
 
 @c
 /* underline the entry for the first identifier in |scrap_info[p].trans| */
-func make_underlined(p int) {
-	tok_ptr:=find_first_ident(scrap_info[p].trans)
+func make_underlined(s scrap) {
+	tok_ptr:=find_first_ident(s.trans)
 	if tok_ptr==nil {
 		return /* this happens, for example, in |case found:| */
 	}
@@ -2660,8 +2572,9 @@ to insert the new cross-reference not at the beginning of the list
 
 @ Now comes the code that tries to match each production starting
 with a particular type of scrap. Whenever a match is discovered,
-the |squash| or |reduce| funcs will cause the appropriate action
-to be performed, followed by |goto found|.
+a closure is formed to reduce nested scrap sequence and matched scrap sequence.
+This closure is returned with rest of scraps and a flag of success.
+
 
 @ @<Cases for |PackageClause|@>=
 if s,f,ok:=sequence(ss,package_token,identifier); ok {
@@ -2672,9 +2585,8 @@ if s,f,ok:=sequence(ss,package_token,identifier); ok {
 }
 
 @ Test for |package|
-@(tests/package.w@>=
+@(goweave/package.w@>=
 @@
-@@2
 @@c
 package main
 
@@ -2706,11 +2618,10 @@ if s,f1,ok:=one(ss,const_token); ok {
 }
 
 @ Tests for |const|
-@(tests/const.w@>=
+@(goweave/const.w@>=
 @@
-@@2
 @@c
-const Pi float64 = 3.14159265358979323846
+const Pi float64 = 3.14159265358979323846@/
 @@
 @@c
 const zero = 0.0 
@@ -2755,9 +2666,8 @@ if s,f1,ok:=one(ss,type_token); ok {
 }
 
 @ Tests for |type|
-@(tests/type.w@>=
+@(goweave/type.w@>=
 @@
-@@2
 @@c
 type IntArray [16]int
 @@
@@ -2808,9 +2718,8 @@ if s,f1,ok:=one(ss,var_token); ok {
 }
 
 @ Tests for |var|
-@(tests/var.w@>=
+@(goweave/var.w@>=
 @@
-@@2
 @@c
 var i int
 @@
@@ -2863,9 +2772,8 @@ if s,f1,ok:=one(ss,import_token); ok {
 }
 
 @ Tests for |import|
-@(tests/import.w@>=
+@(goweave/import.w@>=
 @@
-@@2
 @@c
 import "im1" 
 @@
@@ -2893,23 +2801,22 @@ if s,f1,ok:=sequence(ss,func_token,identifier,Signature); ok{
 		return s,func() {
 			call(f2)
 			call(f1)
-			make_underlined(1)
+			make_underlined(ss[1])
 			reduce(ss,5,FunctionDecl,0,break_space,1,2,3,4,big_force)
 		},true
 	} else if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			make_underlined(1)
+			make_underlined(ss[1])
 			reduce(ss,4,FunctionDecl,0,break_space,1,2,3,big_force)	
 		},true
 	}
 }
 
 @ Tests for |func|
-@(tests/func.w@>=
+@(goweave/func.w@>=
 @@
-@@2
 @@c
 func min(x int, y int) int {
         if x < y {
@@ -2927,22 +2834,21 @@ if s,f1,ok:=sequence(ss,func_token,Receiver,identifier,Signature); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			make_underlined(2)
+			make_underlined(ss[2])
 			reduce(ss,5,MethodDecl,0,break_space,1,break_space,2,3,4)
 		},true
 	} else {
 		return s,func() {
 			call(f1)
-			make_underlined(2)
+			make_underlined(ss[2])
 			reduce(ss,4,MethodDecl,0,break_space,1,break_space,2,3)
 		},true
 	}
 }
 
 @ Tests for |method|
-@(tests/method.w@>=
+@(goweave/method.w@>=
 @@
-@@2
 @@c
 func (p *Point) Length() float64 {
 	return math.Sqrt(p.x * p.x + p.y * p.y)
@@ -3030,11 +2936,15 @@ if s,f1,ok:=sequence(ss,identifier,Type); ok {
 		return s,func() {
 			f2()
 			call(f1)
+			make_underlined(ss[0])
+			make_reserved(ss[0])
 			reduce(ss,3,TypeSpec,0,break_space,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
 			call(f1)
+			make_underlined(ss[0])
+			make_reserved(ss[0])
 			reduce(ss,2,TypeSpec,0,break_space,1,force)
 		},true
 	}
@@ -3108,13 +3018,13 @@ if s,f1,ok:=sequence(ss,identifier,str); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			make_reserved(ss[0],PackageName)
+			make_reserved(ss[0])
 			reduce(ss,3,ImportSpec,0,break_space,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
 			call(f1)
-			make_reserved(ss[0],PackageName)
+			make_reserved(ss[0])
 			reduce(ss,2,ImportSpec,0,break_space,1,force)
 		},true
 	}
@@ -3265,9 +3175,8 @@ if s,f1,ok:=sequence(ss,struct_token,lbrace); ok {
 }
 
 @ Tests for |struct|
-@(tests/struct.w@>=
+@(goweave/struct.w@>=
 @@
-@@2
 @@c
 struct {}
 @@
@@ -3330,7 +3239,7 @@ if s,f1,ok:=one(ss,lpar); ok {
 	tok_mem:=append([]interface{}{},0)
 	s,f2,t,ok:=optional(s,1,pair{cat:ParameterList,mand:true},pair{cat:comma,mand:false})
 	if ok {
-		tok_mem=append(tok_mem,t)
+		tok_mem=append(tok_mem,force,indent,t,outdent,force)
 	}
  	if s,f3,ok:=one(s,rpar); ok {
 		tok_mem=append(tok_mem,1+len(f2))
@@ -3366,7 +3275,7 @@ if s,f1,ok:=one(ss,ParameterDecl); ok {
 if s,f,ok:=sequence(ss,IdentifierList,dot_dot_dot,Type); ok {
 	return s,func() {
 		call(f)
-		reduce(ss,3,ParameterDecl,0,break_space,1,2)
+		reduce(ss,3,ParameterDecl,0,"\\,",1,2)
 	},true
 } else if s,f,ok:=sequence(ss,IdentifierList,Type); ok {
 	return s,func() {
@@ -3376,7 +3285,7 @@ if s,f,ok:=sequence(ss,IdentifierList,dot_dot_dot,Type); ok {
 } else if s,f,ok:=sequence(ss,dot_dot_dot,Type); ok {
 	return s,func() {
 		call(f)
-		reduce(ss,2,ParameterDecl,0,1)
+		reduce(ss,2,ParameterDecl,0,"\\,",1)
 	},true
 } else if s,f,ok:=one(ss,Type); ok {
 	return s,func() {
@@ -3600,7 +3509,7 @@ if s,f,ok:=one(ss,Type); ok {
 @ @<Cases for |LiteralValue|@>=
 if s,f1,ok:=one(ss,lbrace); ok {
 	tok_mem:=append([]interface{}{},0)
-	s,f2,t,ok:=optional(s,1,pair{cat:ElementList,mand:true},pair{cat:comma,mand:true})
+	s,f2,t,ok:=optional(s,1,pair{cat:ElementList,mand:true},pair{cat:comma,mand:false})
 	if ok {
 		tok_mem=append(tok_mem,t)
 	}
@@ -3630,31 +3539,20 @@ if s,f1,ok:=one(ss,Element); ok {
 }
 
 @ @<Cases for |Element|@>=
-s,f1,ok:=any(ss,identifier,Expression)
-f2:=empty
-if ok {
-	s,f2,ok=one(s,colon)
-}
-if ok {
-	if s,f3,ok:=one(s,Expression); ok {
-		return s,func() {
-			f3()
-			f2()
-			f1()
-			reduce(ss,3,Element,0,1,break_space,2)
-		},true
-	} else if s,f3,ok:=one(s,LiteralValue); ok {
-		return s,func() {
-			f3()
-			f2()
-			f1()
-			reduce(ss,3,Element,0,1,break_space,2)
-		},true
+if s,f1,ok:=any(ss,identifier,Expression); ok {
+	if s,f2,ok:=one(s,colon); ok {
+		if s,f3,ok:=any(s,Expression,LiteralValue); ok {
+			return s,func() {
+				f3()
+				f2()
+				f1()
+				reduce(ss,3,Element,0,1,break_space,2)
+			},true
+		} 
 	}
-} else if s,f3,ok:=any(s,Expression,LiteralValue); ok {
+} 
+if s,f1,ok:=any(ss,Expression,LiteralValue); ok {
 	return s,func() {
-		f3()
-		f2()
 		f1()
 		reduce(ss,1,Element,0)
 	},true
@@ -3695,9 +3593,8 @@ if s,f1,ok:=one(ss,lbrace); ok {
 }
 
 @ Tests for |block|
-@(tests/block.w@>=
+@(goweave/block.w@>=
 @@
-@@2
 @@c
 {
 	a:=b
@@ -3763,9 +3660,8 @@ if s,f,ok:=sequence(ss,identifier,colon,Statement); ok {
 
 
 @ Tests for |label|
-@(tests/label.w@>=
+@(goweave/label.w@>=
 @@
-@@2
 @@c
 Error: log.Panic("error encountered")
 
@@ -3791,9 +3687,8 @@ if s,f,ok:=sequence(ss,go_token,Expression); ok {
 }
 
 @ Tests for |go|
-@(tests/go.w@>=
+@(goweave/go.w@>=
 @@
-@@2
 @@c
 go Server()
 @@
@@ -3815,9 +3710,8 @@ if s,f,ok:=sequence(ss,return_token,ExpressionList); ok {
 }
 
 @ Tests for |return|
-@(tests/return.w@>=
+@(goweave/return.w@>=
 @@
-@@2
 @@c
 return
 @@
@@ -3845,9 +3739,8 @@ if s,f1,ok:=one(ss,break_token); ok {
 }
 
 @ Tests for |break|
-@(tests/break.w@>=
+@(goweave/break.w@>=
 @@
-@@2
 @@c
 for i < n {
 	switch i {
@@ -3880,9 +3773,8 @@ if s,f,ok:=sequence(ss,continue_token,identifier); ok {
 }
 
 @ Tests for |continue|
-@(tests/continue.w@>=
+@(goweave/continue.w@>=
 @@
-@@2
 @@c
 for i < n {
 	switch i {
@@ -3909,13 +3801,61 @@ if s,f,ok:=sequence(ss,goto_token,identifier); ok {
 }
 
 @ Tests for |goto|
-@(tests/goto.w@>=
+@(goweave/goto.w@>=
 @@
-@@2
 @@c
 goto Label
 
 @ @<Cases for |IfStmt|@>=
+if s,f1,ok:=one(ss,if_token); ok {
+	tok_mem:=append([]interface{}{},0)
+	c:=1
+	var f2 []reducing
+	f3,f4:=empty,empty
+	if s,f2,ok=sequence(s,SimpleStmt,semi,Expression,Block); ok {
+		tok_mem=append(tok_mem,break_space,c)
+		if len(scrap_info[c+1].trans)!=0 {
+			tok_mem=append(tok_mem,c+1)
+		} else {
+			tok_mem=append(tok_mem,';')
+		}
+		tok_mem=append(tok_mem,break_space,c+2,break_space,c+3)
+		c+=4
+	} else if s,f2,ok=sequence(s,SimpleStmt,semi,QualifiedIdent,Block); ok {
+		tok_mem=append(tok_mem,break_space,c)
+		if len(scrap_info[c+1].trans)!=0 {
+			tok_mem=append(tok_mem,c+1)
+		} else {
+			tok_mem=append(tok_mem,';')
+		}
+		tok_mem=append(tok_mem,break_space,c+2,break_space,c+3)
+		c+=4
+	} else if s,f2,ok=sequence(s,Expression,Block); ok {
+		tok_mem=append(tok_mem,break_space,c,break_space,c+1)
+		c+=2
+	} else if s,f2,ok=sequence(s,QualifiedIdent,Block); ok {
+		tok_mem=append(tok_mem,break_space,c,break_space,c+1)
+		c+=2
+	} else {
+		break
+	}
+	if s,f3,ok=one(s,else_token); ok {
+		if s,f4,ok=any(s,IfStmt,Block); ok {
+			tok_mem=append(tok_mem,break_space,c,break_space,c+1)
+			c+=2
+		} else {
+			break
+		}
+	}
+	return s,func() { 
+		f4()
+		f3()
+		call(f2)
+		f1()
+		reduce(ss,c,IfStmt,tok_mem...)
+	},true
+}
+break
 if s,f1,ok:=one(ss,if_token); ok {
 	tok_mem:=append([]interface{}{},0)
 	c:=1
@@ -3957,9 +3897,8 @@ if s,f1,ok:=one(ss,if_token); ok {
 
 
 @ Tests for |if|
-@(tests/if.w@>=
+@(goweave/if.w@>=
 @@
-@@2
 @@c
 if x > max {
 	x = max
@@ -3972,6 +3911,11 @@ if x := f(); x < y {
 	return z
 } else {
 	return y
+}
+@@
+@@c
+if err := input_ln(change_file); err != nil { 
+	return 
 }
 
 @ @<Cases for |ExprSwitchStmt|@>=
@@ -4146,9 +4090,8 @@ if s,f1,ok:=sequence(ss,case_token); ok {
 }
 
 @ Tests for |switch|
-@(tests/switch.w@>=
+@(goweave/switch.w@>=
 @@
-@@2
 @@c
 switch tag {
 	default: s3()
@@ -4266,16 +4209,14 @@ if s,f,ok:=sequence(ss,Expression,direct,Expression); ok {
 }
 
 @ Tests for |send|
-@(tests/send.w@>=
+@(goweave/send.w@>=
 @@
-@@2
 @@c
 ch <- 3
 
 @ Tests for |select|
-@(tests/select.w@>=
+@(goweave/select.w@>=
 @@
-@@2
 @@c
 select {
 case i1 = <-c1:
@@ -4390,9 +4331,8 @@ if s,f1,ok:=one(ss,ExpressionList); ok {
 }
 
 @ Tests for |for|
-@(tests/for.w@>=
+@(goweave/for.w@>=
 @@
-@@2
 @@c
 for a < b {
 	a *= 2
@@ -4429,9 +4369,8 @@ if s,f,ok:=sequence(ss,defer_token,Expression); ok {
 }
 
 @ Tests for |defer|
-@(tests/defer.w@>=
+@(goweave/defer.w@>=
 @@
-@@2
 @@c
 defer unlock(l) 
 @@
@@ -4453,9 +4392,8 @@ if s,f1,ok:=one(ss,Expression); ok {
 }
 
 @ Tests for |incdec|
-@(tests/incdec.w@>=
+@(goweave/incdec.w@>=
 @@
-@@2
 @@c
 i++
 @@
@@ -4471,9 +4409,8 @@ if s,f,ok:=sequence(ss,ExpressionList,assign_op,ExpressionList); ok {
 }
 
 @ Tests for assignments
-@(tests/assign.w@>=
+@(goweave/assign.w@>=
 @@
-@@2
 @@c 
 x = 1
 @@
@@ -4547,9 +4484,8 @@ if s,f,ok:=sequence(ss,IdentifierList,col_eq,ExpressionList); ok {
 }
 
 @ Tests for short var declarations
-@(tests/shortvar.w@>=
+@(goweave/shortvar.w@>=
 @@
-@@2
 @@c
 i, j := 0, 10
 @@
@@ -4566,12 +4502,13 @@ r, w := os.Pipe(fd)
 _, y, _ := coord(p)
 
 @ @<Cases for |QualifiedIdent|@>=
-if s,f1,ok:=any(ss,identifier,PackageName); ok {
+if s,f1,ok:=one(ss,identifier); ok {
 	if s,f2,ok:=sequence(s,dot,identifier); ok {
 		return s,func() {
 			call(f2)
 			f1()
 			reduce(ss,3,QualifiedIdent,0,1,2)
+			//make\_reserved(ss[0],ss[0].cat)
 		},true
 	} else {
 		return s,func() {
@@ -4756,6 +4693,35 @@ switch s.mathness % 4 { /* left boundary */
 }
 trans=append(trans,s.trans...)
 
+@ The |reduce| function makes a reducing of scraps and a correcting of a |mathness|
+of an expression.
+
+The |mathness| is an attribute of scraps that says whether they are
+to be printed in a math mode context or not.  It is separate from the
+``part of speech'' (the |cat|) because to make each |cat| have
+a fixed |mathness|.
+
+The low two bits (i.e. |mathness % 4|) control the left boundary.
+(We need two bits because we allow cases |yes_math|, |no_math| and
+|maybe_math|, which can go either way.)
+The next two bits (i.e. |mathness / 4|) control the right boundary.
+If we combine two scraps and the right boundary of the first has
+a different mathness from the left boundary of the second, we
+insert a \.{\$} in between.  Similarly, if at printing time some
+irreducible scrap has a |yes_math| boundary the scrap gets preceded
+or followed by a \.{\$}. The left boundary is |maybe_math| if and
+only if the right boundary is.
+
+A reducing is made by moving a tail of the slices |ss| and |scrap_info|
+at position $1$.
+
+@<Constants@>=
+const (
+	maybe_math rune = iota /* works in either horizontal or math mode */
+	yes_math rune = iota /* should be in math mode */
+	no_math rune = iota /* should be in horizontal mode */
+)
+
 @
 @c
 func reduce(ss []scrap, k int, c rune, s ...interface{}) {
@@ -4793,6 +4759,8 @@ func reduce(ss []scrap, k int, c rune, s ...interface{}) {
 					s:=ss[v]
 					@<Making translation...@>
 				}
+			case string:
+				trans=append(trans,v)
 			default:
 				panic(fmt.Sprintf( "Invalid type of translation: %T(%v)",v,v))
 		}
@@ -4814,13 +4782,6 @@ func reduce(ss []scrap, k int, c rune, s ...interface{}) {
 }
 
 @ And here now is the code that applies productions as long as possible.
-Before applying the production mechanism, we must make sure
-it has good input (at least four scraps, the length of the lhs of the
-longest rules), and that there is enough room in the memory arrays
-to hold the appended tokens and texts.  Here we use a very
-conservative test; it's more important to make sure the program
-will still work if we change the production rules (within reason)
-than to squeeze the last bit of space from the memory arrays.
 
 @ @<Reduce the scraps using the productions until no more rules apply@>=
 for  {
@@ -4830,7 +4791,7 @@ for  {
 	@<Match a production...@>
 }
 
-@ If \.{GOWEAVE} is being run in debugging mode, the production numbers and
+@ If \.{GOWEAVE} is being run in debugging mode, the productions and
 current stack categories will be printed out when |tracing| is set to 2;
 a sequence of two or more irreducible scraps will be printed out when
 |tracing| is set to 1.
@@ -4904,7 +4865,7 @@ where appropriate.
 }
 
 @ @<If semi-tracing, show the irreducible scraps@>=
-if len(scrap_info)>0 && tracing==1 {
+if len(scrap_info)>0 && (tracing & 1) == 1 {
 	fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count)
 @.Irreducible scrap sequence...@>
 	mark_harmless()
@@ -4980,7 +4941,7 @@ switch (next_control) {
 	case identifier: 
 		app_cur_id()
 	case TeX_string:
-		@<Append a \TEX/ string, without forming a scrap@>
+		@<Append a \TEX/ string@>
 	case '/':
 		app_scrap(mul_op,yes_math,next_control)
 		next_control=mul_op
@@ -5122,7 +5083,7 @@ case lt_lt:
 	@+app_scrap(mul_op,yes_math,"\\LL")
 @.\\LL@>
 case dot_dot_dot: 
-	@+app_scrap(dot_dot_dot,yes_math,"\\,\\ldots\\,")
+	@+app_scrap(dot_dot_dot,yes_math,"\\ldots")
 @.\\,@>
 @.\\ldots@>
 case col_eq: 
@@ -5133,6 +5094,7 @@ case direct:
 @.\\leftarrow@>
 case and_not:
 	@+app_scrap(mul_op,yes_math,"\\AND\\CF")
+@.\\AND\\CF@>
 
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
@@ -5188,12 +5150,8 @@ for i:=0; i < len(id); {
 tok_mem=append(tok_mem,@q{@>'}')
 app_scrap(next_control,maybe_math,tok_mem...)
 
-@ We do not make the \TEX/ string into a scrap, because there is no
-telling what the user will be putting into it; instead we leave it
-open, to be picked up by the next scrap. If it comes at the end of a
-section, it will be made into a scrap when |finish_Go| is called.
-
-@<Append a \TEX/ string, without forming a scrap@>=
+@ 
+@<Append a \TEX/ string@>=
 tok_mem:=append([]interface{}{},"\\hbox{"@q}@>)
 for i:=0; i < len(id);{ 
 	if id[i]=='@@' {
@@ -5206,7 +5164,7 @@ tok_mem=append(tok_mem,@q{@>'}')
 app_scrap(insert,no_math,tok_mem...)
 
 @ The function |app_cur_id| appends the current identifier to the
-token list; it also builds a new scrap if |scrapping==true|.
+token list.
 
 @
 @c
@@ -5330,10 +5288,7 @@ be no |force| token output immediately after `\.{\\Y\\B}'.
 different ``levels'' as the token lists are being written out. Entries on
 this stack have three parts:
 
-\yskip\hang |end_field| is the |tok_mem| location where the token list of a
-particular level will end;
-
-\yskip\hang |tok_field| is the |tok_mem| location from which the next token
+\yskip\hang |tok_field| is a slice of tokens from begin of which the next token
 on a particular level will be read;
 
 \yskip\hang |mode_field| is the current mode, either |inner| or |outer|.
@@ -5343,8 +5298,7 @@ quite frequently, so they are stored in a separate place instead of in the
 |stack| array. We call the current values |cur_state.end_field|, |cur_state.tok_field|, and
 |cur_state.mode_field|.
 
-The global variable |stack_ptr| tells how many levels of output are
-currently in progress. The end of output occurs when an |end_translation|
+The end of output occurs when an |end_translation|
 token is found, so the stack is never empty except when we first begin the
 output process.
 
@@ -5384,8 +5338,7 @@ func push_level(tokens []interface{}) {
 }
 
 @ Conversely, the |pop_level| routine restores the conditions that were in
-force when the current level was begun. This subroutine will never be
-called when |stack_ptr==1|.
+force when the current level was begun.
 
 @c
 func pop_level() bool {
