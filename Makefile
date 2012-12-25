@@ -1,4 +1,11 @@
-.INTERMEDIATE: $(patsubst %.w, %.idx, $(wildcard *.w) $(wildcard goweave/*.w)) $(patsubst %.w, %.toc, $(wildcard *.w) $(wildcard goweave/*.w)) $(patsubst %.w, %.scn, $(wildcard *.w) $(wildcard goweave/*.w)) $(patsubst %.w, %.log, $(wildcard *.w) $(wildcard goweave/*.w)) 
+IFILES= \
+	$(patsubst %.w, %.idx, $(wildcard *.w) $(wildcard goweave/*.w)) \
+	$(patsubst %.w, %.toc, $(wildcard *.w) $(wildcard goweave/*.w)) \
+	$(patsubst %.w, %.scn, $(wildcard *.w) $(wildcard goweave/*.w)) \
+	$(patsubst %.w, %.log, $(wildcard *.w) $(wildcard goweave/*.w)) \
+	$(patsubst %.w, %.tex, $(wildcard *.w) $(wildcard goweave/*.w))
+
+.INTERMEDIATE: $(IFILES)
 
 TEXP?=xetex
 gcflags=-gcflags '-N -l'
@@ -32,7 +39,7 @@ install: gotangle goweave
 	(cd goweave; go install)
 
 clean:
-	rm -rf *.pdf gotangle goweave goweave/*.w goweave/*.pdf
+	rm -rf *.pdf gotangle goweave goweave/*.w goweave/*.pdf $(IFILES)
 
 tests: $(patsubst %.w, %.pdf, $(wildcard goweave/*.w))
 
