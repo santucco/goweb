@@ -63,25 +63,23 @@ const banner = "This is GOWEAVE (Version 0.2)\n"
 
 @
 @c
-package main
+package main @#
 
 import (
-@<Import packages@>@/
-)
+@<Import packages@>
+) @#
 
-@<Typedef declarations@>@/
+@<Typedef declarations@> @#
 
-@<Constants@>@/
+@<Constants@> @#
 
-
-@<Global variables@>@/
+@<Global variables@> @#
 
 @ \.{GOWEAVE} has a fairly straightforward outline.  It operates in
 three phases: First it inputs the source file and stores cross-reference
 data, then it inputs the source once again and produces the \TEX/ output
 file, finally it sorts and outputs the index.
 
-@
 @c
 func main () {
 	flags['x']=true
@@ -110,8 +108,8 @@ const (
 		should be less than 256 */
 )
 
-@ The next few sections contain stuff from the file |common.w| that must
-be included in both |gotangle.w| and |goweave.w|. 
+@ The next few sections contain stuff from the file \.{common.w} that must
+be included in both \.{gotangle.w} and \.{goweave.w}. 
 
 @i common.w
 
@@ -311,10 +309,10 @@ func set_file_flag(p int32) {
 
 @ Here are the procedure needed to complete |id_lookup|:
 @c
-func names_match(
+func names_match(@t\1@>@/
 	p int32, /* points to the proposed match */
-	id []rune,
-	t int32 /* desired ilk */ ) bool {
+	id []rune,@/
+	t int32 @t\2@>/* desired ilk */) bool {
 	if len(name_dir[p].name)!=len(id) {
 		return false
 	}
@@ -341,10 +339,10 @@ name_dir[p].xref=0
 reserved words into the hash table, and the simplest way to do this is
 to insert them every time \.{GOWEAVE} is run.  Fortunately there are relatively
 few reserved words.
-@^reserved words@>
+
 
 @<Store all the reserved words@>=
-// reserved words
+@#@^reserved words@>
 id_lookup([]rune("break"),break_token)
 id_lookup([]rune("case"),case_token)
 id_lookup([]rune("chan"),chan_token)
@@ -370,8 +368,7 @@ id_lookup([]rune("struct"),struct_token)
 id_lookup([]rune("switch"),switch_token)
 id_lookup([]rune("type"),type_token)
 id_lookup([]rune("var"),var_token)
-
-// types
+@#@^types@>
 id_lookup([]rune("bool"),Type) 
 id_lookup([]rune("byte"),Type)
 id_lookup([]rune("complex64"),Type) 
@@ -392,16 +389,13 @@ id_lookup([]rune("uint16"),Type)
 id_lookup([]rune("uint32"),Type)
 id_lookup([]rune("uint64"),Type)
 id_lookup([]rune("uintptr"),Type)
-
-// constants
+@#@^constants@>
 id_lookup([]rune("true"),constant)
 id_lookup([]rune("false"),constant)
 id_lookup([]rune("iota"),constant)
-
-// zero value
+@#@^nil value@>
 id_lookup([]rune("nil"),constant)
-
-// functions
+@#@^builtin functions@>
 id_lookup([]rune("append"),identifier)
 id_lookup([]rune("cap"),identifier)
 id_lookup([]rune("close"),identifier)
@@ -521,12 +515,13 @@ ccode['0']=trace // turn the tracing off
 ccode['1']=trace // turn on a printing of irreducible scraps
 ccode['2']=trace // turn on a printing of a snapshot of the |scrap_info|
 ccode['4']=trace // turn on a printing of a category name is looking for
-ccode['8']=trace // turh on a printing of a resulting translation of a scrap
+ccode['8']=trace // turn on a printing of a resulting translation of a scrap
 ccode['3']=trace
 ccode['5']=trace
 ccode['6']=trace
 ccode['7']=trace
 ccode['9']=trace
+
 @ The |skip_limbo| routine is used on the first pass to skip through
 portions of the input that are not in any sections, i.e., that precede
 the first section. After this procedure has been called, the value of
@@ -536,7 +531,6 @@ There's a complication that we will postpone until later: If the \.{@@s}
 operation appears in limbo, we want to use it to adjust the default
 interpretation of identifiers.
 
-@
 @c
 func skip_limbo() {
 	for {
@@ -654,7 +648,6 @@ that branches to the various special cases that can arise.
 \GO/ allows underscores to appear in identifiers, and some \GO/
 compilers even allow the dollar sign.
 
-@
 @c
 /* produces the next input token */
 func get_next() rune { 
@@ -663,27 +656,27 @@ func get_next() rune {
 			// Looking for last non-|insert| scrap
 			i:=len(scrap_info)-1
 			for ;i>=0 && scrap_info[i].cat==insert;i-- {}
-			if i>=0 && 
-				(scrap_info[i].cat==identifier ||
-				scrap_info[i].cat==constant ||
-				scrap_info[i].cat==str ||
-				scrap_info[i].cat==break_token ||
-				scrap_info[i].cat==continue_token ||
-				scrap_info[i].cat==fallthrough_token ||
-				scrap_info[i].cat==return_token ||
-				scrap_info[i].cat==plus_plus ||
-				scrap_info[i].cat==minus_minus ||
-				scrap_info[i].cat==rpar ||
-				scrap_info[i].cat==rbracket ||
-				scrap_info[i].cat==rbrace ||
-				scrap_info[i].cat==Type) {
+			if i>=0 && @t\1@>@/
+				(scrap_info[i].cat==identifier || @/
+				scrap_info[i].cat==constant || @/
+				scrap_info[i].cat==str || @/
+				scrap_info[i].cat==break_token || @/
+				scrap_info[i].cat==continue_token || @/
+				scrap_info[i].cat==fallthrough_token || @/
+				scrap_info[i].cat==return_token || @/
+				scrap_info[i].cat==plus_plus || @/
+				scrap_info[i].cat==minus_minus || @/
+				scrap_info[i].cat==rpar || @/
+				scrap_info[i].cat==rbracket || @/
+				scrap_info[i].cat==rbrace || @/
+				scrap_info[i].cat==Type @t\2@>) {
 				return pseudo_semi
 			}
 			if !get_line() {
 				return new_section 
 			}
 		}
-		@+c:=buffer[loc] /* the current character */
+		c:=buffer[loc] /* the current character */
 		loc++
 		nc:=' '
 		if loc < len(buffer) {
@@ -717,10 +710,10 @@ treated as separate tokens.
 @ @<Get an identifier@>= {
 	loc--
 	id_first:=loc
-	for loc < len(buffer) && 
-		(unicode.IsLetter(buffer[loc]) || 
-		unicode.IsDigit(buffer[loc]) || 
-		buffer[loc]=='_') {
+	for loc < len(buffer) && @t\1@>@/
+		(unicode.IsLetter(buffer[loc]) || @/ 
+		unicode.IsDigit(buffer[loc]) || @/
+		buffer[loc]=='_' @t\2@>) {
 		loc++
 	}
 	id = buffer[id_first:loc]
@@ -741,14 +734,14 @@ is a slice of the array |section_text|, not of |buffer|.
 	id = nil
 	is_dec := false
 	if loc < len(buffer) && buffer[loc-1]=='0' {
-		if buffer[loc]=='x' || buffer[loc]=='X' /* hex constant */ {
+		if buffer[loc]=='x' || buffer[loc]=='X'{/* hex constant */ 
 			id = append(id,'^')
 			loc++
 			for loc < len(buffer) && xisxdigit(buffer[loc]) {
 				id = append(id, buffer[loc])
 				loc++
 			}
-		} else if unicode.IsDigit(buffer[loc]) /* octal constant */{
+		} else if unicode.IsDigit(buffer[loc]){ /* octal constant */
 			id = append(id,'~')
 			for loc < len(buffer) && unicode.IsDigit(buffer[loc]) {
 				id = append(id, buffer[loc])
@@ -944,7 +937,6 @@ if c=='@@' {
 
 @ This function skips over a restricted context at relatively high speed.
 
-@
 @c
 func skip_restricted() {
 	id_first:=loc
@@ -1007,7 +999,6 @@ var next_control rune /* control code waiting to be acting upon */
 @ The overall processing strategy in phase one has the following
 straightforward outline.
 
-@
 @c
 func phase_one() {
 	phase=1
@@ -1062,7 +1053,6 @@ the relations |xref_roman==identifier+roman| and |xref_wildcard==identifier
 +wildcard| and |xref_typewriter==identifier+typewriter|,
 as well as |normal==0|.
 
-@
 @c
 /* makes cross-references for \GO/ identifiers */
 func Go_xref(spec_ctrl rune) {
@@ -1091,7 +1081,6 @@ func Go_xref(spec_ctrl rune) {
 with |next_control!='|'| and ends with |next_control>=format_code|. Thus, it
 handles \GO/ text with embedded comments.
 
-@
 @c
 /* extension of |Go_xref| */
 func outer_xref() {
@@ -1274,14 +1263,13 @@ section name was both defined and used.  The variable |cur_xref| will point
 to cross-references for the current section name of interest.
 
 @<Global...@>=
-var cur_xref int32; /* temporary cross-reference pointer */
+var cur_xref int32 /* temporary cross-reference pointer */
 var an_output bool /* did |file_flag| precede |cur_xref|? */
 
 @ The following recursive procedure
 walks through the tree of section names and prints out anomalies.
 @^recursion@>
 
-@
 @c
 /* print anomalies in subtree |p| */
 func section_check(p int32) {
@@ -1325,7 +1313,7 @@ process, |out_line| will hold the current line number of the line about to
 be output.
 
 @<Global...@>=
-var out_buf[line_length + 1] rune/* assembled characters */
+var out_buf[line_length + 1] rune /* assembled characters */
 var out_ptr int32 /* just after last character in |out_buf| */
 var out_buf_end int32 = line_length /* end of |out_buf| */
 var out_line int /* number of next line to be output */
@@ -1416,7 +1404,6 @@ full.  If we want to append more than one character at once, we say
 A line break will occur at a space or after a single-nonletter
 \TEX/ control sequence.
 
-@
 @c
 func out(c rune) {
 	if out_ptr>=out_buf_end {
@@ -1446,7 +1433,6 @@ out_buf[0]='\\'
 preceded by another backslash. In the latter case, a |'%'| is output at
 the break.
 
-@
 @c
 /* finds a way to break the output line */
 func break_out() {
@@ -1580,9 +1566,8 @@ way. It returns the next control code or `\.{\v}' found in the input.
 We don't copy spaces or tab marks into the beginning of a line. This
 makes the test for empty lines in |finish_line| work.
 
-@ @f copy_TeX TeX
+@f copy_TeX TeX
 
-@
 @c
 func copy_TeX() rune {
 	for {
@@ -1627,13 +1612,12 @@ Instead of copying the \TEX/ material
 into the output buffer, this function copies it into the token memory
 (in phase two only).
 
-@
 @c
 /* copies \TEX/ code in comments */
-func copy_comment(
-	is_long_comment bool,
+func copy_comment(@t\1@>@/
+	is_long_comment bool,@/
 	bal int, /* brace balance */
-	tok_mem []interface{} ) (int,[]interface{}) {
+	tok_mem []interface{} @t\2@>@/ ) (int,[]interface{}) {
 	for {
 		if loc>=len(buffer) {
 			if is_long_comment {
@@ -2417,7 +2401,7 @@ at its context. We want to design the program so that this switch
 works, so we might as well not keep ourselves in suspense about exactly what
 code needs to be provided with a proper environment.
 
-@ @<Match a production at |pp|, or increase |pp| if there is no match@>= {
+@<Match a production at |pp|, or increase |pp| if there is no match@>= {
 	_,f,ok:=func (ss []scrap) ([]scrap,reducing,bool) {
 		switch ss[0].cat {
 			case package_token:
@@ -2462,7 +2446,6 @@ be enclosed in parentheses, as when one defines a function
 returning a pointer.
 @^recursion@>
 
-@
 @c
 func find_first_ident(p []interface{}) []interface{} {
 	for i, j:= range p {
@@ -2529,7 +2512,6 @@ because this would just make a new cross-reference at the end of the list.
 We actually have to search through the list for the existing
 cross-reference.
 
-@
 @c
 func underline_xref(p id_token) {
 	q:=name_dir[p].xref /* pointer to cross-reference being examined */
@@ -2586,8 +2568,8 @@ if s,f,ok:=sequence(ss,package_token,identifier); ok {
 
 @ Test for |package|
 @(goweave/package.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 package main
 
 @ @<Cases for |ConstDecl|@>= 
@@ -2619,23 +2601,23 @@ if s,f1,ok:=one(ss,const_token); ok {
 
 @ Tests for |const|
 @(goweave/const.w@>=
-@@
-@@c
-const Pi float64 = 3.14159265358979323846@/
-@@
-@@c
+@/@@
+@/@@@+c
+const Pi float64 = 3.14159265358979323846
+@/@@
+@/@@@+c
 const zero = 0.0 
-@@
-@@c
+@/@@
+@/@@@+c
 const (
 	size int64 = 1024
 	eof        = -1
 )
-@@
-@@c
+@/@@
+@/@@@+c
 const a, b, c = 3, 4, "foo"
-@@
-@@c
+@/@@
+@/@@@+c
 const u, v float32 = 0, 3
 
 @ @<Cases for |TypeDecl|@>= 
@@ -2667,23 +2649,23 @@ if s,f1,ok:=one(ss,type_token); ok {
 
 @ Tests for |type|
 @(goweave/type.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 type IntArray [16]int
-@@
-@@c
+@/@@
+@/@@@+c
 type (
 	Point struct{ x, y float64 }
 	Polar Point
 )
-@@
-@@c
+@/@@
+@/@@@+c
 type TreeNode struct {
 	left, right *TreeNode
 	value *Comparable
 }
-@@
-@@c
+@/@@
+@/@@@+c
 type Block interface {
 	BlockSize() int
 	Encrypt(src, dst []byte)
@@ -2719,29 +2701,29 @@ if s,f1,ok:=one(ss,var_token); ok {
 
 @ Tests for |var|
 @(goweave/var.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 var i int
-@@
-@@c
+@/@@
+@/@@@+c
 var U, V, W float64
-@@
-@@c
+@/@@
+@/@@@+c
 var k = 0
-@@
-@@c
+@/@@
+@/@@@+c
 var x, y float32 = -1, -2
-@@
-@@c
+@/@@
+@/@@@+c
 var (
 	i       int
 	u, v, s = 2.0, 3.0, "bar"
 )
-@@
-@@c
+@/@@
+@/@@@+c
 var re, im = complexSqrt(-1)
-@@
-@@c
+@/@@
+@/@@@+c
 var _, found = entries[name]
 
 @ @<Cases for |ImportDecl|@>=
@@ -2773,20 +2755,20 @@ if s,f1,ok:=one(ss,import_token); ok {
 
 @ Tests for |import|
 @(goweave/import.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 import "im1" 
-@@
-@@c
+@/@@
+@/@@@+c
 import _ "im2"; /*im2*/
-@@
-@@c
+@/@@
+@/@@@+c
 import . "im3" //im3
-@@
-@@c
+@/@@
+@/@@@+c
 import IM "im4"
-@@
-@@c
+@/@@
+@/@@@+c
 import(
 	"nim1" 
 	. "nim2"; // nim2
@@ -2816,16 +2798,16 @@ if s,f1,ok:=sequence(ss,func_token,identifier,Signature); ok{
 
 @ Tests for |func|
 @(goweave/func.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 func min(x int, y int) int {
         if x < y {
                 return x
         }
         return y
 }
-@@
-@@c
+@/@@
+@/@@@+c
 func flushICache(begin, end uintptr)
 
 @ @<Cases for |MethodDecl|@>=
@@ -2848,13 +2830,13 @@ if s,f1,ok:=sequence(ss,func_token,Receiver,identifier,Signature); ok {
 
 @ Tests for |method|
 @(goweave/method.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 func (p *Point) Length() float64 {
 	return math.Sqrt(p.x * p.x + p.y * p.y)
 }
-@@
-@@c
+@/@@
+@/@@@+c
 func (p *Point) Scale(factor float64) {
 	p.x *= factor
 	p.y *= factor
@@ -3132,16 +3114,16 @@ if s,f,ok:=sequence(ss,asterisk,Type); ok {
 }
 
 @ @<Cases for |Type|@>=
-if s,f,ok:=any(ss,
+if s,f,ok:=any(ss,@t\1@>@/
 				ArrayType,
-				StructType,
+				StructType,@/
 				PointerType,
-				FunctionType,
+				FunctionType,@/
 				InterfaceType,
-				SliceType,
+				SliceType,@/
 				MapType,
-				ChannelType,
-				QualifiedIdent); ok {
+				ChannelType,@/
+				QualifiedIdent@t\2@>); ok {
 	return s,func() {
 		f()
 		reduce(ss,1,Type,0)
@@ -3176,11 +3158,11 @@ if s,f1,ok:=sequence(ss,struct_token,lbrace); ok {
 
 @ Tests for |struct|
 @(goweave/struct.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 struct {}
-@@
-@@c
+@/@@
+@/@@@+c
 struct {
 	x, y int
 	u float32
@@ -3188,8 +3170,8 @@ struct {
 	A *[]int
 	F func()
 }
-@@
-@@c
+@/@@
+@/@@@+c
 struct {
 	T1
 	*T2
@@ -3197,8 +3179,8 @@ struct {
 	*P.T4
 	x, y int
 }
-@@
-@@c
+@/@@
+@/@@@+c
 struct {
 	microsec  uint64 "field 1"
 	serverIP6 uint64 "field 2"
@@ -3239,7 +3221,7 @@ if s,f1,ok:=one(ss,lpar); ok {
 	tok_mem:=append([]interface{}{},0)
 	s,f2,t,ok:=optional(s,1,pair{cat:ParameterList,mand:true},pair{cat:comma,mand:false})
 	if ok {
-		tok_mem=append(tok_mem,force,indent,t,outdent,force)
+		tok_mem=append(tok_mem,t)
 	}
  	if s,f3,ok:=one(s,rpar); ok {
 		tok_mem=append(tok_mem,1+len(f2))
@@ -3450,11 +3432,12 @@ if s,f,ok:=any(ss,rel_op,add_op,mul_op,asterisk); ok {
 @ @<Cases for |PrimaryExpr|@>=
 if s,f1,ok:=any(ss,BuiltinCall,Conversion,Operand); ok {
 	tok_mem:=append([]interface{}{},0)
-	s,f2,t,ok:=optional(s,1,pair{cat:Selector,mand:false},
-							pair{cat:Index,mand:false},
-							pair{cat:Slice,mand:false},
-							pair{cat:TypeAssertion,mand:false},
-							pair{cat:Call,mand:false});
+	s,f2,t,ok:=optional(s,1,@t\1@>@/
+							pair{cat:Selector,mand:false},@/
+							pair{cat:Index,mand:false},@/
+							pair{cat:Slice,mand:false},@/
+							pair{cat:TypeAssertion,mand:false},@/
+							pair{cat:Call,mand:false});@t\2@>
 	if ok {
 		tok_mem=append(tok_mem,t)
 	}
@@ -3594,8 +3577,8 @@ if s,f1,ok:=one(ss,lbrace); ok {
 
 @ Tests for |block|
 @(goweave/block.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 {
 	a:=b
 }
@@ -3611,21 +3594,21 @@ if s,f,ok:=any(ss,
 		f()
 		reduce(ss,1,Statement,0)
 	},true
-} else if s,f1,ok:=any(ss,
+} else if s,f1,ok:=any(ss,@t\1@>@/
 				GoStmt,
-				ReturnStmt,
+				ReturnStmt,@/
 				BreakStmt,
-				ContinueStmt,
+				ContinueStmt,@/
 				GotoStmt,
-				fallthrough_token,
+				fallthrough_token,@/
 				Block,
 				IfStmt,
-				ExprSwitchStmt,
+				ExprSwitchStmt,@/
 				TypeSwitchStmt,
 				SelectStmt,
-				ForStmt,
+				ForStmt,@/
 				DeferStmt,
-				SimpleStmt); ok {
+				SimpleStmt @t\2@>); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
@@ -3661,8 +3644,8 @@ if s,f,ok:=sequence(ss,identifier,colon,Statement); ok {
 
 @ Tests for |label|
 @(goweave/label.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 Error: log.Panic("error encountered")
 
 @ @<Cases for |SimpleStmt|@>=
@@ -3688,11 +3671,11 @@ if s,f,ok:=sequence(ss,go_token,Expression); ok {
 
 @ Tests for |go|
 @(goweave/go.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 go Server()
-@@
-@@c
+@/@@
+@/@@@+c
 go func(ch chan<- bool) { for { sleep(10); ch <- true; }} (c)
 
 
@@ -3711,14 +3694,14 @@ if s,f,ok:=sequence(ss,return_token,ExpressionList); ok {
 
 @ Tests for |return|
 @(goweave/return.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 return
-@@
-@@c
+@/@@
+@/@@@+c
 return -7.0, -4.0
-@@
-@@c
+@/@@
+@/@@@+c
 return complexF1()
 
 
@@ -3740,16 +3723,16 @@ if s,f1,ok:=one(ss,break_token); ok {
 
 @ Tests for |break|
 @(goweave/break.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 for i < n {
 	switch i {
 	case 5:
 	break
 	}
 }
-@@
-@@c
+@/@@
+@/@@@+c
 L:
 for i < n {
 	switch i {
@@ -3774,16 +3757,16 @@ if s,f,ok:=sequence(ss,continue_token,identifier); ok {
 
 @ Tests for |continue|
 @(goweave/continue.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 for i < n {
 	switch i {
 	case 5:
 	continue
 	}
 }
-@@
-@@c
+@/@@
+@/@@@+c
 L:
 for i < n {
 	switch i {
@@ -3802,8 +3785,8 @@ if s,f,ok:=sequence(ss,goto_token,identifier); ok {
 
 @ Tests for |goto|
 @(goweave/goto.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 goto Label
 
 @ @<Cases for |IfStmt|@>=
@@ -3898,13 +3881,13 @@ if s,f1,ok:=one(ss,if_token); ok {
 
 @ Tests for |if|
 @(goweave/if.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 if x > max {
 	x = max
 }
-@@
-@@c
+@/@@
+@/@@@+c
 if x := f(); x < y {
 	return x
 } else if x > z {
@@ -3912,8 +3895,8 @@ if x := f(); x < y {
 } else {
 	return y
 }
-@@
-@@c
+@/@@
+@/@@@+c
 if err := input_ln(change_file); err != nil { 
 	return 
 }
@@ -4091,28 +4074,28 @@ if s,f1,ok:=sequence(ss,case_token); ok {
 
 @ Tests for |switch|
 @(goweave/switch.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 switch tag {
 	default: s3()
 	case 0, 1, 2, 3: s1()
 	case 4, 5, 6, 7: s2()
 }
-@@
-@@c
+@/@@
+@/@@@+c
 switch x := f(); {
 	case x < 0: return -x
 	default: return x
 }
-@@
-@@c
+@/@@
+@/@@@+c
 switch {
 	case x < y: f1()
 	case x < z: f2()
 	case x == 4: f3()
 }
-@@
-@@c
+@/@@
+@/@@@+c
 switch i := x.(type) {
 case nil:
 	printString("x is nil")
@@ -4210,14 +4193,14 @@ if s,f,ok:=sequence(ss,Expression,direct,Expression); ok {
 
 @ Tests for |send|
 @(goweave/send.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 ch <- 3
 
 @ Tests for |select|
 @(goweave/select.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 select {
 case i1 = <-c1:
 	print("received ", i1, " from c1\n")
@@ -4232,14 +4215,14 @@ case i3, ok := (<-c3):  // same as: i3, ok := <-c3
 default:
 	print("no communication\n")
 }
-@@
-@@c
+@/@@
+@/@@@+c
 select {
 	case c <- 0:  // note: no statement, no fallthrough, no folding of cases
 	case c <- 1:
 }
-@@
-@@c
+@/@@
+@/@@@+c
 select {}
 
 @ @<Cases for |ForStmt|@>=
@@ -4332,29 +4315,29 @@ if s,f1,ok:=one(ss,ExpressionList); ok {
 
 @ Tests for |for|
 @(goweave/for.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 for a < b {
 	a *= 2
 }
-@@
-@@c
+@/@@
+@/@@@+c
 for i := 0; i < 10; i++ {
 	f(i)
 }
-@@
-@@c
+@/@@
+@/@@@+c
 for i, _ := range testdata.a {
 	f(i)
 }
-@@
-@@c
+@/@@
+@/@@@+c
 for i, s := range a {
 	g(i, s)
 }
 
-@@
-@@c
+@/@@
+@/@@@+c
 for{
 	sleep(10);
 	ch<-true;
@@ -4370,11 +4353,11 @@ if s,f,ok:=sequence(ss,defer_token,Expression); ok {
 
 @ Tests for |defer|
 @(goweave/defer.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 defer unlock(l) 
-@@
-@@c
+@/@@
+@/@@@+c
 defer func() {
 	result++
 }()
@@ -4393,11 +4376,11 @@ if s,f1,ok:=one(ss,Expression); ok {
 
 @ Tests for |incdec|
 @(goweave/incdec.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 i++
-@@
-@@c
+@/@@
+@/@@@+c
 j--
 
 @ @<Cases for |Assignment|@>=
@@ -4410,56 +4393,56 @@ if s,f,ok:=sequence(ss,ExpressionList,assign_op,ExpressionList); ok {
 
 @ Tests for assignments
 @(goweave/assign.w@>=
-@@
-@@c 
+@/@@
+@/@@@+c 
 x = 1
-@@
-@@c
+@/@@
+@/@@@+c
 *p = f()
-@@
-@@c
+@/@@
+@/@@@+c
 a[i] = 23
-@@
-@@c
+@/@@
+@/@@@+c
 (k) = <-ch
-@@
-@@c
+@/@@
+@/@@@+c
 a[i] <<= 2
-@@
-@@c
+@/@@
+@/@@@+c
 i &^= 1<<n
-@@
-@@c
+@/@@
+@/@@@+c
 x, y = f()
-@@
-@@c
+@/@@
+@/@@@+c
 x, _ = f()
-@@
-@@c
+@/@@
+@/@@@+c
 a, b = b, a
-@@
-@@c
+@/@@
+@/@@@+c
 i, x[i] = 1, 2
-@@
-@@c
+@/@@
+@/@@@+c
 i = 0
-@@
-@@c
+@/@@
+@/@@@+c
 x[i], i = 2, 1
-@@
-@@c
+@/@@
+@/@@@+c
 x[0], x[0] = 1, 2
-@@
-@@c
+@/@@
+@/@@@+c
 x[1], x[3] = 4, 5 
-@@
-@@c
+@/@@
+@/@@@+c
 x[2], p.x = 6, 7
-@@
-@@c
+@/@@
+@/@@@+c
 i = 2
-@@
-@@c
+@/@@
+@/@@@+c
 x = []int{3, 5, 7}
 
 @ @<Cases for |assign_op|@>=
@@ -4485,20 +4468,20 @@ if s,f,ok:=sequence(ss,IdentifierList,col_eq,ExpressionList); ok {
 
 @ Tests for short var declarations
 @(goweave/shortvar.w@>=
-@@
-@@c
+@/@@
+@/@@@+c
 i, j := 0, 10
-@@
-@@c
+@/@@
+@/@@@+c
 f := func() int { return 7 }
-@@
-@@c
+@/@@
+@/@@@+c
 ch := make(chan int)
-@@
-@@c
+@/@@
+@/@@@+c
 r, w := os.Pipe(fd) 
-@@
-@@c
+@/@@
+@/@@@+c
 _, y, _ := coord(p)
 
 @ @<Cases for |QualifiedIdent|@>=
@@ -4952,10 +4935,10 @@ switch (next_control) {
 		app_scrap(identifier,maybe_math,"\\_")
 		next_control=identifier
 	case '<': 
-		@+app_scrap(rel_op,yes_math,"\\langle")
+		app_scrap(rel_op,yes_math,"\\langle")
 		next_control=rel_op
 	case '>': 
-		@+app_scrap(rel_op,yes_math,"\\rangle")
+		app_scrap(rel_op,yes_math,"\\rangle")
 		next_control=rel_op
 	case '=': 
 		app_scrap(eq,yes_math,"\\K")
@@ -4988,7 +4971,7 @@ switch (next_control) {
 		next_control=mul_op
 @.\\AND@>
 	case ignore, xref_roman, xref_wildcard, xref_typewriter, noop:
-		@+break
+		break
 	case '(' : 
 		app_scrap(lpar,maybe_math,next_control)
 		next_control=lpar
@@ -5016,9 +4999,9 @@ switch (next_control) {
 		app_scrap(semi,maybe_math,next_control)
 		next_control=semi
 	case ':': 
-		app_scrap(colon,no_math,next_control)@/
+		app_scrap(colon,no_math,next_control)
 		next_control=colon
-	@t\4@>  @<Cases involving nonstandard characters@>
+	@<Cases involving nonstandard characters@>
 	case thin_space: 
 		app_scrap(insert,maybe_math,"\\,")
 		next_control=thin_space
@@ -5053,47 +5036,47 @@ possible to keep \.{GOWEAVE} from outputting unusual |rune| codes.
 
 @<Cases involving nonstandard...@>=
 case not_eq: 
-	@+app_scrap(rel_op,yes_math,"\\I")
+	app_scrap(rel_op,yes_math,"\\I")
 @.\\I@>
 case lt_eq: 
-	@+app_scrap(rel_op,yes_math,"\\Z")
+	app_scrap(rel_op,yes_math,"\\Z")
 @.\\Z@>
 case gt_eq: 
-	@+app_scrap(rel_op,yes_math,"\\G")
+	app_scrap(rel_op,yes_math,"\\G")
 @.\\G@>
 case eq_eq: 
-	@+app_scrap(rel_op,yes_math,"\\E")
+	app_scrap(rel_op,yes_math,"\\E")
 @.\\E@>
 case and_and: 
-	@+app_scrap(binary_op,yes_math,"\\W")
+	app_scrap(binary_op,yes_math,"\\W")
 @.\\W@>
 case or_or: 
-	@+app_scrap(binary_op,yes_math,"\\V")
+	app_scrap(binary_op,yes_math,"\\V")
 @.\\V@>
 case plus_plus: 
-	@+app_scrap(plus_plus,yes_math,"\\PP")
+	app_scrap(plus_plus,yes_math,"\\PP")
 @.\\PP@>
 case minus_minus: 
-	@+app_scrap(minus_minus,yes_math,"\\MM")
+	app_scrap(minus_minus,yes_math,"\\MM")
 @.\\MM@>
 case gt_gt: 
-	@+app_scrap(mul_op,yes_math,"\\GG")
+	app_scrap(mul_op,yes_math,"\\GG")
 @.\\GG@>
 case lt_lt: 
-	@+app_scrap(mul_op,yes_math,"\\LL")
+	app_scrap(mul_op,yes_math,"\\LL")
 @.\\LL@>
 case dot_dot_dot: 
-	@+app_scrap(dot_dot_dot,yes_math,"\\ldots")
+	app_scrap(dot_dot_dot,yes_math,"\\ldots")
 @.\\,@>
 @.\\ldots@>
 case col_eq: 
-	@+app_scrap(col_eq,yes_math,":\\K")
+	app_scrap(col_eq,yes_math,":\\K")
 @.:\\K@>
 case direct:
-	@+app_scrap(direct,yes_math,"\\leftarrow")
+	app_scrap(direct,yes_math,"\\leftarrow")
 @.\\leftarrow@>
 case and_not:
-	@+app_scrap(mul_op,yes_math,"\\AND\\CF")
+	app_scrap(mul_op,yes_math,"\\AND\\CF")
 @.\\AND\\CF@>
 
 
@@ -5166,7 +5149,6 @@ app_scrap(insert,no_math,tok_mem...)
 @ The function |app_cur_id| appends the current identifier to the
 token list.
 
-@
 @c
 func app_cur_id() {
 	p:=id_lookup(id,normal)
@@ -5302,7 +5284,8 @@ The end of output occurs when an |end_translation|
 token is found, so the stack is never empty except when we first begin the
 output process.
 
-@c type mode int
+@<Typed...@>= 
+type mode int
 
 @ @<Constants@>=
 const (
@@ -5383,18 +5366,18 @@ restart:
 	switch tok := val.(type) {
 		case id_token:
 			cur_name = int32(tok)
-			return identifier/* |a==id_flag+cur_name| */
+			return identifier
 		case res_token: 
 			cur_name = int32(tok)
-			return res_word /* |a==res_flag+cur_name| */
+			return res_word 
 		case section_token: 
 			cur_name = int32(tok)
-			return section_code /* |a==section_flag+cur_name| */
-		case inner_list_token: 	/* |a==inner_tok_flag+cur_name| */
+			return section_code 
+		case inner_list_token: 	
 			push_level(tok)
 			cur_state.mode_field=inner
 			goto restart
-		case list_token: /* |a==tok_flag+cur_name| */
+		case list_token: 
 			push_level(tok)
 			goto restart
 		case rune: 
@@ -5439,7 +5422,7 @@ func output_Go() {
 		make_output(inner_list_token(p))
 		out('}')
 @.\\PB@>
-	}@+else {
+	} else {
 		make_output(inner_list_token(p)) /* output the list */
 	}
 	next_control=save_next_control /* restore |next_control| to original state */
@@ -5447,7 +5430,6 @@ func output_Go() {
 
 @ Here is \.{GOWEAVE}'s major output handler.
 
-@
 @c
 /* outputs the equivalents of tokens */
 func make_output(p interface{}) {
@@ -5529,7 +5511,7 @@ if a==identifier {
 	}
 @.\\\\@>
 @.\\.@>
-}@+else {
+} else {
 	out('&') /* |a==res_word| */
 }
 @.\\\&@>
@@ -5786,7 +5768,6 @@ is analogous to phase one, except that more work is involved because we must
 actually output the \TEX/ material instead of merely looking at the
 \.{CWEB} specifications.
 
-@
 @c
 func phase_two() {
 	reset_input()
@@ -5876,9 +5857,9 @@ if loc-1 >= len(buffer) || buffer[loc-1]!='*' {
 	out_str("\\N")
 @.\\N@>
 	{
-		@+s := fmt.Sprintf("{%d}",sec_depth+1)
-		@+out_str(s)
-	@+}
+		s := fmt.Sprintf("{%d}",sec_depth+1)
+		out_str(s)
+	}
 	if show_progress() {
 		fmt.Printf("*%d",section_count)
 	}
@@ -5942,11 +5923,9 @@ takes place, so that the translation will normally end with \.{\\6} or
 \.{\\7} (the \TEX/ macros for |force| and |big_force|). This \.{\\6} or
 \.{\\7} is replaced by the concluding \.{\\par} or by \.{\\Y\\par}.
 
-@
 @c
 /* finishes a definition or a \GO/ part */
-/* visible is nonzero if we should produce \TEX/ output */
-func finish_Go(visible bool) {
+func finish_Go(@t\1@>@/ visible bool @t\2@>/* |visible| is nonzero if we should produce \TEX/ output */) {
 	if visible {
 		out_str("\\B")
 		app_scrap(insert,no_math,force)
@@ -6104,7 +6083,6 @@ leaves |cur_xref| pointing to the first element not printed.  Typical outputs:
 Note that the output of \.{GOWEAVE} is not English-specific; users may
 supply new definitions for the macros \.{\\A}, \.{\\As}, etc.
 
-@
 @c
 /* outputs section cross-references */
 func footnote(flag int32) {
@@ -6168,7 +6146,6 @@ If the user has set the |flags['x']==0| flag (the \.{-x} option on the command l
 just finish off the page, omitting the index, section name list, and table of
 contents.
 
-@
 @c
 func phase_three() {
 	if !flags['x'] {
@@ -6183,8 +6160,8 @@ func phase_three() {
 @.Writing the index...@>
 		}
 		finish_line()
-		if f, err := os.OpenFile(idx_file_name, 
-			os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666); err != nil {
+		if f, err := os.OpenFile(idx_file_name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666); 
+			@t\1@>@/ err != nil @t\2@>  {
 			fatal("! Cannot open index file ",idx_file_name)
 @.Cannot open index file@>
 		} else {
@@ -6208,7 +6185,7 @@ func phase_three() {
 		finish_line()
 @.\\fin@>
 		if f, err := os.OpenFile(scn_file_name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666); 
-			err != nil {
+			@t\1@>@/ err != nil @t\2@> {
 			fatal("! Cannot open section file ",scn_file_name)
 @.Cannot open section file@>
 		} else {
@@ -6222,7 +6199,7 @@ func phase_three() {
 		if group_found {
 			out_str("\\con")
 @.\\con@>
-		} @+else {
+		} else {
 			out_str("\\end")
 @.\\end@>
 		}
@@ -6300,12 +6277,6 @@ present; the lists are output in reverse order (first |sort_ptr|, then
 
 @ @<Rest of |scrap| struct@>=
 head int32
-
-@ @<Type...@>=
-type sort_pointer int32
-
-@ @f sort_pointer int
-
 
 @ @<Global...@>=
 var cur_depth int32 /* depth of current buckets */
@@ -6537,7 +6508,6 @@ for {
 prints them.
 @^recursion@>
 
-@
 @c
 /* print all section names in subtree |p| */
 func section_print(p int32) {
@@ -6549,7 +6519,7 @@ func section_print(p int32) {
 		make_output(section_token(p))
 		footnote(cite_flag)
 		footnote(0) /* |cur_xref| was set by |make_output| */
-		finish_line() @/
+		finish_line() 
 		section_print(name_dir[p].rlink)
 	}
 }

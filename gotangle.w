@@ -57,19 +57,19 @@ banner = "This is GOTANGLE (Version 0.2)\n"
 
 @
 @c
-package main
+package main @#
 
 import (
-@<Import packages@>@/
-)
+@<Import packages@>
+) @#
 
 const (
-@<Constants@>@/
-)
+@<Constants@>
+) @#
 
 
-@<Typedef declarations@>@/
-@<Global variables@>@/
+@<Typedef declarations@> @#
+@<Global variables@> @#
 
 @ \.{GOTANGLE} has a fairly straightforward outline.  It operates in
 two phases: first it reads the source file, saving the \GO/ code in
@@ -90,8 +90,8 @@ func main () {
 @ @<Constants@>=
 max_texts = 2500 /* number of replacement texts, must be less than 10240 */
 
-@ The next few sections contain stuff from the file |common.w| that must
-be included in both |gotangle.w| and |goweave.w|. 
+@ The next few sections contain stuff from the file \.{common.w} that must
+be included in both \.{gotangle.w} and \.{goweave.w}. 
 
 @i common.w
 
@@ -122,10 +122,10 @@ equiv int32 /* info corresponding to names */
 the identifier pointed to by |p|:
 
 @c
-func names_match(
+func names_match(@t\1@>@/
 	p int32, /* points to the proposed match */
 	id []rune, /* the identifier*/
-	t int32 ) bool {
+	t int32 @t\2@>@/) bool {
 	if len(name_dir[p].name)!=len(id) {
 		return false
 	}
@@ -432,7 +432,6 @@ complain we're out of room@>=
 @* The big output switch.  Here then is the routine that does the
 output.
 
-@
 @c
 func phase_two () {
 	line[include_depth]=1
@@ -476,7 +475,8 @@ The only subtlety is that we have to open each one.
 for an_output_file:=len(output_files); an_output_file>0; {
 	an_output_file--
 	output_file_name = string(sprint_section_name(output_files[an_output_file]))
-	if f, err := os.OpenFile(output_file_name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666); err != nil {
+	if f, err := os.OpenFile(output_file_name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666);
+		@t\1@>@/ err != nil @t\2@> {
 		fatal("! Cannot open output file:",output_file_name)
 		@.Cannot open output file@>
 	} else {
@@ -501,19 +501,18 @@ is not called if |out_state==verbatim|, except perhaps with arguments
 |'\n'| (protect the newline), |string| (end the string), or |constant|
 (end the constant).
 
-@
 @c
 func out_char(cur_char rune) {
-	switch (cur_char) {
+	switch cur_char {
 		case '\n': 
 			flush_buffer()
 			if out_state!=verbatim {
 				out_state=normal
 			}
-		@/@t\4@>@<Case of an identifier@>
-		@/@t\4@>@<Case of a section number@>
-		@/@t\4@>@<Case of a line number@>
-		@/@t\4@>@<Cases like \.{!=}@>
+		@<Case of an identifier@>
+		@<Case of a section number@>
+		@<Case of a line number@>
+		@<Cases like \.{!=}@>
 		case '=', '>': 
 			fmt.Fprintf(go_file, "%c ", cur_char)
 			out_state=normal
@@ -797,7 +796,6 @@ var no_where bool /* suppress |print_where|? */
 @ As one might expect, |get_next| consists mostly of a big switch
 that branches to the various special cases that can arise.
 
-@
 @c
 /* produces the next input token */
 func get_next() rune {
@@ -850,11 +848,11 @@ mistake:
 {
 	loc--
 	id_first:=loc
-	for loc < len(buffer) &&
-		(unicode.IsLetter(buffer[loc]) || 
-		unicode.IsDigit(buffer[loc]) || 
-		buffer[loc]=='_' || 
-		buffer[loc]=='$') { 
+	for loc < len(buffer) && @t\1@>@/
+		(unicode.IsLetter(buffer[loc]) || @/
+		unicode.IsDigit(buffer[loc]) || @/
+		buffer[loc]=='_' || @/
+		buffer[loc]=='$' @t\2@>) { 
 		loc++
 	}
 	id = buffer[id_first: loc]
@@ -895,10 +893,10 @@ mistake:
 		}
 	}
 found: 
-	for loc < len(buffer) &&
-		(buffer[loc]=='u' || buffer[loc]=='U' || 
-		buffer[loc]=='l' || buffer[loc]=='L' ||
-		buffer[loc]=='f' || buffer[loc]=='F') {
+	for loc < len(buffer) && @t\1@>@/
+		(buffer[loc]=='u' || buffer[loc]=='U' || @/
+		buffer[loc]=='l' || buffer[loc]=='L' || @/
+		buffer[loc]=='f' || buffer[loc]=='F' @t\2@>) {
 		loc++
 	}
 	id = buffer[id_first: loc]
@@ -1237,7 +1235,7 @@ case new_section:
 @ @<Copy a string...@>=
 	tok_mem = append(tok_mem, a) /* |string| or |constant| */
 	for i := 0; i < len(id); { /* simplify \.{@@@@} pairs */
-		if (id[i]=='@@') {
+		if id[i]=='@@' {
 			if id[i+1]=='@@' {
 				i++
 			} else {
@@ -1309,8 +1307,8 @@ case new_section:
 					@.Unrecognized escape sequence@>
 			}
 		}
-	}@/
-  	/* at this point |c| should have been converted to its ASCII code number */
+	}
+  	@//* at this point |c| should have been converted to its ASCII code number */
 	tok_mem = append(tok_mem, constant)
 	if c>=100 {
 		tok_mem = append(tok_mem, '0'+c/100)
