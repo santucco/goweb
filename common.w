@@ -24,11 +24,11 @@ parsing of command line.
 
 @c
 const (
-@<Common constants@>@/
-)
+@<Common constants@>
+) @#
 
-@<Definitions that should agree with \.{GOTANGLE} and \.{GOWEAVE}@>@/
-@<Other definitions@>@/
+@<Definitions that should agree with \.{GOTANGLE} and \.{GOWEAVE}@> @#
+@<Other definitions@> @#
 
 @ \.{GOWEAVE} operates in three phases: First it inputs the source
 file and stores cross-reference data, then it inputs the source once again and
@@ -627,9 +627,9 @@ for i, _ := range hash {
 
 @c
 /* looks up a string in the identifier table */
-func id_lookup(
+func id_lookup(@t\1@>@/
 	id []rune,  /* string with id */
-	t int32 /* the |ilk|; used by \.{GOWEAVE} only */) int32 { 
+	t int32 @t\2@>/* the |ilk|; used by \.{GOWEAVE} only */) int32 { 
 	@<Compute the hash code |h|@>
 	@<Compute the name location |p|@>
 	if p==-1 {
@@ -706,7 +706,6 @@ The second chunk will begin at the name pointer |name_dir[p+1].llink|,
 and if it too is a prefix (ending with blank) its |llink| will point
 to additional chunks in the same way. Null links are represented by -1.
 
-@
 @c
 func print_section_name(p int32) {
 	q := p+1
@@ -765,9 +764,9 @@ extension = 4 /* the first name is a proper extension of the second */
 @
 @c
 /* fuller comparison than |strcmp| */
-func web_strcmp(
+func web_strcmp(@t\1@>@/
 	j []rune, /* first string */
-	k []rune /* second string */ ) int {
+	k []rune @t\2@>/* second string */ ) int {
 	i := 0
 	for ; i < len(j) && i < len(k) && j[i] == k[i]; i++ {}
 	if i==len(k) {
@@ -801,14 +800,13 @@ differently in \.{GOWEAVE} and \.{GOTANGLE}; hence the
 |init_node| procedure, which is defined differently in \.{goweave.w}
 and \.{gotangle.w}.
 
-@
 @c 
 /* install a new node in the tree */ 
-func add_section_name(
+func add_section_name(@t\1@>@/
 	par int32, /* parent of new node */
 	c int, /* right or left? */
 	name []rune, /* section name */
-	ispref  bool/* are we adding a prefix or a full name? */) int32 {
+	ispref  bool @t\2@>/* are we adding a prefix or a full name? */) int32 {
 	p:=int32(len(name_dir)) /* new node */
 	name_dir = append(name_dir, name_info{})
 	name_dir[p].llink = -1
@@ -838,10 +836,10 @@ func add_section_name(
 
 @
 @c
-func extend_section_name(
+func extend_section_name(@t\1@>@/
 	p int32, /* index name to be extended */
 	text []rune, /* extension text */
-	ispref bool /* are we adding a prefix or a full name? */ ) {
+	ispref bool @t\2@>/* are we adding a prefix or a full name? */) {
 	q:=p+1
 	for name_dir[q].llink!=-1 {
 		q=name_dir[q].llink
@@ -864,9 +862,9 @@ exactly equals or is a prefix or extension of a name in the tree.
 
 @c
 /* find or install section name in tree */
-func section_lookup (
+func section_lookup (@t\1@>@/
 	name []rune, /* new name */
-	ispref bool /* is the new name a prefix or a full name? */) int32 {
+	ispref bool @t\2@>/* is the new name a prefix or a full name? */) int32 {
 	c:=less/* comparison between two names*/
 	p:=name_root /* current node of the search tree */
 	var q int32 =-1 /* another place to look in the tree */
@@ -982,9 +980,9 @@ bad_extension = 5
 
 @
 @c 
-func section_name_cmp(
+func section_name_cmp(@t\1@>@/
 	name []rune, /* comparison string */
-	r int32 /* section name being compared */) (int, int) {
+	r int32 @t\2@> /* section name being compared */) (int, int) {
 	q:=r+1 /* access to subsequent chunks */
 	var ispref bool /* is chunk |r| a prefix? */
 	first := 0
@@ -1070,7 +1068,6 @@ Note that no period follows the error message, since the error routine
 will automatically supply a period. A newline is automatically supplied
 if the string begins with |"!"|.
 
-@
 @c
 /* prints `\..' and location of error message */
 func err_print(s string) { 
@@ -1189,7 +1186,7 @@ func fatal(s string, t string) {
 The user calls \.{GOWEAVE} and \.{GOTANGLE} with arguments on the command line.
 These are either file names or flags to be turned off (beginning with |"-"|)
 or flags to be turned on (beginning with |"+"|).
-The following globals are for communicating the user's desires to the rest
+The following functions are for communicating the user's desires to the rest
 of the program. The various file name variables contain strings with
 the names of those files. Most of the 128 flags are undefined but available
 for future extensions.
@@ -1249,7 +1246,6 @@ when no changes are desired.
 
 If there's a third file name, it will be the output file.
 
-@
 @c
 func scan_args() {
 	dot_pos := -1 /* position of |'.'| in the argument */
@@ -1266,7 +1262,7 @@ func scan_args() {
 			@<Handle flag argument@>
 		} else {
 			name_pos=0
-			@+dot_pos=-1
+			dot_pos=-1
 			for j := 0; j < len(arg); j++ {
 				if arg[j]=='.' { 
 					dot_pos=j
