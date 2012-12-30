@@ -2116,7 +2116,7 @@ buffer[loc]=='$'){
 loc++
 }
 id= buffer[id_first:loc]
-return(identifier)
+return identifier
 }
 
 /*:133*/

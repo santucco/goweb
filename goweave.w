@@ -2417,8 +2417,8 @@ code needs to be provided with a proper environment.
 				@<Cases for |MethodDecl|@>
 				@<Cases for |FunctionType|@>
 			default:
-				@<Cases for |Statement|@>
 				@<Cases for |ImportSpec|@>
+				@<Cases for |Statement|@>
 				@<Cases for |ConstSpec|@>
 				@<Cases for |VarSpec|@>
 				@<Cases for |TypeSpec|@>
@@ -2450,18 +2450,19 @@ returning a pointer.
 func find_first_ident(p []interface{}) []interface{} {
 	for i, j:= range p {
 		switch r := j.(type) {
-			case res_token: /* |res_flag| */
-				if name_dir[r].ilk==case_token {
-					return nil
-				}
+			case res_token: 
 				if name_dir[r].ilk!=Type {
 					break
 				}
 				return p[i:i+1]
 			case id_token: 
 				return p[i:i+1]
-			case list_token, inner_list_token: /* |tok_flag| or |inner_tok_flag| */
-				if q:=find_first_ident(r.([]interface{})); q!=nil {
+			case list_token: 
+				if q:=find_first_ident(r); q!=nil {
+					return q
+				}
+			case inner_list_token: 
+				if q:=find_first_ident(r); q!=nil {
 					return q
 				}
 			case rune:  /* char, |section_token|, fallthru: move on to next token */
@@ -2479,8 +2480,8 @@ the |for| loop below.
 
 @c
 /* make the first identifier in |scrap_info[p].trans| like |c| */
-func make_reserved(s scrap) {
-	tok_ptr:=find_first_ident(s.trans)
+func make_reserved(p []interface{}) {
+	tok_ptr:=find_first_ident(p)
 	if tok_ptr==nil {
 		return /* this should not happen */
 	}
@@ -2498,8 +2499,8 @@ it has been swallowed up by an |Expression|.
 
 @c
 /* underline the entry for the first identifier in |scrap_info[p].trans| */
-func make_underlined(s scrap) {
-	tok_ptr:=find_first_ident(s.trans)
+func make_underlined(p []interface{}) {
+	tok_ptr:=find_first_ident(p)
 	if tok_ptr==nil {
 		return /* this happens, for example, in |case found:| */
 	}
@@ -2770,7 +2771,7 @@ import IM "im4"
 @/@@
 @/@@@+c
 import(
-	"nim1" 
+	"nim1/subnim1" 
 	. "nim2"; // nim2
 	_ "nim3" /*nim3*/
 	NIM "nim4"
@@ -2783,14 +2784,14 @@ if s,f1,ok:=sequence(ss,func_token,identifier,Signature); ok{
 		return s,func() {
 			call(f2)
 			call(f1)
-			make_underlined(ss[1])
+			make_underlined(ss[1].trans)
 			reduce(ss,5,FunctionDecl,0,break_space,1,2,3,4,big_force)
 		},true
 	} else if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			make_underlined(ss[1])
+			make_underlined(ss[1].trans)
 			reduce(ss,4,FunctionDecl,0,break_space,1,2,3,big_force)	
 		},true
 	}
@@ -2816,13 +2817,13 @@ if s,f1,ok:=sequence(ss,func_token,Receiver,identifier,Signature); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			make_underlined(ss[2])
+			make_underlined(ss[2].trans)
 			reduce(ss,5,MethodDecl,0,break_space,1,break_space,2,3,4)
 		},true
 	} else {
 		return s,func() {
 			call(f1)
-			make_underlined(ss[2])
+			make_underlined(ss[2].trans)
 			reduce(ss,4,MethodDecl,0,break_space,1,break_space,2,3)
 		},true
 	}
@@ -2918,15 +2919,15 @@ if s,f1,ok:=sequence(ss,identifier,Type); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			make_underlined(ss[0])
-			make_reserved(ss[0])
+			make_underlined(ss[0].trans)
+			make_reserved(ss[0].trans)
 			reduce(ss,3,TypeSpec,0,break_space,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
 			call(f1)
-			make_underlined(ss[0])
-			make_reserved(ss[0])
+			make_underlined(ss[0].trans)
+			make_reserved(ss[0].trans)
 			reduce(ss,2,TypeSpec,0,break_space,1,force)
 		},true
 	}
@@ -2994,19 +2995,50 @@ if s,f1,ok:=one(ss,IdentifierList);ok {
 	},true
 }
 
+@ The function |underline_import| helps to extract a package name from |import| string
+and to make it underlined.
+It searches a last filename in quoted string, adds this filename like an identifier 
+and makes an underlined xref. 
+
+@c
+func underline_import(s []interface{}) {
+	var id []rune
+	var i int
+	for i=0;i<len(s);i++ {
+		if c,ok:=s[i].(rune); ok && c=='"' {
+			i++
+			break
+		}
+	}
+	for ;i<len(s);i++ {
+		if c,ok:=s[i].(rune); !ok || c=='/' {
+			id=nil
+		} else if c=='"' {
+			break
+		} else {
+			id=append(id,c)
+		} 
+	}
+	if len(id)==0 {
+		return
+	}
+	xref_switch=def_flag
+	underline_xref(app_id(id))
+}
+
 @ @<Cases for |ImportSpec|@>=
 if s,f1,ok:=sequence(ss,identifier,str); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
 			call(f1)
-			make_reserved(ss[0])
+			make_reserved(ss[0].trans)
 			reduce(ss,3,ImportSpec,0,break_space,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
 			call(f1)
-			make_reserved(ss[0])
+			make_reserved(ss[0].trans)
 			reduce(ss,2,ImportSpec,0,break_space,1,force)
 		},true
 	}
@@ -3028,11 +3060,13 @@ if s,f1,ok:=sequence(ss,identifier,str); ok {
 		return s,func() {
 			f2()
 			f1()
+			underline_import(ss[0].trans)
 			reduce(ss,2,ImportSpec,0,1,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
 			f1()
+			underline_import(ss[0].trans)
 			reduce(ss,1,ImportSpec,0,force)
 		},true
 	}
@@ -4922,7 +4956,7 @@ switch (next_control) {
 	case str,constant,verbatim:
 		@<Append a string or constant@>
 	case identifier: 
-		app_cur_id()
+		app_id(id)
 	case TeX_string:
 		@<Append a \TEX/ string@>
 	case '/':
@@ -5104,7 +5138,7 @@ for i:=0; i < len(id); {
 		count=20
 @q(@>@.\\)@>
 	}
-	switch (id[i]) {
+	switch id[i] {
 		case ' ', '\\', '#', '%', '$','^', '{', '}', '~', '&', '_': 
 			tok_mem=append(tok_mem,'\\')
 @.\\\ @>
@@ -5146,11 +5180,11 @@ for i:=0; i < len(id);{
 tok_mem=append(tok_mem,@q{@>'}')
 app_scrap(insert,no_math,tok_mem...)
 
-@ The function |app_cur_id| appends the current identifier to the
+@ The function |app_id| appends an identifier |id| to the
 token list.
 
 @c
-func app_cur_id() {
+func app_id(id []rune) id_token {
 	p:=id_lookup(id,normal)
 	if name_dir[p].ilk<=custom { /* not a reserved word */
 		a1 := identifier
@@ -5169,6 +5203,7 @@ func app_cur_id() {
 			app_scrap(name_dir[p].ilk,maybe_math,res_token(p))
 		}
 	}
+	return id_token(p)
 }
 
 @ When the `\.{\v}' that introduces \GO/ text is sensed, a call on
