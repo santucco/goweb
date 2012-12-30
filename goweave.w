@@ -2,7 +2,7 @@
 % This program by Alexander Sychev
 % is based on a program CWEAVE by Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.2 --- December 2012
+% Version 0.3 --- December 2012
 
 % Copyright (C) 2012 Alexander Sychev
 
@@ -27,11 +27,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.2)}
+\def\title{GOWEAVE (Version 0.3)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.2)}
+	\centerline{(Version 0.3)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -59,7 +59,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.2)\n"
+const banner = "This is GOWEAVE (Version 0.3)\n"
 
 @
 @c
