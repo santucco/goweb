@@ -856,7 +856,7 @@ mistake:
 		loc++
 	}
 	id = buffer[id_first: loc]
-	return(identifier)
+	return identifier
 }
 
 @ @<Get a constant@>= 
