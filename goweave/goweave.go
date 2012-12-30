@@ -110,7 +110,7 @@ mode_field mode
 /*1:*/
 //line goweave.w:61
 
-const banner= "This is GOWEAVE (Version 0.2)\n"
+const banner= "This is GOWEAVE (Version 0.3)\n"
 
 /*:1*//*4:*/
 //line goweave.w:103
