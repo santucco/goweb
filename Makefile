@@ -4,7 +4,7 @@ IFILES= \
 	$(patsubst %.w, %.scn, $(wildcard *.w) $(wildcard goweave/*.w)) \
 	$(patsubst %.w, %.log, $(wildcard *.w) $(wildcard goweave/*.w)) \
 	$(patsubst %.w, %.tex, $(wildcard *.w) $(wildcard goweave/*.w)) \
-	gowebman.idx gowebman.log
+	gowebman.idx gowebman.log gowebman.toc
 
 .INTERMEDIATE: $(IFILES)
 
