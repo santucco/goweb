@@ -40,7 +40,7 @@ const(
 /*1:*/
 //line gotangle.w:55
 
-banner= "This is GOTANGLE (Version 0.3)\n"
+banner= "This is GOTANGLE (Version 0.4)\n"
 
 /*:1*//*4:*/
 //line gotangle.w:90
@@ -198,7 +198,7 @@ text_info[0].text_link= 0
 /*:98*//*126:*/
 //line gotangle.w:661
 {
-for c:= 0;c<len(ccode);c++{
+for c:=0;c<len(ccode);c++{
 ccode[c]= ignore
 }
 ccode[' ']= new_section
@@ -422,7 +422,7 @@ func common_init(){
 /*44:*/
 //line common.w:621
 
-for i,_:= range hash{
+for i,_:=range hash{
 hash[i]= -1
 }
 
@@ -504,7 +504,7 @@ change_buffer= nil
 
 for true{
 change_line++
-if err:= input_ln(change_file);err!=nil{
+if err:=input_ln(change_file);err!=nil{
 return
 }
 if len(buffer)<2{
@@ -534,7 +534,7 @@ err_print("! Missing @x in change file")
 
 for true{
 change_line++
-if err:= input_ln(change_file);err!=nil{
+if err:=input_ln(change_file);err!=nil{
 err_print("! Change file ended after @x")
 
 return
@@ -574,7 +574,7 @@ change_pending= b
 //line common.w:253
 
 func compare_runes(l[]rune,r[]rune)int{
-i:= 0
+i:=0
 for;i<len(l)&&i<len(r)&&l[i]==r[i];i++{}
 if i==len(r){
 if i==len(l){
@@ -599,7 +599,7 @@ return 0
 
 
 func check_change(){
-n:= 0
+n:=0
 if compare_runes(buffer,change_buffer)!=0{
 return
 }
@@ -614,7 +614,7 @@ for true{
 changing= true
 print_where= true
 change_line++
-if err:= input_ln(change_file);err!=nil{
+if err:=input_ln(change_file);err!=nil{
 err_print("! Change file ended before @y")
 
 change_buffer= nil
@@ -688,7 +688,7 @@ file= file[:0]
 /*30:*/
 //line common.w:372
 
-if wf,err:= os.Open(file_name[0]);err!=nil{
+if wf,err:=os.Open(file_name[0]);err!=nil{
 file_name[0]= alt_file_name
 if wf,err= os.Open(file_name[0]);err!=nil{
 fatal("! Cannot open input file ",file_name[0])
@@ -699,7 +699,7 @@ file= append(file,bufio.NewReader(wf))
 }else{
 file= append(file,bufio.NewReader(wf))
 }
-if cf,err:= os.Open(change_file_name);err!=nil{
+if cf,err:=os.Open(change_file_name);err!=nil{
 fatal("! Cannot open change file ",change_file_name)
 
 }else{
@@ -824,7 +824,7 @@ include_depth++
 /*35:*/
 //line common.w:461
 {
-l:= loc
+l:=loc
 if buffer[loc]=='"'{
 loc++
 l++
@@ -840,18 +840,18 @@ loc++
 file_name= append(file_name,string(buffer[l:loc]))
 
 
-if f,err:= os.Open(file_name[include_depth]);err==nil{
+if f,err:=os.Open(file_name[include_depth]);err==nil{
 file= append(file,bufio.NewReader(f))
 line= append(line,0)
 print_where= true
 goto restart
 }
-temp_file_name:= os.Getenv("GOWEBINPUTS")
+temp_file_name:=os.Getenv("GOWEBINPUTS")
 if len(temp_file_name)!=0{
 
-for _,fn:= range strings.Split(temp_file_name,":"){
+for _,fn:=range strings.Split(temp_file_name,":"){
 file_name[include_depth]= fn+"/"+file_name[include_depth]
-if f,err:= os.Open(file_name[include_depth]);err==nil{
+if f,err:=os.Open(file_name[include_depth]);err==nil{
 file= append(file,bufio.NewReader(f))
 line= append(line,0)
 print_where= true
@@ -899,8 +899,8 @@ t int32)int32{
 /*46:*/
 //line common.w:645
 
-h:= id[0]
-for i:= 1;i<len(id);i++{
+h:=id[0]
+for i:=1;i<len(id);i++{
 h= (h+h+id[i])%hash_size
 }
 
@@ -910,12 +910,12 @@ h= (h+h+id[i])%hash_size
 /*47:*/
 //line common.w:654
 
-p:= hash[h]
+p:=hash[h]
 for p!=-1&&!names_match(p,id,t){
 p= name_dir[p].llink
 }
 if p==-1{
-p:= int32(len(name_dir))
+p:=int32(len(name_dir))
 name_dir= append(name_dir,name_info{})
 name_dir[p].llink= -1
 init_node(p)
@@ -952,7 +952,7 @@ return p
 //line common.w:709
 
 func print_section_name(p int32){
-q:= p+1
+q:=p+1
 for p!=-1{
 fmt.Print(string(name_dir[p].name[1:]))
 if name_dir[p].ispref{
@@ -972,7 +972,7 @@ fmt.Print("...")
 //line common.w:728
 
 func sprint_section_name(p int32)[]rune{
-q:= p+1
+q:=p+1
 var dest[]rune
 for p!=-1{
 dest= append(dest,name_dir[p].name[1:]...)
@@ -990,7 +990,7 @@ return dest
 //line common.w:745
 
 func print_prefix_name(p int32){
-l:= name_dir[p].name[0]
+l:=name_dir[p].name[0]
 fmt.Print(string(name_dir[p].name[1:]))
 if int(l)<len(name_dir[p].name){
 fmt.Print("...")
@@ -1004,7 +1004,7 @@ fmt.Print("...")
 func web_strcmp(
 j[]rune,
 k[]rune)int{
-i:= 0
+i:=0
 for;i<len(j)&&i<len(k)&&j[i]==k[i];i++{}
 if i==len(k){
 if i==len(j){
@@ -1033,7 +1033,7 @@ par int32,
 c int,
 name[]rune,
 ispref bool)int32{
-p:= int32(len(name_dir))
+p:=int32(len(name_dir))
 name_dir= append(name_dir,name_info{})
 name_dir[p].llink= -1
 init_node(p)
@@ -1067,11 +1067,11 @@ func extend_section_name(
 p int32,
 text[]rune,
 ispref bool){
-q:= p+1
+q:=p+1
 for name_dir[q].llink!=-1{
 q= name_dir[q].llink
 }
-np:= int32(len(name_dir))
+np:=int32(len(name_dir))
 name_dir[q].llink= np
 name_dir= append(name_dir,name_info{})
 name_dir[np].llink= -1
@@ -1089,12 +1089,12 @@ name_dir[np].ispref= ispref
 func section_lookup(
 name[]rune,
 ispref bool)int32{
-c:= less
-p:= name_root
+c:=less
+p:=name_root
 var q int32= -1
 var r int32= -1
 var par int32= -1
-name_len:= len(name)
+name_len:=len(name)
 /*60:*/
 //line common.w:886
 
@@ -1145,7 +1145,7 @@ return add_section_name(par,c,name,ispref)
 /*62:*/
 //line common.w:927
 
-first,cmp:= section_name_cmp(name,r)
+first,cmp:=section_name_cmp(name,r)
 switch cmp{
 
 case prefix:
@@ -1193,9 +1193,9 @@ return-1
 func section_name_cmp(
 name[]rune,
 r int32)(int,int){
-q:= r+1
+q:=r+1
 var ispref bool
-first:= 0
+first:=0
 for true{
 if name_dir[r].ispref{
 ispref= true
@@ -1204,7 +1204,7 @@ q= name_dir[q].llink
 ispref= false
 q= -1
 }
-c:= web_strcmp(name,name_dir[r].name[1:])
+c:=web_strcmp(name,name_dir[r].name[1:])
 switch c{
 case equal:
 if q==-1{
@@ -1282,7 +1282,7 @@ if loc<l{
 l= loc
 }
 if l> 0{
-for k:= 0;k<l;k++{
+for k:=0;k<l;k++{
 if buffer[k]=='\t'{
 fmt.Print(" ")
 }else{
@@ -1385,16 +1385,16 @@ return flags['h']
 //line common.w:1249
 
 func scan_args(){
-dot_pos:= -1
-name_pos:= 0
-found_web:= false
-found_change:= false
-found_out:= false
+dot_pos:=-1
+name_pos:=0
+found_web:=false
+found_change:=false
+found_out:=false
 
-flag_change:= false
+flag_change:=false
 
-for i:= 1;i<len(os.Args);i++{
-arg:= os.Args[i]
+for i:=1;i<len(os.Args);i++{
+arg:=os.Args[i]
 if(arg[0]=='-'||arg[0]=='+')&&len(arg)> 1{
 /*86:*/
 //line common.w:1346
@@ -1405,7 +1405,7 @@ flag_change= false
 }else{
 flag_change= true
 }
-for i:= 1;i<len(arg);i++{
+for i:=1;i<len(arg);i++{
 flags[arg[i]]= flag_change
 }
 }
@@ -1416,7 +1416,7 @@ flags[arg[i]]= flag_change
 }else{
 name_pos= 0
 dot_pos= -1
-for j:= 0;j<len(arg);j++{
+for j:=0;j<len(arg);j++{
 if arg[j]=='.'{
 dot_pos= j
 }else if arg[j]=='/'{
@@ -1605,14 +1605,14 @@ goto restart
 out_char(section_number)
 return
 }
-a:= cur_state.byte_field[0]
+a:=cur_state.byte_field[0]
 cur_state.byte_field= cur_state.byte_field[1:]
 if out_state==verbatim&&a!=strs&&a!=constant&&a!='\n'{
 fmt.Fprintf(go_file,"%c",a)
 }else if a<unicode.UpperLower{
 out_char(a)
 }else{
-c:= cur_state.byte_field[0]
+c:=cur_state.byte_field[0]
 cur_state.byte_field= cur_state.byte_field[1:]
 switch a%unicode.UpperLower{
 case identifier:
@@ -1710,10 +1710,10 @@ writeloop:
 /*117:*/
 //line gotangle.w:474
 
-for an_output_file:= len(output_files);an_output_file> 0;{
+for an_output_file:=len(output_files);an_output_file> 0;{
 an_output_file--
 output_file_name= string(sprint_section_name(output_files[an_output_file]))
-if f,err:= os.OpenFile(output_file_name,os.O_WRONLY|os.O_CREATE|os.O_TRUNC,0666);
+if f,err:=os.OpenFile(output_file_name,os.O_WRONLY|os.O_CREATE|os.O_TRUNC,0666);
 err!=nil{
 fatal("! Cannot open output file:",output_file_name)
 
@@ -1785,10 +1785,10 @@ fmt.Fprintf(go_file,"/*:%d*/",-cur_val)
 case line_number:
 fmt.Fprint(go_file,"\n//line ")
 
-line:= cur_val
+line:=cur_val
 cur_val= cur_state.byte_field[0]
 cur_state.byte_field= cur_state.byte_field[1:]
-for _,v:= range name_dir[cur_val].name{
+for _,v:=range name_dir[cur_val].name{
 if v=='\\'||v=='"'{
 fmt.Fprint(go_file,"\\")
 }
@@ -1898,7 +1898,7 @@ loc++
 }
 if loc<len(buffer){
 loc++
-c:= new_section
+c:=new_section
 if loc<len(buffer)&&buffer[loc]<int32(len(ccode)){
 c= ccode[buffer[loc]]
 }
@@ -1933,7 +1933,7 @@ comment_continues= false
 return comment_continues
 }
 }
-c:= buffer[loc]
+c:=buffer[loc]
 loc++
 if is_long_comment&&c=='*'&&loc<len(buffer)&&buffer[loc]=='/'{
 loc++
@@ -1982,7 +1982,7 @@ tok_mem= append(tok_mem,rune(change_line))
 tok_mem= append(tok_mem,rune(line[include_depth]))
 }
 {
-a:= id_lookup(id,0)
+a:=id_lookup(id,0)
 tok_mem= append(tok_mem,a)
 }
 
@@ -1993,7 +1993,7 @@ tok_mem= append(tok_mem,a)
 return'\n'
 }
 }
-c:= buffer[loc]
+c:=buffer[loc]
 var nc rune= ' '
 if loc+1<len(buffer){
 nc= buffer[loc+1]
@@ -2013,7 +2013,7 @@ if unicode.IsDigit(c)||c=='.'{
 //line gotangle.w:862
 
 {
-id_first:= loc-1
+id_first:=loc-1
 if buffer[id_first]=='.'&&(loc>=len(buffer)||!unicode.IsDigit(buffer[loc])){
 goto mistake
 }
@@ -2063,7 +2063,7 @@ return constant
 //line gotangle.w:910
 
 {
-delim:= c
+delim:=c
 section_text= section_text[0:0]
 section_text= append(section_text,delim)
 
@@ -2078,7 +2078,7 @@ break
 section_text= append(section_text,'\n')
 }
 }
-l:= loc
+l:=loc
 loc++
 if c= buffer[l];c==delim{
 section_text= append(section_text,c)
@@ -2107,7 +2107,7 @@ return strs
 
 {
 loc--
-id_first:= loc
+id_first:=loc
 for loc<len(buffer)&&
 (unicode.IsLetter(buffer[loc])||
 unicode.IsDigit(buffer[loc])||
@@ -2177,7 +2177,7 @@ if(c=='>'){
 loc+= 2
 break
 }
-cc:= ignore
+cc:=ignore
 if c<int32(len(ccode)){
 cc= ccode[c]
 }
@@ -2223,7 +2223,7 @@ if cur_section_name_char=='('{
 //line gotangle.w:419
 
 {
-an_output_file:= 0
+an_output_file:=0
 for;an_output_file<len(output_files);an_output_file++{
 if output_files[an_output_file]==cur_section_name{
 break
@@ -2248,7 +2248,7 @@ case strs:
 /*142:*/
 //line gotangle.w:1091
 {
-id_first:= loc
+id_first:=loc
 loc++
 for loc<len(buffer)&&loc+1<len(buffer)&&(buffer[loc]!='@'||buffer[loc+1]!='>'){
 loc++
@@ -2316,13 +2316,13 @@ mistake:
 switch c{
 case'/':
 if nc=='*'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return begin_comment
 }
 }else if nc=='/'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return begin_short_comment
@@ -2330,7 +2330,7 @@ return begin_short_comment
 }
 case'+':
 if nc=='+'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return plus_plus
@@ -2338,7 +2338,7 @@ return plus_plus
 }
 case'-':
 if nc=='-'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return minus_minus
@@ -2347,7 +2347,7 @@ return minus_minus
 case'.':
 if nc=='.'&&loc+1<len(buffer)&&buffer[loc+1]=='.'{
 loc++
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return dot_dot_dot
@@ -2355,7 +2355,7 @@ return dot_dot_dot
 }
 case'=':
 if nc=='='{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return eq_eq
@@ -2363,13 +2363,13 @@ return eq_eq
 }
 case'>':
 if nc=='='{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return gt_eq
 }
 }else if nc=='>'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return gt_gt
@@ -2377,19 +2377,19 @@ return gt_gt
 }
 case'<':
 if nc=='<'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return lt_lt
 }
 }else if nc=='-'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return direct
 }
 }else if nc=='='{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return lt_eq
@@ -2397,13 +2397,13 @@ return lt_eq
 }
 case'&':
 if nc=='&'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return and_and
 }
 }else if nc=='^'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return and_not
@@ -2412,7 +2412,7 @@ return and_not
 
 case'|':
 if nc=='|'{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return or_or
@@ -2420,7 +2420,7 @@ return or_or
 }
 case'!':
 if nc=='='{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return not_eq
@@ -2428,7 +2428,7 @@ return not_eq
 }
 case':':
 if nc=='='{
-l:= loc
+l:=loc
 loc++
 if l<=len(buffer){
 return col_eq
@@ -2470,7 +2470,7 @@ tok_mem= append(tok_mem,rune(change_line))
 tok_mem= append(tok_mem,rune(line[include_depth]))
 }
 {
-a:= id_lookup(id,0)
+a:=id_lookup(id,0)
 tok_mem= append(tok_mem,a)
 }
 
@@ -2495,7 +2495,7 @@ goto done
 /*149:*/
 //line gotangle.w:1216
 {
-try_loc:= loc
+try_loc:=loc
 for try_loc<len(buffer)&&buffer[try_loc]==' '{
 try_loc++
 }
@@ -2535,7 +2535,7 @@ tok_mem= append(tok_mem,rune(change_line))
 tok_mem= append(tok_mem,rune(line[include_depth]))
 }
 {
-a:= id_lookup(id,0)
+a:=id_lookup(id,0)
 tok_mem= append(tok_mem,a)
 }
 
@@ -2548,7 +2548,7 @@ case constant,strs:
 //line gotangle.w:1235
 
 tok_mem= append(tok_mem,a)
-for i:= 0;i<len(id);{
+for i:=0;i<len(id);{
 if id[i]=='@'{
 if id[i+1]=='@'{
 i++
@@ -2570,7 +2570,7 @@ case ord:
 //line gotangle.w:1251
 
 {
-c:= id[0]
+c:=id[0]
 if c=='\\'{
 id= id[1:]
 c= id[0]
@@ -2826,9 +2826,9 @@ for loc<len(buffer)&&buffer[loc]!='@'{
 loc++
 }
 if loc++;loc<len(buffer){
-c:= buffer[loc]
+c:=buffer[loc]
 loc++
-cc:= ignore
+cc:=ignore
 if c<int32(len(ccode)){
 cc= ccode[c]
 }
