@@ -2,7 +2,7 @@
 % This program by Alexander Sychev
 % is based on a program CWEAVE by Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.3 --- December 2012
+% Version 0.4 --- January 2013
 
 % Copyright (C) 2012 Alexander Sychev
 
@@ -27,11 +27,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.3)}
+\def\title{GOWEAVE (Version 0.4)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.3)}
+	\centerline{(Version 0.4)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -59,7 +59,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.3)\n"
+const banner = "This is GOWEAVE (Version 0.4)\n"
 
 @
 @c
@@ -1479,7 +1479,7 @@ the section is changed, we output `\.{\\*}' just after the number.
 func section_str(n int32) string {
 	s:=fmt.Sprintf("%d",n)
 	if changed_section[n] {
-		s= "\\*"
+		s+="\\*"
 @.\\*@>
 	}
 	return s
@@ -6566,12 +6566,11 @@ rather than an |int|, we use \.{\%ld} to print these quantities.
 
 @c
 func print_stats() {
-	fmt.Println("\nMemory usage statistics:\n")
+	fmt.Print("\nMemory usage statistics:\n")
 @.Memory usage statistics:@>
-	fmt.Println("%v names", len(name_dir))
-	fmt.Println("Parsing:")
+	fmt.Printf("%v names\n", len(name_dir))
 	fmt.Println("Sorting:")
-	fmt.Println("%v levels ",max_sort_ptr)
+	fmt.Printf("%v levels\n",max_sort_ptr)
 }
 
 @ @<Print usage error message and quit@>=
