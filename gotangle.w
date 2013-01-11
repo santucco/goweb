@@ -2,7 +2,7 @@
 % This program by Alexander Sychev 
 % is based on a program CWEB by Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.3 --- December 2012
+% Version 0.4 --- January 2013
 
 % Copyright (C) 2012 Alexander Sychev
 
@@ -22,11 +22,11 @@
 \mathchardef\RA="3221 % right arrow
 \mathchardef\BA="3224 % double arrow
 
-\def\title{GOTANGLE (Version 0.3)}
+\def\title{GOTANGLE (Version 0.4)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont GOTANGLE} processor}
   \vskip 15pt
-  \centerline{(Version 0.3)}
+  \centerline{(Version 0.4)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -53,7 +53,7 @@ The ``banner line'' defined here should be changed whenever \.{GOTANGLE}
 is modified.
 
 @<Constants@>=
-banner = "This is GOTANGLE (Version 0.3)\n"
+banner = "This is GOTANGLE (Version 0.4)\n"
 
 @
 @c
