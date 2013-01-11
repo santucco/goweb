@@ -3,7 +3,8 @@ IFILES= \
 	$(patsubst %.w, %.toc, $(wildcard *.w) $(wildcard goweave/*.w)) \
 	$(patsubst %.w, %.scn, $(wildcard *.w) $(wildcard goweave/*.w)) \
 	$(patsubst %.w, %.log, $(wildcard *.w) $(wildcard goweave/*.w)) \
-	$(patsubst %.w, %.tex, $(wildcard *.w) $(wildcard goweave/*.w))
+	$(patsubst %.w, %.tex, $(wildcard *.w) $(wildcard goweave/*.w)) \
+	gowebman.idx gowebman.log
 
 .INTERMEDIATE: $(IFILES)
 
@@ -18,7 +19,7 @@ gotangle/gotangle: gotangle/gotangle.go
 goweave/goweave: goweave/goweave.go
 	(cd goweave; go build  $(gcflags))
 
-doc: gotangle.pdf goweave.pdf
+doc: gotangle.pdf goweave.pdf gowebman.pdf
 
 gotangle/gotangle.go: gotangle.w common.w
 	-mkdir -p gotangle
