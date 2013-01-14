@@ -2,7 +2,7 @@
 % This program by Alexander Sychev 
 % is based on a program CWEB by Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.4 --- January 2013
+% Version 0.5 --- January 2013
 
 % Copyright (C) 2012 Alexander Sychev
 

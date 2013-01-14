@@ -40,7 +40,7 @@ const(
 /*1:*/
 //line gotangle.w:55
 
-banner= "This is GOTANGLE (Version 0.4)\n"
+banner= "This is GOTANGLE (Version 0.5)\n"
 
 /*:1*//*4:*/
 //line gotangle.w:90
