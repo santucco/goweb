@@ -1,10 +1,10 @@
-% This file is part of GOWEB.
-% This program by Alexander Sychev 
-% is based on a program CWEB by Silvio Levy and Donald E. Knuth
+% This file is part of GOWEB Version 0.5 - January 2013
+% Author Alexander Sychev
+% GOWEB is based on program CWEB Version 3.64 - February 2002,
+% Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.5 --- January 2013
+% Copyright (C) 2013 Alexander Sychev
 
-% Copyright (C) 2012 Alexander Sychev
 
 % Permission is granted to make and distribute verbatim copies of this
 % document provided that the copyright notice and this permission notice
@@ -30,7 +30,7 @@
   \vfill}
 \def\botofcontents{\vfill
 \noindent
-Copyright \copyright\ 2012 Alexander Sychev
+Copyright \copyright\ 2013 Alexander Sychev
 \bigskip\noindent
 Permission is granted to make and distribute verbatim copies of this
 document provided that the copyright notice and this permission notice
@@ -90,10 +90,10 @@ func main () {
 @ @<Constants@>=
 max_texts = 2500 /* number of replacement texts, must be less than 10240 */
 
-@ The next few sections contain stuff from the file \.{common.w} that must
+@ The next few sections contain stuff from the file \.{gocommon.w} that must
 be included in both \.{gotangle.w} and \.{goweave.w}. 
 
-@i common.w
+@i gocommon.w
 
 
 @** Data structures exclusive to {\tt GOTANGLE}.

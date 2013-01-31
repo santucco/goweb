@@ -1,10 +1,10 @@
-% This file is part of GOWEB.
-% This program by Alexander Sychev
-% is based on a program CWEAVE by Silvio Levy and Donald E. Knuth
+% This file is part of GOWEB Version 0.5 - January 2013
+% Author Alexander Sychev
+% GOWEB is based on program CWEB Version 3.64 - February 2002,
+% Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.5 --- January 2013
+% Copyright (C) 2013 Alexander Sychev
 
-% Copyright (C) 2012 Alexander Sychev
 
 % Permission is granted to make and distribute verbatim copies of this
 % document provided that the copyright notice and this permission notice
@@ -14,6 +14,7 @@
 % document under the conditions for verbatim copying, provided that the
 % entire resulting derived work is given a different name and distributed
 % under the terms of a permission notice identical to this one.
+
 
 % Here is TeX material that gets inserted after \input gowebmac
 \def\hang{\hangindent 3em\indent\ignorespaces}
@@ -35,7 +36,7 @@
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
-Copyright \copyright\ 2012 Alexander Sychev
+Copyright \copyright\ 2013 Alexander Sychev
 \bigskip\noindent
 Permission is granted to make and distribute verbatim copies of this
 document provided that the copyright notice and this permission notice
@@ -109,10 +110,10 @@ const (
 		should be less than 256 */
 )
 
-@ The next few sections contain stuff from the file \.{common.w} that must
+@ The next few sections contain stuff from the file \.{gocommon.w} that must
 be included in both \.{gotangle.w} and \.{goweave.w}. 
 
-@i common.w
+@i gocommon.w
 
 @** Data structures exclusive to {\tt GOWEAVE}.
 As explained above, the field of a |name_info| structure
@@ -323,7 +324,7 @@ func names_match(@t\1@>@/
 	return compare_runes(id,name_dir[p].name) == 0
 }
 
-@ |init_node| is used in |common.w| to init a new node
+@ |init_node| is used in |gocommon.w| to init a new node
 @c
 func init_node(p int32){
 	name_dir[p].xref=0

@@ -5,28 +5,28 @@ package main
 
 import(
 /*13:*/
-//line common.w:93
+//line gocommon.w:93
 
 "io"
 "bytes"
 
 /*:13*//*16:*/
-//line common.w:135
+//line gocommon.w:135
 
 "bufio"
 
 /*:16*//*20:*/
-//line common.w:175
+//line gocommon.w:175
 
 "unicode"
 
 /*:20*//*27:*/
-//line common.w:330
+//line gocommon.w:330
 
 "fmt"
 
 /*:27*//*34:*/
-//line common.w:457
+//line gocommon.w:457
 
 "os"
 "strings"
@@ -245,11 +245,11 @@ os.Exit(wrap_up())
 }
 
 /*:3*//*6:*/
-//line common.w:25
+//line gocommon.w:25
 
 const(
 /*10:*/
-//line common.w:63
+//line gocommon.w:63
 
 and_and rune= 04
 lt_lt rune= 020
@@ -269,19 +269,19 @@ direct rune= 0203
 begin_short_comment rune= 031
 
 /*:10*//*31:*/
-//line common.w:402
+//line gocommon.w:402
 
 max_sections= 2000
 
 
 
 /*:31*//*42:*/
-//line common.w:614
+//line gocommon.w:614
 
 hash_size= 353
 
 /*:42*//*55:*/
-//line common.w:757
+//line gocommon.w:757
 
 less= 0
 equal= 1
@@ -290,12 +290,12 @@ prefix= 3
 extension= 4
 
 /*:55*//*63:*/
-//line common.w:978
+//line gocommon.w:978
 
 bad_extension= 5
 
 /*:63*//*65:*/
-//line common.w:1041
+//line gocommon.w:1041
 
 spotless= 0
 harmless_message= 1
@@ -303,12 +303,12 @@ error_message= 2
 fatal_message= 3
 
 /*:65*/
-//line common.w:27
+//line gocommon.w:27
 
 )
 
 /*12:*/
-//line common.w:87
+//line gocommon.w:87
 
 var buffer[]rune
 var loc int= 0
@@ -316,7 +316,7 @@ var section_text[]rune
 var id[]rune
 
 /*:12*//*17:*/
-//line common.w:138
+//line gocommon.w:138
 
 var include_depth int
 var file[]*bufio.Reader
@@ -332,7 +332,7 @@ var input_has_ended bool
 var changing bool
 
 /*:17*//*32:*/
-//line common.w:407
+//line gocommon.w:407
 
 var section_count int32
 var changed_section[max_sections]bool
@@ -341,17 +341,17 @@ var change_pending bool
 var print_where bool= false
 
 /*:32*//*40:*/
-//line common.w:589
+//line gocommon.w:589
 
 type name_info struct{
 name[]rune
 /*41:*/
-//line common.w:603
+//line gocommon.w:603
 
 llink int32
 
 /*:41*//*50:*/
-//line common.w:684
+//line gocommon.w:684
 
 ispref bool
 rlink int32
@@ -363,7 +363,7 @@ rlink int32
 equiv int32
 
 /*:93*/
-//line common.w:592
+//line gocommon.w:592
 
 }
 type name_index int
@@ -371,18 +371,18 @@ var name_dir[]name_info
 var name_root int32
 
 /*:40*//*43:*/
-//line common.w:617
+//line gocommon.w:617
 
 var hash[hash_size]int32
 var h int32
 
 /*:43*//*68:*/
-//line common.w:1061
+//line gocommon.w:1061
 
 var history int= spotless
 
 /*:68*//*80:*/
-//line common.w:1218
+//line gocommon.w:1218
 
 var go_file_name string
 var tex_file_name string
@@ -391,7 +391,7 @@ var scn_file_name string
 var flags[128]bool
 
 /*:80*//*87:*/
-//line common.w:1360
+//line gocommon.w:1360
 
 var go_file io.WriteCloser
 var tex_file io.WriteCloser
@@ -400,52 +400,52 @@ var scn_file io.WriteCloser
 var active_file io.WriteCloser
 
 /*:87*/
-//line common.w:30
+//line gocommon.w:30
 
 /*7:*/
-//line common.w:39
+//line gocommon.w:39
 var phase int
 
 /*:7*//*18:*/
-//line common.w:157
+//line gocommon.w:157
 
 var change_buffer[]rune
 
 /*:18*/
-//line common.w:31
+//line gocommon.w:31
 
 
 /*:6*//*8:*/
-//line common.w:45
+//line gocommon.w:45
 
 func common_init(){
 /*44:*/
-//line common.w:621
+//line gocommon.w:621
 
 for i,_:=range hash{
 hash[i]= -1
 }
 
 /*:44*//*51:*/
-//line common.w:689
+//line gocommon.w:689
 
 name_root= -1
 
 /*:51*/
-//line common.w:47
+//line gocommon.w:47
 
 /*81:*/
-//line common.w:1229
+//line gocommon.w:1229
 
 flags['b']= true
 flags['h']= true
 flags['p']= true
 
 /*:81*/
-//line common.w:48
+//line gocommon.w:48
 
 /*88:*/
-//line common.w:1367
+//line gocommon.w:1367
 
 scan_args()
 /*163:*/
@@ -458,17 +458,17 @@ fatal("! Cannot open output file ",go_file_name)
 }
 
 /*:163*/
-//line common.w:1369
+//line gocommon.w:1369
 
 
 /*:88*/
-//line common.w:49
+//line gocommon.w:49
 
 }
 
 
 /*:8*//*14:*/
-//line common.w:98
+//line gocommon.w:98
 
 
 func input_ln(fp*bufio.Reader)error{
@@ -495,12 +495,12 @@ return err
 }
 
 /*:14*//*19:*/
-//line common.w:167
+//line gocommon.w:167
 
 func prime_the_change_buffer(){
 change_buffer= nil
 /*21:*/
-//line common.w:182
+//line gocommon.w:182
 
 for true{
 change_line++
@@ -527,10 +527,10 @@ err_print("! Missing @x in change file")
 }
 
 /*:21*/
-//line common.w:170
+//line gocommon.w:170
 
 /*22:*/
-//line common.w:209
+//line gocommon.w:209
 
 for true{
 change_line++
@@ -545,10 +545,10 @@ break
 }
 
 /*:22*/
-//line common.w:171
+//line gocommon.w:171
 
 /*23:*/
-//line common.w:222
+//line gocommon.w:222
 
 {
 change_buffer= buffer
@@ -556,12 +556,12 @@ buffer= nil
 }
 
 /*:23*/
-//line common.w:172
+//line gocommon.w:172
 
 }
 
 /*:19*//*24:*/
-//line common.w:243
+//line gocommon.w:243
 
 func if_section_start_make_pending(b bool){
 for loc= 0;loc<len(buffer)&&unicode.IsSpace(buffer[loc]);loc++{}
@@ -571,7 +571,7 @@ change_pending= b
 }
 
 /*:24*//*25:*/
-//line common.w:253
+//line gocommon.w:253
 
 func compare_runes(l[]rune,r[]rune)int{
 i:=0
@@ -595,7 +595,7 @@ return 0
 }
 
 /*:25*//*26:*/
-//line common.w:276
+//line gocommon.w:276
 
 
 func check_change(){
@@ -629,7 +629,7 @@ xyz_code= unicode.ToLower(buffer[1])
 xyz_code= buffer[1]
 }
 /*28:*/
-//line common.w:333
+//line gocommon.w:333
 
 if xyz_code=='x'||xyz_code=='z'{
 loc= 2
@@ -647,11 +647,11 @@ return
 }
 
 /*:28*/
-//line common.w:309
+//line gocommon.w:309
 
 }
 /*23:*/
-//line common.w:222
+//line gocommon.w:222
 
 {
 change_buffer= buffer
@@ -659,7 +659,7 @@ buffer= nil
 }
 
 /*:23*/
-//line common.w:311
+//line gocommon.w:311
 
 changing= false
 line[include_depth]++
@@ -680,13 +680,13 @@ n++
 }
 
 /*:26*//*29:*/
-//line common.w:353
+//line gocommon.w:353
 
 func reset_input(){
 loc= 0
 file= file[:0]
 /*30:*/
-//line common.w:372
+//line gocommon.w:372
 
 if wf,err:=os.Open(file_name[0]);err!=nil{
 file_name[0]= alt_file_name
@@ -707,7 +707,7 @@ change_file= bufio.NewReader(cf)
 }
 
 /*:30*/
-//line common.w:357
+//line gocommon.w:357
 
 include_depth= 0
 line= line[:0]
@@ -722,13 +722,13 @@ input_has_ended= false
 }
 
 /*:29*//*33:*/
-//line common.w:415
+//line gocommon.w:415
 
 func get_line()bool{
 restart:
 if changing&&include_depth==change_depth{
 /*37:*/
-//line common.w:535
+//line gocommon.w:535
 {
 change_line++
 if input_ln(change_file)!=nil{
@@ -762,12 +762,12 @@ print_where= true
 }
 
 /*:37*/
-//line common.w:419
+//line gocommon.w:419
 
 }
 if!changing||include_depth> change_depth{
 /*36:*/
-//line common.w:505
+//line gocommon.w:505
 {
 line[include_depth]++
 for input_ln(file[include_depth])!=nil{
@@ -799,7 +799,7 @@ check_change()
 }
 
 /*:36*/
-//line common.w:422
+//line gocommon.w:422
 
 if changing&&include_depth==change_depth{
 goto restart
@@ -822,7 +822,7 @@ goto restart
 
 include_depth++
 /*35:*/
-//line common.w:461
+//line gocommon.w:461
 {
 l:=loc
 if buffer[loc]=='"'{
@@ -868,14 +868,14 @@ goto restart
 }
 
 /*:35*/
-//line common.w:443
+//line gocommon.w:443
 
 }
 return true
 }
 
 /*:33*//*38:*/
-//line common.w:570
+//line gocommon.w:570
 
 func check_complete(){
 if len(change_buffer)> 0{
@@ -890,14 +890,14 @@ err_print("! Change file entry did not match")
 }
 
 /*:38*//*45:*/
-//line common.w:628
+//line gocommon.w:628
 
 
 func id_lookup(
 id[]rune,
 t int32)int32{
 /*46:*/
-//line common.w:645
+//line gocommon.w:645
 
 h:=id[0]
 for i:=1;i<len(id);i++{
@@ -905,10 +905,10 @@ h= (h+h+id[i])%hash_size
 }
 
 /*:46*/
-//line common.w:633
+//line gocommon.w:633
 
 /*47:*/
-//line common.w:654
+//line gocommon.w:654
 
 p:=hash[h]
 for p!=-1&&!names_match(p,id,t){
@@ -924,11 +924,11 @@ hash[h]= p
 }
 
 /*:47*/
-//line common.w:634
+//line gocommon.w:634
 
 if p==-1{
 /*49:*/
-//line common.w:672
+//line gocommon.w:672
 
 p= int32(len(name_dir)-1)
 name_dir[p].name= append(name_dir[p].name,id...)
@@ -938,18 +938,18 @@ name_dir[p].name= append(name_dir[p].name,id...)
 
 
 /*:96*/
-//line common.w:675
+//line gocommon.w:675
 
 
 /*:49*/
-//line common.w:636
+//line gocommon.w:636
 
 }
 return p
 }
 
 /*:45*//*52:*/
-//line common.w:709
+//line gocommon.w:709
 
 func print_section_name(p int32){
 q:=p+1
@@ -969,7 +969,7 @@ fmt.Print("...")
 }
 
 /*:52*//*53:*/
-//line common.w:728
+//line gocommon.w:728
 
 func sprint_section_name(p int32)[]rune{
 q:=p+1
@@ -987,7 +987,7 @@ return dest
 }
 
 /*:53*//*54:*/
-//line common.w:745
+//line gocommon.w:745
 
 func print_prefix_name(p int32){
 l:=name_dir[p].name[0]
@@ -998,7 +998,7 @@ fmt.Print("...")
 }
 
 /*:54*//*56:*/
-//line common.w:765
+//line gocommon.w:765
 
 
 func web_strcmp(
@@ -1025,7 +1025,7 @@ return equal
 }
 
 /*:56*//*57:*/
-//line common.w:803
+//line gocommon.w:803
 
 
 func add_section_name(
@@ -1061,7 +1061,7 @@ return p
 }
 
 /*:57*//*58:*/
-//line common.w:838
+//line gocommon.w:838
 
 func extend_section_name(
 p int32,
@@ -1083,7 +1083,7 @@ name_dir[np].ispref= ispref
 }
 
 /*:58*//*59:*/
-//line common.w:863
+//line gocommon.w:863
 
 
 func section_lookup(
@@ -1096,7 +1096,7 @@ var r int32= -1
 var par int32= -1
 name_len:=len(name)
 /*60:*/
-//line common.w:886
+//line gocommon.w:886
 
 for p!=-1{
 c= web_strcmp(name,name_dir[p].name[1:])
@@ -1130,20 +1130,20 @@ q= -1
 }
 
 /*:60*/
-//line common.w:875
+//line gocommon.w:875
 
 /*61:*/
-//line common.w:918
+//line gocommon.w:918
 
 if r==-1{
 return add_section_name(par,c,name,ispref)
 }
 
 /*:61*/
-//line common.w:876
+//line gocommon.w:876
 
 /*62:*/
-//line common.w:927
+//line gocommon.w:927
 
 first,cmp:=section_name_cmp(name,r)
 switch cmp{
@@ -1182,13 +1182,13 @@ return r
 }
 
 /*:62*/
-//line common.w:877
+//line gocommon.w:877
 
 return-1
 }
 
 /*:59*//*64:*/
-//line common.w:982
+//line gocommon.w:982
 
 func section_name_cmp(
 name[]rune,
@@ -1239,7 +1239,7 @@ return-2,-1
 }
 
 /*:64*//*66:*/
-//line common.w:1048
+//line gocommon.w:1048
 
 func mark_harmless(){
 if history==spotless{
@@ -1248,14 +1248,14 @@ history= harmless_message
 }
 
 /*:66*//*67:*/
-//line common.w:1056
+//line gocommon.w:1056
 
 func mark_error(){
 history= error_message
 }
 
 /*:67*//*69:*/
-//line common.w:1071
+//line gocommon.w:1071
 
 
 func err_print(s string){
@@ -1267,7 +1267,7 @@ fmt.Printf("%s",s)
 }
 if len(file)> 0&&file[0]!=nil{
 /*70:*/
-//line common.w:1096
+//line gocommon.w:1096
 
 {
 if changing&&include_depth==change_depth{
@@ -1301,7 +1301,7 @@ fmt.Print(" ")
 }
 
 /*:70*/
-//line common.w:1081
+//line gocommon.w:1081
 
 }
 os.Stdout.Sync()
@@ -1309,7 +1309,7 @@ mark_error()
 }
 
 /*:69*//*72:*/
-//line common.w:1142
+//line gocommon.w:1142
 
 func wrap_up()int{
 fmt.Print("\n")
@@ -1317,7 +1317,7 @@ if show_stats(){
 print_stats()
 }
 /*73:*/
-//line common.w:1155
+//line gocommon.w:1155
 
 switch history{
 case spotless:
@@ -1333,7 +1333,7 @@ fmt.Printf("(That was a fatal error, my friend.)\n")
 }
 
 /*:73*/
-//line common.w:1148
+//line gocommon.w:1148
 
 if history> harmless_message{
 return 1
@@ -1342,7 +1342,7 @@ return 0
 }
 
 /*:72*//*74:*/
-//line common.w:1175
+//line gocommon.w:1175
 
 func fatal(s string,t string){
 if len(s)!=0{
@@ -1354,35 +1354,35 @@ os.Exit(wrap_up())
 }
 
 /*:74*//*76:*/
-//line common.w:1195
+//line gocommon.w:1195
 
 func show_banner()bool{
 return flags['b']
 }
 
 /*:76*//*77:*/
-//line common.w:1201
+//line gocommon.w:1201
 
 func show_progress()bool{
 return flags['p']
 }
 
 /*:77*//*78:*/
-//line common.w:1207
+//line gocommon.w:1207
 
 func show_stats()bool{
 return flags['s']
 }
 
 /*:78*//*79:*/
-//line common.w:1213
+//line gocommon.w:1213
 
 func show_happiness()bool{
 return flags['h']
 }
 
 /*:79*//*82:*/
-//line common.w:1249
+//line gocommon.w:1249
 
 func scan_args(){
 dot_pos:=-1
@@ -1397,7 +1397,7 @@ for i:=1;i<len(os.Args);i++{
 arg:=os.Args[i]
 if(arg[0]=='-'||arg[0]=='+')&&len(arg)> 1{
 /*86:*/
-//line common.w:1346
+//line gocommon.w:1346
 
 {
 if arg[0]=='-'{
@@ -1411,7 +1411,7 @@ flags[arg[i]]= flag_change
 }
 
 /*:86*/
-//line common.w:1262
+//line gocommon.w:1262
 
 }else{
 name_pos= 0
@@ -1426,7 +1426,7 @@ name_pos= j+1
 }
 if!found_web{
 /*83:*/
-//line common.w:1297
+//line gocommon.w:1297
 
 {
 if dot_pos==-1{
@@ -1444,11 +1444,11 @@ found_web= true
 }
 
 /*:83*/
-//line common.w:1275
+//line gocommon.w:1275
 
 }else if!found_change{
 /*84:*/
-//line common.w:1313
+//line gocommon.w:1313
 
 {
 if arg[0]=='-'{
@@ -1464,11 +1464,11 @@ found_change= true
 }
 
 /*:84*/
-//line common.w:1277
+//line gocommon.w:1277
 
 }else if!found_out{
 /*85:*/
-//line common.w:1327
+//line gocommon.w:1327
 
 {
 if dot_pos==-1{
@@ -1489,7 +1489,7 @@ found_out= true
 }
 
 /*:85*/
-//line common.w:1279
+//line gocommon.w:1279
 
 }else{
 /*164:*/
@@ -1501,7 +1501,7 @@ fatal("! Usage: gotangle [options] webfile[.w] [{changefile[.ch]|-} [outfile[.go
 }
 
 /*:164*/
-//line common.w:1281
+//line gocommon.w:1281
 
 }
 }
@@ -1516,13 +1516,13 @@ fatal("! Usage: gotangle [options] webfile[.w] [{changefile[.ch]|-} [outfile[.go
 }
 
 /*:164*/
-//line common.w:1286
+//line gocommon.w:1286
 
 }
 }
 
 /*:82*//*89:*/
-//line common.w:1374
+//line gocommon.w:1374
 
 func xisxdigit(r rune)bool{
 if unicode.IsDigit(r){
@@ -2311,7 +2311,7 @@ continue
 }
 mistake:
 /*90:*/
-//line common.w:1395
+//line gocommon.w:1395
 
 switch c{
 case'/':
