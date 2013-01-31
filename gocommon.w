@@ -1,10 +1,10 @@
-% This file is part of GOWEB.
-% This program by Alexander Sychev 
-% is based on a program CWEB by Silvio Levy and Donald E. Knuth
+% This file is part of GOWEB Version 0.5 - January 2013
+% Author Alexander Sychev
+% GOWEB is based on program CWEB Version 3.64 - February 2002,
+% Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Version 0.5 --- January 2013
+% Copyright (C) 2013 Alexander Sychev
 
-% Copyright (C) 2012 Alexander Sychev
 
 % Permission is granted to make and distribute verbatim copies of this
 % document provided that the copyright notice and this permission notice

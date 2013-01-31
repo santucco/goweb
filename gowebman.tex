@@ -49,17 +49,9 @@
 \null\vfill
 \centerline{\titlefont The {\ttitlefont GOWEB} System of
     Structured Documentation}
-\vskip 18pt\centerline{(Version 0.4 --- January 2013)}
-\vskip 32pt
-
-\centerline{\it Based on}
-\vskip 6pt
-\centerline{\it The CWEB System of
-    Structured Documentation}
-\vskip 6pt
-\centerline{\it by}
-\vskip 6pt
-\centerline{\it Donald E. Knuth and Silvio Levy}
+\vskip 18pt\centerline{(Version 0.5 --- January 2013)}
+\vskip 24pt
+\centerline{\authorfont Alexander Sychev}
 \vfill
 
 \noindent
@@ -68,8 +60,20 @@
 \noindent
 Acrobat Reader is a trademark of Adobe Systems Incorporated.
 
+\bigskip\noindent
+This document is based on the CWEB System of Structured Documentation
+(Version 3.64 - February 2002).
+
 \smallskip\noindent
-The electronic form is copyright \copyright\ 2013 by Alexander Sychev.
+The printed form of this manual is copyright \copyright\ 1994
+  by Addison-Wesley Publishing Company, Inc.  All rights reserved.
+
+\smallskip\noindent
+The electronic form is copyright \copyright\ 1987, 1990, 1993, 2000
+  by Silvio Levy and Donald E. Knuth.
+
+\smallskip\noindent
+Portions copyright \copyright\ 2013 Alexander Sychev
 
 \bigskip\noindent
 Permission is granted to make and distribute verbatim copies of the
@@ -86,15 +90,14 @@ of a permission notice identical to this one.
 Individuals may make copies of the documentation from the electronic files
 for their own personal use.
 
-\smallskip\noindent
-Internet page \.{http://www-cs-faculty.stanford.edu/\char`\~knuth/cweb.html}
-contains current info about \.{CWEB} and related topics.
-
 \pageno=0 \titletrue\eject
 
-\titletrue
 \centerline{\titlefont The {\ttitlefont GOWEB} System of
     Structured Documentation}
+\vskip 18pt\centerline{(Version 0.5 --- January 2013)}
+\vskip 24pt
+\centerline{\authorfont Alexander Sychev}
+\vfill
 
 \vskip 24pt plus 3pt minus 3pt
 \noindent
@@ -102,6 +105,13 @@ This document describes a version of Don Knuth's and Silvio Levy's \.{CWEB} syst
 adapted to \GO/ by Alexander Sychev.  Bug
 reports, suggestions and comments are  welcome, and
 should be sent to (\.{santucco@gmail.com}).
+
+I thank Donald E. Knuth, who created the \.{literate programming} paradigm,
+and both Donald E. Knuth and Silvio Levi who ``literate programmed'' the
+\.{CWEB} system - I doubt I could make this work if they wrote
+the system usual way without the \.{WEB}.
+Also I thank Afanasy Shipunov, who helped me with a legalization of my intellectual property
+of this work.
 
 \section Introduction.
 The philosophy behind \.{GOWEB} is
@@ -982,7 +992,7 @@ appendices D, E, and~F, which exhibit the complete source code for
 
 This appendix consists
 of four listings.  The first shows the \.{GOWEB} input that
-generated sections 12--15 of the file \.{common.w}, which contains
+generated sections 12--15 of the file \.{gocommon.w}, which contains
 routines common to \.{GOWEAVE} and \.{GOTANGLE}.
 Note that some of the lines are indented to show the program structure;
 the indentation is ignored by \.{GOWEAVE} and \.{GOTANGLE}, but users find
@@ -991,7 +1001,7 @@ that \.{GOWEB} files are quite readable if they have some such indentation.
 The second and third listings
 show corresponding parts
 of the \GO/ code output by \.{GOTANGLE} and of
-the corresponding \TEX/ code output by \.{GOWEAVE}, when run on \.{common.w}.
+the corresponding \TEX/ code output by \.{GOWEAVE}, when run on \.{gocommon.w}.
 The fourth listing shows how that output looks when printed out.
 
 \vskip 6pt
@@ -1080,12 +1090,12 @@ have been tangled into section~12.
 \verbatim
 
 /*:14*//*19:*/
-//line common.w:167
+//line gocommon.w:167
 
 func prime_the_change_buffer(){
 change_buffer= nil
 /*21:*/
-//line common.w:182
+//line gocommon.w:182
 
 for true{
 change_line++
@@ -1112,10 +1122,10 @@ err_print("!! Missing @x in change file")
 }
 
 /*:21*/
-//line common.w:170
+//line gocommon.w:170
 
 /*22:*/
-//line common.w:209
+//line gocommon.w:209
 
 for true{
 change_line++
@@ -1129,10 +1139,10 @@ break
 }
 
 /*:22*/
-//line common.w:171
+//line gocommon.w:171
 
 /*23:*/
-//line common.w:222
+//line gocommon.w:222
 
 {
 change_buffer= buffer
@@ -1140,7 +1150,7 @@ buffer= nil
 }
 
 /*:23*/
-//line common.w:172
+//line gocommon.w:172
 
 }
 
