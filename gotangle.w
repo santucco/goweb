@@ -604,9 +604,9 @@ case identifier:
 @ @<Case of a sec...@>=
 case section_number:
 	if cur_val>0 {
-		fmt.Fprintf(go_file,"/*%d:*/",cur_val)
+		fmt.Fprintf(go_file,"\n\n/*%d:*/\n\n",cur_val)
 	} else if cur_val<0 {
-		fmt.Fprintf(go_file,"/*:%d*/",-cur_val)
+		fmt.Fprintf(go_file,"\n\n/*:%d*/\n\n",-cur_val)
 	} 
 
 @ @<Case of a line...@>=
