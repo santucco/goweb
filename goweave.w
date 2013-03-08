@@ -4683,7 +4683,7 @@ if s,f1,ok:=one(ss,lpar); ok {
 }
 
 @ @<Cases for |unary_op|@>=
-if s,f,ok:=any(ss,asterisk,direct,add_op); ok {
+if s,f,ok:=any(ss,asterisk,direct,add_op,mul_op); ok {
 	return s,func() {
 		f()
 		reduce(ss,1,unary_op,0)
