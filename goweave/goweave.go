@@ -7625,7 +7625,7 @@ case unary_op:
 
 //line goweave.w:4685
 
-if s,f,ok:=any(ss,asterisk,direct,add_op);ok{
+if s,f,ok:=any(ss,asterisk,direct,add_op,mul_op);ok{
 return s,func(){
 f()
 reduce(ss,1,unary_op,0)
