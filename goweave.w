@@ -806,6 +806,8 @@ delimiters if they are protected by a backslash.
 				loc=0
 				break
 @.Input ended in middle of string@>
+			} else {
+				section_text = append(section_text, '\\', 'n')
 			}
 		}
 		l := loc
