@@ -3025,7 +3025,7 @@ func underline_import(s []interface{}) {
 		return
 	}
 	xref_switch=def_flag
-	underline_xref(app_id(id))
+	underline_xref(id_token(id_lookup(id,normal)))
 }
 
 @ @<Cases for |ImportSpec|@>=
