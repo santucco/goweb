@@ -1091,15 +1091,25 @@ of the string itself, and |loc| to the position just after the ending delimiter.
 @<Scan a verbatim string@>= {
 	id_first:=loc
 	loc++
-	for loc<len(buffer) && loc+1<len(buffer) && (buffer[loc]!='@@' || buffer[loc+1]!='>') {
+	for loc<len(buffer) {
+		if buffer[loc]!='@@' {
+			loc++
+			continue
+		}
 		loc++
+		if loc==len(buffer) {
+			break
+		}
+		if buffer[loc]=='>' {
+			break
+		}
 	}
 	if loc>=len(buffer) {
 		err_print("! Verbatim string didn't end")
 	}
 	@.Verbatim string didn't end@>
-	id=buffer[id_first:loc]
-	loc+=2
+	id=buffer[id_first:loc-1]
+	loc+=1
 	return strs
 }
 
