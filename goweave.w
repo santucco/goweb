@@ -436,7 +436,6 @@ scanning routines.
 @ @<Constants@>=
 const (
 	ignore rune = 00 /* control code of no interest to \.{GOWEAVE} */
-	verbatim rune = 02 /* takes the place of extended ASCII \.{\char2} */
 	underline rune = '\n' /* this code will be intercepted without confusion */
 	noop rune = 0177 /* takes the place of ASCII delete */
 	xref_roman rune = 0213 /* control code for `\.{@@\^}' */
@@ -451,6 +450,7 @@ const (
 	big_line_break rune = 0224 /* control code for `\.{@@\#}' */
 	no_line_break rune = 0225 /* control code for `\.{@@+}' */
 	pseudo_semi rune = 0226 /* control code for `\.{@@;}' */
+	verbatim rune = 0227 /* control code for `\.{@@=}' */
 	trace rune = 0232 /* control code for `\.{@@0}', `\.{@@1}' and `\.{@@2}' */
 	format_code rune = 0235 /* control code for `\.{@@f}' and `\.{@@s}' */
 	begin_code rune = 0237 /* control code for `\.{@@c}' */
@@ -2061,6 +2061,7 @@ cat_name[0]="zero"
 cat_name[direct]="'<-'"
 cat_name[plus_plus]="'++'"
 cat_name[minus_minus]="'--'"
+cat_name[verbatim]="verbatim"
 
 @ This code allows \.{GOWEAVE} to display its parsing steps.
 
@@ -5130,10 +5131,7 @@ case and_not:
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
 \TEX/ will print them properly.
-There is a bug in the code below: the constant |verbatim| conflicts with the constant |StructType|,
-so I use |constant| instead of |verbatim|.
 @^special string characters@>
-
 
 @<Append a string or...@>=
 count:= -1 
@@ -5146,9 +5144,7 @@ if next_control==constant {
 	tok_mem=append(tok_mem,"\\.{"@q}@>)
 @.\\.@>
 } else {
-	next_control=constant
 	tok_mem=append(tok_mem,"\\vb{"@q}@>)
-	@^bug, known@>
 }
 @.\\vb@>
 for i:=0; i < len(id); {
