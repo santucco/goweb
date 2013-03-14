@@ -975,15 +975,25 @@ We also set |loc| to the position just after the ending delimiter.
 @<Scan a verbatim string@>= {
 	id_first:=loc
 	loc++
-	for loc + 1 < len(buffer) && ( buffer[loc]!='@@' || buffer[loc+1]!='>') {
+	for loc<len(buffer) {
+		if buffer[loc]!='@@' {
+			loc++
+			continue
+		}
 		loc++
+		if loc==len(buffer) {
+			break
+		}
+		if buffer[loc]=='>' {
+			break
+		}
 	}
 	if loc>=len(buffer) {
 		err_print("! Verbatim string didn't end")
 @.Verbatim string didn't end@>
 	}
-	id = buffer[id_first:loc]
-	loc+=2
+	id = buffer[id_first:loc-1]
+	loc+=1
 	return verbatim
 }
 
@@ -5120,7 +5130,10 @@ case and_not:
 
 @ Many of the special characters in a string must be prefixed by `\.\\' so that
 \TEX/ will print them properly.
+There is a bug in the code below: the constant |verbatim| conflicts with the constant |StructType|,
+so I use |constant| instead of |verbatim|.
 @^special string characters@>
+
 
 @<Append a string or...@>=
 count:= -1 
@@ -5133,7 +5146,9 @@ if next_control==constant {
 	tok_mem=append(tok_mem,"\\.{"@q}@>)
 @.\\.@>
 } else {
+	next_control=constant
 	tok_mem=append(tok_mem,"\\vb{"@q}@>)
+	@^bug, known@>
 }
 @.\\vb@>
 for i:=0; i < len(id); {
