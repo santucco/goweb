@@ -35,7 +35,7 @@
 
 \def\lheader{\mainfont\the\pageno\hfill\sc\runninghead\hfill}
 \def\rheader{\hfill\sc\runninghead\hfill\mainfont\the\pageno}
-\def\runninghead{{\tentt GOWEB} USER MANUAL (VERSION 0.5)}
+\def\runninghead{{\tentt GOWEB} USER MANUAL (VERSION 0.6)}
 
 % This verbatim mode assumes that ! marks are !! in the text being copied.
 \def\verbatim{\begingroup
@@ -49,7 +49,7 @@
 \null\vfill
 \centerline{\titlefont The {\ttitlefont GOWEB} System of
     Structured Documentation}
-\vskip 18pt\centerline{(Version 0.5 --- January 2013)}
+\vskip 18pt\centerline{(Version 0.6 --- Mart 2013)}
 \vskip 24pt
 \centerline{\authorfont Alexander Sychev}
 \vfill
@@ -286,8 +286,9 @@ approximation to the text of the program. (There should be at least
 one unnamed section, otherwise there will be no program.) Then all section
 names that appear in the first-order approximation are replaced by the \GO/
 parts of the corresponding sections, and this substitution process
-continues until no section names remain. All comments are removed, because
-the \GO/ program is intended only for the eyes of the \GO/ compiler.
+continues until no section names remain. In contrast with \.{CTANGLE} all comments
+are left to produce compatibility with \.{godoc} - a standard documentation tool
+of \GO/.
 
 If the same name has been given to more than one section, the \GO/ text
 for that name is obtained by putting together all of the \GO/ parts in

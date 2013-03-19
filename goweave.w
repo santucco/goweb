@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.5 - January 2013
+% This file is part of GOWEB Version 0.6 - Mart 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -28,11 +28,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.5)}
+\def\title{GOWEAVE (Version 0.6)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.5)}
+	\centerline{(Version 0.6)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -60,7 +60,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.5)\n"
+const banner = "This is GOWEAVE (Version 0.6)\n"
 
 @
 @c
@@ -2100,7 +2100,7 @@ $10n$;
 comes from \GO/ text between \pb\ signs; |break_space| and |force| and
 |big_force| become single spaces in this mode. The translation of other
 \GO/ texts results in \TEX/ control sequences \.{\\1}, \.{\\2},
-\.{\\3}, \.{\\4}, \.{\\5}, \.{\\6}, \.{\\7}, \.{\\8}
+\.{\\3}, \.{\\4}, \.{\\5}, \.{\\6}, \.{\\7}
 corresponding respectively to
 |indent|, |outdent|, |opt|, |backup|, |break_space|, |force|,
 |big_force|.
@@ -5262,7 +5262,18 @@ func outer_parse() {
 			Go_parse(ignore)
 		} else {
 			is_long_comment:=(next_control==begin_comment)
-			tok_mem=append(tok_mem,cancel,inserted)
+			tok_mem=append(tok_mem,inserted)
+			// checking if a comment is placed at start of the line
+			s:=true
+			for i:=0; i<loc-2; i++ {
+				if !unicode.IsSpace(buffer[i]) {
+					s=false
+					break
+				}
+			}
+			if s {
+				tok_mem=append(tok_mem,force)
+			}
 			if is_long_comment {
 				tok_mem=append(tok_mem,"\\C{"@q}@>)
 @.\\C@>
@@ -5270,7 +5281,8 @@ func outer_parse() {
 				tok_mem=append(tok_mem,"\\SHC{"@q}@>)
 			}
 @.\\SHC@>
-			bal,tok_mem:=copy_comment(is_long_comment,1,tok_mem)  /* brace level in comment */
+			var bal int
+			bal,tok_mem=copy_comment(is_long_comment,1,tok_mem)  /* brace level in comment */
 			next_control=ignore
 			for bal>0 {
 				p:=tok_mem
@@ -5292,7 +5304,13 @@ func outer_parse() {
 					bal=0 /* an error has been reported */
 				}
 			}
-			tok_mem=append(tok_mem,force)
+			// checking if the comment is a last entity in the line
+			for loc<len(buffer) && unicode.IsSpace(buffer[loc]) {
+				loc++
+			}
+			if loc>=len(buffer) {
+				tok_mem=append(tok_mem,force)
+			}
 			app_scrap(insert,no_math,tok_mem...)
 				/* the full comment becomes a scrap */
 		}
