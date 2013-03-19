@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.5 - January 2013
+% This file is part of GOWEB Version 0.6 - Mart 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -22,11 +22,11 @@
 \mathchardef\RA="3221 % right arrow
 \mathchardef\BA="3224 % double arrow
 
-\def\title{GOTANGLE (Version 0.5)}
+\def\title{GOTANGLE (Version 0.6)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont GOTANGLE} processor}
   \vskip 15pt
-  \centerline{(Version 0.5)}
+  \centerline{(Version 0.6)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -53,7 +53,7 @@ The ``banner line'' defined here should be changed whenever \.{GOTANGLE}
 is modified.
 
 @<Constants@>=
-banner = "This is GOTANGLE (Version 0.5)\n"
+banner = "This is GOTANGLE (Version 0.6)\n"
 
 @
 @c
@@ -307,7 +307,7 @@ restart:
 	}	
 	a:=cur_state.byte_field[0]
 	cur_state.byte_field = cur_state.byte_field[1:]
-	if out_state==verbatim && a!=strs && a!=constant && a!='\n' {
+	if out_state==verbatim && a!=strs && a!=constant && a!=comment && a!='\n' {
 		fmt.Fprintf(go_file, "%c", a)
 	} else if a<unicode.UpperLower { 
 		out_char(a)
@@ -534,6 +534,12 @@ func out_char(cur_char rune) {
 			} else {
 				out_state=verbatim 
 			}
+		case comment: 
+			if out_state==verbatim {
+				out_state=normal
+			} else {
+				out_state=verbatim 
+			}
 		case '/': 
 			fmt.Fprint(go_file,"/")
 			out_state=post_slash
@@ -722,66 +728,58 @@ func skip_ahead() rune {
 	return 0
 }
 
-@ The |skip_comment| procedure reads through the input at somewhat high
-speed in order to pass over comments, which \.{GOTANGLE} does not transmit
-to the output. If the comment is introduced by \.{/*}, |skip_comment|
-proceeds until finding the end-comment token \.{*/} or a newline; in the
-latter case |skip_comment| will be called again by |get_next|, since the
-comment is not finished.  This is done so that each newline in the
-\GO/ part of a section is copied to the output; otherwise the \&{\#line}
-commands inserted into the \GO/ file by the output routines become useless.
+@ The |copy_comment| procedure reads through the input at somewhat high
+speed in order to pass over comments. 
+If the comment is introduced by \.{/*}, |copy_comment| proceeds until finding 
+the end-comment token \.{*/} or a newline; in the latter case the newline 
+will be added to the comment.
 On the other hand, if the comment is introduced by \.{//} (i.e., if it
 is a \GO/ ``short comment''), it always is simply delimited by the next
 newline. The boolean argument |is_long_comment| distinguishes between
 the two types of comments.
 
-If |skip_comment| comes to the end of the section, it prints an error message.
+If |copy_comment| comes to the end of the section, it prints an error message.
 No comment, long or short, is allowed to contain `\.{@@\ }' or `\.{@@*}'.
 
-@<Global...@>=
-var comment_continues bool=false /* are we scanning a comment? */
+@<Constants@>=
+comment = 0213
 
 @
 @c
- /* skips over comments */
-func skip_comment(is_long_comment bool) bool {
+func copy_comment(is_long_comment bool) rune {
+	section_text=section_text[0:0]
 	for true {
 		if loc>=len(buffer) {
-			if is_long_comment {
-				if get_line() { 
-					comment_continues=true
-					return comment_continues
-				} else {
-					err_print("! Input ended in mid-comment")
-					@.Input ended in mid-comment@>
-					comment_continues=false
-					return comment_continues
-				}
-			} else {
-				comment_continues=false
-				return comment_continues
+			if !is_long_comment {
+				break
+			}
+			section_text=append(section_text, '\n')
+			if !get_line() {
+				err_print("! Input ended in mid-comment")
+				@.Input ended in mid-comment@>
+				break
 			}
 		}
 		c:=buffer[loc]
-		loc++
-		if is_long_comment && c=='*' && loc < len(buffer) && buffer[loc]=='/' {
-			loc++
-			comment_continues=false
-			return comment_continues
+		if is_long_comment && c=='*' && loc+1<len(buffer) && buffer[loc+1]=='/' {
+			section_text=append(section_text, '*', '/')
+			loc+=2
+			break
 		}
 		if c=='@@' {
-			if buffer[loc] < int32(len(ccode)) && ccode[buffer[loc]]==new_section {
+			if loc+1<len(buffer) && buffer[loc+1]<int32(len(ccode)) && ccode[buffer[loc+1]]==new_section {
 				err_print("! Section name ended in mid-comment")
-				loc--
 				@.Section name ended in mid-comment@>
-				comment_continues=false
-				return comment_continues
+				break
 			} else { 
 				loc++
 			}
 		}
+		section_text=append(section_text, c)
+		loc++
 	}
-	return false
+	id=section_text
+	return comment
 }
 
 @* Inputting the next token.
@@ -815,14 +813,8 @@ func get_next() rune {
 		if loc + 1 < len(buffer) {
 			nc=buffer[loc+1]
 		}
-		if comment_continues || (c=='/' && (nc=='*' || nc=='/')) {
-			skip_comment(comment_continues||nc=='*')
-			/* scan to end of comment or newline */
-			if comment_continues {
-				return '\n'
-			} else {
-				continue
-			}
+		if  c=='/' && (nc=='*' || nc=='/') {
+			return copy_comment(nc=='*')
 		}
 		loc++
 		if unicode.IsDigit(c) || c=='.' {
@@ -1210,6 +1202,8 @@ case section_name:
 	}
 case constant, strs:
 	@<Copy a string or verbatim construction or numerical constant@>
+case comment:
+	@<Copy a comment@>
 case ord:
 	@<Copy an ASCII constant@>
 case definition, format_code, begin_code: 
@@ -1257,6 +1251,20 @@ case new_section:
 		i++
 	}
 	tok_mem = append(tok_mem, a)
+
+@ Comments are copied as is except some symbols
+@<Copy a comment@>=
+	tok_mem = append(tok_mem, a) /* |comment| */
+	for i := 0; i < len(id); { 
+		if id[i]=='|' {
+			i++
+			continue
+		}
+		tok_mem = append(tok_mem, id[i])
+		i++
+	}
+	tok_mem = append(tok_mem, a) /* |comment| */
+	
 
 @ @<Copy an ASCII constant@>= 
 {
