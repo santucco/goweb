@@ -2068,7 +2068,7 @@ cat_name[verbatim]="verbatim"
 @c
 /* symbolic printout of a category */
 func print_cat(c int32) {
-	fmt.Printf("%s(%v)", cat_name[c],c)
+	fmt.Printf("%s", cat_name[c])
 }
 
 @ The token lists for translated \TEX/ output contain some special control
@@ -4392,6 +4392,11 @@ for{
 	ch<-true;
 }
 
+@/@@
+@/@@@+c
+for _,err:=f.Read(b[:]); err==nil; _,err=f.Read(b[:]) {}
+
+
 @ @<Cases for |DeferStmt|@>=
 if s,f,ok:=sequence(ss,defer_token,Expression); ok {
 	return s,func() {
@@ -4772,9 +4777,9 @@ func reduce(ss []scrap, k int, c rune, s ...interface{}) {
 					}
 					cur_mathness=no_math
 				} else {
-					if ss[0].mathness==maybe_math { 
+					if cur_mathness==maybe_math { 
 						init_mathness=yes_math
-					} else if ss[0].mathness==no_math { 
+					} else if cur_mathness==no_math { 
 						trans=append(trans,"${}") 
 					}
 					cur_mathness=yes_math
