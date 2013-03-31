@@ -653,24 +653,7 @@ defined, or where it is explained in some special way, from the sections
 where it is used. A~reserved word or an identifier of length one will not
 be indexed except for underlined entries. An `\.{@!}' is implicitly inserted
 by \.{GOWEAVE} when an identifier is being defined or declared in \GO/
-code; for example, the definition
-$$\hbox{\&{int} \\{array}[\\{max\_dim}], \\{count}${}=\\{old\_count};$}$$
-makes the names \\{array} and \\{count} get an underlined entry in the
-index.  Statement labels, function definitions like
-\\{main}(\&{int}~\\{argc},\,\&{char}~$*$\\{argv}[\,]),
-and \&{typedef} definitions also
-imply underlining. An old-style
-function definition (without prototyping) doesn't define its arguments;
-the arguments will, however, be considered to be defined
-(i.e., their index entries will be underlined) if their types are
-declared before the body of the function in the usual way
-(e.g., `\&{int}~\\{argc}; \&{char}~${*}\\{argv}[\,]$; $\{\,\ldots\,\}$').
-Thus \.{@!} is not needed very often, except in unusual constructions
-or in cases like
-$$\.{enum boolean \{@!false, @!true\};}$$
-here \.{@!} gives the best results because individual constants enumerated
-by \.{enum} are not automatically underlined in the index at their
-point of definition.
+code.
 
 \subsec
 We now turn to control codes that affect only the operation of
