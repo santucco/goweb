@@ -775,8 +775,7 @@ Furthermore the \\{web\_file} itself can be a combination of
 several files.  When either \.{GOWEAVE} or \.{GOTANGLE} is reading a file and
 encounters the control code \.{@i} at the beginning of a line, it
 interrupts normal reading and starts looking at the file named after the
-\.{@i}, much as the \GO/ preprocessor does when it encounters an \.{\#include}
-line.  After the included file has been entirely read, the program
+\.{@i}.  After the included file has been entirely read, the program
 goes back to the next line
 of the original file.  The file name following \.{@i} can be
 surrounded by \." characters, but such delimiters are
@@ -827,9 +826,7 @@ necessary, depending on the fonts used and the desired page width. For
 best results it is wise to avoid enclosing long \GO/ texts in \pb, since the
 indentation and line breaking codes are omitted when the \pb\ text is
 translated from \GO/ to \TEX/. Stick to simple expressions or
-statements.  If a \GO/ preprocessor command is enclosed in \pb,
-the \.\# that introduces it must be at the beginning of a line,
-or \.{GOWEAVE} won't print it correctly.
+statements.
 
 5. Comments are not permitted in \pb\ text. After a `\.|'
 signals the change from \TEX/ text to \GO/ text, the next `\.|' that is
