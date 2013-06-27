@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.6 - March 2013
+% This file is part of GOWEB Version 0.7 - June 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -22,11 +22,11 @@
 \mathchardef\RA="3221 % right arrow
 \mathchardef\BA="3224 % double arrow
 
-\def\title{GOTANGLE (Version 0.6)}
+\def\title{GOTANGLE (Version 0.7)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont GOTANGLE} processor}
   \vskip 15pt
-  \centerline{(Version 0.6)}
+  \centerline{(Version 0.7)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -53,7 +53,7 @@ The ``banner line'' defined here should be changed whenever \.{GOTANGLE}
 is modified.
 
 @<Constants@>=
-banner = "This is GOTANGLE (Version 0.6)\n"
+banner = "This is GOTANGLE (Version 0.7)\n"
 
 @
 @c
@@ -692,6 +692,8 @@ var ccode[256] rune/* meaning of a char following \.{@@} */
 	ccode['.']=control_text
 	ccode['t']=control_text
 	ccode['T']=control_text
+	ccode['r']=control_text
+	ccode['R']=control_text
 	ccode['q']=control_text
 	ccode['Q']=control_text
 	ccode['&']=join

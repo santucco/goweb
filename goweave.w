@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.6 - March 2013
+% This file is part of GOWEB Version 0.7 - June 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -25,14 +25,15 @@
 \mathchardef\BA="3224 % double arrow
 \def\({} % ) kludge for alphabetizing certain section names
 \def\TeXxstring{\\{\TEX/\_string}}
+\def\rawxTeXxstring{\\{raw\_\TEX/\_string}}
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.6)}
+\def\title{GOWEAVE (Version 0.7)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.6)}
+	\centerline{(Version 0.7)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -60,7 +61,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.6)\n"
+const banner = "This is GOWEAVE (Version 0.7)\n"
 
 @
 @c
@@ -451,6 +452,7 @@ const (
 	no_line_break rune = 0225 /* control code for `\.{@@+}' */
 	pseudo_semi rune = 0226 /* control code for `\.{@@;}' */
 	verbatim rune = 0227 /* control code for `\.{@@=}' */
+	raw_TeX_string rune = 0231 /* control code for `\.{@@r}' */
 	trace rune = 0232 /* control code for `\.{@@0}', `\.{@@1}' and `\.{@@2}' */
 	format_code rune = 0235 /* control code for `\.{@@f}' and `\.{@@s}' */
 	begin_code rune = 0237 /* control code for `\.{@@c}' */
@@ -459,6 +461,7 @@ const (
 )
 
 @ @f TeX_string TeX
+@ @f raw_TeX_string TeX
 
 @ Control codes are converted to \.{GOWEAVE}'s internal
 representation by means of the table |ccode|.
@@ -491,6 +494,8 @@ ccode['p']=begin_code
 ccode['P']=begin_code
 ccode['t']=TeX_string
 ccode['T']=TeX_string
+ccode['r']=raw_TeX_string
+ccode['R']=raw_TeX_string
 ccode['q']=noop
 ccode['Q']=noop
 ccode['&']=join
@@ -618,7 +623,7 @@ slight modifications; |id| is set.
 \yskip\noindent Furthermore, some of the control codes cause
 |get_next| to take additional actions:
 
-\yskip\hang |xref_roman|, |xref_wildcard|, |xref_typewriter|, |TeX_string|,
+\yskip\hang |xref_roman|, |xref_wildcard|, |xref_typewriter|, |TeX_string|, |raw_TeX_string|,
 |verbatim|: The values of |id| will have been set to
 the slice of the buffer.
 
@@ -844,7 +849,7 @@ whether there is more work to do.
 		case trace: 
 			tracing=c-'0'
 			continue
-		case xref_roman, xref_wildcard, xref_typewriter, noop, TeX_string: 
+		case xref_roman, xref_wildcard, xref_typewriter, noop, TeX_string, raw_TeX_string: 
 			c=ccode[c]
 			skip_restricted()
 			return c
@@ -4979,6 +4984,8 @@ switch (next_control) {
 		app_id(id)
 	case TeX_string:
 		@<Append a \TEX/ string@>
+	case raw_TeX_string:
+		@<Append a raw \TEX/ string@>
 	case '/':
 		app_scrap(mul_op,yes_math,next_control)
 		next_control=mul_op
@@ -5187,7 +5194,7 @@ for i:=0; i < len(id); {
 tok_mem=append(tok_mem,@q{@>'}')
 app_scrap(next_control,maybe_math,tok_mem...)
 
-@ 
+@
 @<Append a \TEX/ string@>=
 tok_mem:=append([]interface{}{},"\\hbox{"@q}@>)
 for i:=0; i < len(id);{ 
@@ -5199,6 +5206,19 @@ for i:=0; i < len(id);{
 }
 tok_mem=append(tok_mem,@q{@>'}')
 app_scrap(insert,no_math,tok_mem...)
+
+@
+@<Append a raw \TEX/ string@>=
+tok_mem:=make([]interface{}, 0, len(id))
+for i:=0; i < len(id);{ 
+	if id[i]=='@@' {
+		i++
+	}
+	tok_mem=append(tok_mem,id[i])
+	i++
+}
+app_scrap(insert,no_math,tok_mem...)
+
 
 @ The function |app_id| appends an identifier |id| to the
 token list.
@@ -5954,10 +5974,10 @@ for {
 			output_Go()
 		case '@@': 
 			out('@@')
-		case TeX_string, noop, xref_roman, xref_wildcard, xref_typewriter, section_name: 
+		case TeX_string, raw_TeX_string, noop, xref_roman, xref_wildcard, xref_typewriter, section_name: 
 			loc-=2
 			next_control=get_next() /* skip to \.{@@>} */
-			if next_control==TeX_string {
+			if next_control==TeX_string || next_control==raw_TeX_string {
 				err_print("! TeX string should be in Go text only")
 @.TeX string should be...@>
 			}

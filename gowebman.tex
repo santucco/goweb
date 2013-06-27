@@ -35,7 +35,7 @@
 
 \def\lheader{\mainfont\the\pageno\hfill\sc\runninghead\hfill}
 \def\rheader{\hfill\sc\runninghead\hfill\mainfont\the\pageno}
-\def\runninghead{{\tentt GOWEB} USER MANUAL (VERSION 0.6)}
+\def\runninghead{{\tentt GOWEB} USER MANUAL (VERSION 0.7)}
 
 % This verbatim mode assumes that ! marks are !! in the text being copied.
 \def\verbatim{\begingroup
@@ -49,7 +49,7 @@
 \null\vfill
 \centerline{\titlefont The {\ttitlefont GOWEB} System of
     Structured Documentation}
-\vskip 18pt\centerline{(Version 0.6 --- March 2013)}
+\vskip 18pt\centerline{(Version 0.7 --- June 2013)}
 \vskip 24pt
 \centerline{\authorfont Alexander Sychev}
 \vfill
@@ -634,6 +634,9 @@ be put into a \TEX/ \.{\\hbox} and formatted along with the neighboring
 for various purposes within \.{GOWEAVE}. For example, you can make comments
 that mix \GO/ and classical mathematics, as in `$\\{size}<2^{15}$', by
 typing `\.{|size < 2@t\$\^\{15\}\$@>|}'.
+
+\@r [MCc] $*$ This control code behaves like \.{@t} except the control text
+will be put without a \TEX/ \.{\\hbox}.
 
 \@= [MCc] $*$ The control text that follows will
 be passed verbatim to the \GO/ program.
