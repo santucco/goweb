@@ -2640,6 +2640,14 @@ const a, b, c = 3, 4, "foo"
 @/@@
 @/@@@+c
 const u, v float32 = 0, 3
+@/@@
+@/@@@+c
+const (
+	a t = 1<<iota
+	b
+	c
+)
+
 
 @ @<Cases for |TypeDecl|@>= 
 if s,f1,ok:=one(ss,type_token); ok {
@@ -2925,6 +2933,12 @@ if s,f1,ok:=one(ss,IdentifierList); ok {
 				reduce(ss,3,ConstSpec,0,break_space,1,break_space,2,force)
 			},true
 		}
+	} else if s,f2,ok:=one(s,semi); ok{
+		return s,func() {
+			f2()
+			f1()
+			reduce(ss,2,ConstSpec,0,1,force)
+		},true	
 	}
 } else if s,f,ok:=one(ss,section_scrap); ok {
 	return s,func() {
