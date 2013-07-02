@@ -1096,7 +1096,7 @@ has special line-numbering conventions.
 @<Print error location based on input buffer@>=
 {
 	if changing && include_depth==change_depth {
-		fmt.Printf(". (change file %s:%d)\n", file_name[include_depth], change_line)
+		fmt.Printf(". (change file %s:%d)\n", change_file_name, change_line)
 	} else if include_depth==0 && len(line) > 0 { 
 		fmt.Printf(". (%s:%d)\n", file_name[include_depth], line[include_depth])
 	} else if len(line) > include_depth{
