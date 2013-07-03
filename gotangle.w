@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.7 - June 2013
+% This file is part of GOWEB Version 0.8 - July 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -22,11 +22,11 @@
 \mathchardef\RA="3221 % right arrow
 \mathchardef\BA="3224 % double arrow
 
-\def\title{GOTANGLE (Version 0.7)}
+\def\title{GOTANGLE (Version 0.8)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont GOTANGLE} processor}
   \vskip 15pt
-  \centerline{(Version 0.7)}
+  \centerline{(Version 0.8)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -53,7 +53,7 @@ The ``banner line'' defined here should be changed whenever \.{GOTANGLE}
 is modified.
 
 @<Constants@>=
-banner = "This is GOTANGLE (Version 0.7)\n"
+banner = "This is GOTANGLE (Version 0.8)\n"
 
 @
 @c
@@ -341,9 +341,7 @@ or the \GO/ text may have been associated with a different name by mistake.
 	if name_dir[c].equiv!=-1 {
 		push_level(c)
 	} else if a!=0 {
-		fmt.Printf("\n! Not present: <")
-	print_section_name(c)
-		err_print(">")
+		err_print("! Not present: <%s>",sprint_section_name(c))
 		@.Not present: <section name>@>
 	}
 	goto restart
@@ -437,8 +435,7 @@ func phase_two () {
 	line[include_depth]=1
 	@<Initialize the output stacks@>
 	if text_info[0].text_link==0 && len(output_files) == 0 {
-		fmt.Print("\n! No program text was specified.")
-		mark_harmless()
+		warn_print("! No program text was specified.")
 		@.No program text...@>
 	} else {
 		if len(output_files) == 0 {

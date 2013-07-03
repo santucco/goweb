@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.7 - June 2013
+% This file is part of GOWEB Version 0.8 - July 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -338,8 +338,7 @@ if xyz_code=='x' || xyz_code=='z' {
 } else if xyz_code=='y' {
 	if n>0 {
 		loc=2
-		fmt.Printf("\n! Hmm... %d ",n)
-		err_print("of the preceding lines failed to match")
+		err_print("! Hmm... %d of the preceding lines failed to match",n)
 		@.Hmm... n of the preceding...@>
 	}
 	change_depth=include_depth
@@ -707,10 +706,10 @@ and if it too is a prefix (ending with blank) its |llink| will point
 to additional chunks in the same way. Null links are represented by -1.
 
 @c
-func print_section_name(p int32) {
+func get_section_name(p int32) (dest []rune, complete bool) {
 	q := p+1
 	for p!=-1 {
-		fmt.Print(string(name_dir[p].name[1:]))
+		dest = append(dest,name_dir[p].name[1:]...)
 		if name_dir[p].ispref {
 			p=name_dir[q].llink
 			q=p
@@ -719,36 +718,33 @@ func print_section_name(p int32) {
 			q=-2
 		}
 	}
+	complete=true
 	if q != -2 {
-		fmt.Print("...") /* complete name not yet known */
-	}
+		complete=false/* complete name not yet known */
+	}	
+	return
 }
 
 @
 @c
-func sprint_section_name(p int32) []rune{
-	q := p+1
-	var dest []rune
-	for p!=-1 {
-		dest = append(dest,name_dir[p].name[1:]...)
-		if name_dir[p].ispref {
-			p=name_dir[q].llink
-			q=p
-		} else {
-			p=-1
-		}
+func sprint_section_name(p int32) string {
+	s,c:=get_section_name(p)
+	str:=string(s)
+	if !c {
+		str+="..."/* complete name not yet known */
 	}
-	return dest
+	return str
 }
 
 @
 @c
-func print_prefix_name(p int32) {
+func print_prefix_name(p int32) (str string) {
 	l := name_dir[p].name[0]
-	fmt.Print(string(name_dir[p].name[1:]))
+	str=fmt.Sprint(string(name_dir[p].name[1:]))
 	if int(l)<len(name_dir[p].name) {
-		fmt.Print("...")
+		str+="..."
 	}
+	return
 }
 
 @ When we compare two section names, we'll need a function 
@@ -897,12 +893,8 @@ for p != -1 { /* compare shortest prefix of |p| with new name */
 		}
 	} else { /* new name matches |p| */
 		if r!=-1 {  /* and also |r|: illegal */
-			fmt.Printf("\n! Ambiguous prefix: matches <")
+			err_print("! Ambiguous prefix: matches <%s>\n and <%s>", print_prefix_name(p), print_prefix_name(r))
 			@.Ambiguous prefix ... @>
-			print_prefix_name(p)
-			fmt.Printf(">\n and <")
-			print_prefix_name(r)
-			err_print(">")
 			return 0 /* the unsection */
 		}
     	r=p /* remember match */
@@ -930,10 +922,8 @@ switch cmp {
 	/* compare all of |r| with new name */
 	case prefix:
 		if !ispref {
-			fmt.Printf("\n! New name is a prefix of <")
+			err_print("! New name is a prefix of <%s>", sprint_section_name(r))
 			@.New name is a prefix...@>
-			print_section_name(r)
-			err_print(">")
 		} else if name_len<int(name_dir[r].name[0]){
 			name_dir[r].name[0]=int32(len(name) - first)
 		}
@@ -946,18 +936,12 @@ switch cmp {
 		}
 		return r
 	case bad_extension:
-		fmt.Printf("\n! New name extends <")
+		err_print("! New name extends <%s>",sprint_section_name(r))
 		@.New name extends...@>
-		print_section_name(r)
-		err_print(">")
 		return r
 	default: /* no match: illegal */
-		fmt.Printf("\n! Section name incompatible with <")
+		err_print("! Section name incompatible with <%s>,\n which abbreviates <%s>", print_prefix_name(r), sprint_section_name(r))
 		@.Section name incompatible...@>
-		print_prefix_name(r)
-		fmt.Printf(">,\n which abbreviates <")
-		print_section_name(r)
-		err_print(">")
 		return r
 }
 
@@ -1070,19 +1054,36 @@ if the string begins with |"!"|.
 
 @c
 /* prints `\..' and location of error message */
-func err_print(s string) { 
+func err_print(s string, a ...interface{}) { 
 	var l int /* pointers into |buffer| */
 	if len(s) > 0 && s[0] == '!' {
-		fmt.Printf("\n%s", s)
+		fmt.Fprintf(os.Stdout,"\n\n"+s, a...)
 	} else {
-		fmt.Printf("%s",s)
+		fmt.Fprintf(os.Stdout,"\n"+s, a...)
 	}
-	if len(file)> 0 && file[0] != nil {
+	if len(file)>0 && file[0]!=nil {
 		@<Print error location based on input buffer@>
 	}
 	os.Stdout.Sync()
 	mark_error()
 }
+
+@ The command `|warn_print("! Warning message")|' will report a warning to
+the user, by printing the warning message at the beginning of a new line.
+A newline is automatically supplied if the string begins with |"!"|.
+
+@c
+func warn_print(s string, a ...interface{}) { 
+	if len(s) > 0 && s[0] == '!' {
+		fmt.Fprintf(os.Stdout, "\n\n"+s, a...)
+	} else {
+		fmt.Fprintf(os.Stdout, "\n"+s, a...)
+	}
+	os.Stdout.Sync()
+	mark_harmless()
+}
+
+
 
 @ The error locations can be indicated by using the global variables
 |loc|, |line[include_depth]|, |file_name[include_depth]| and |changing|,

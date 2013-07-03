@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.7 - June 2013
+% This file is part of GOWEB Version 0.8 - July 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -29,11 +29,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.7)}
+\def\title{GOWEAVE (Version 0.8)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.7)}
+	\centerline{(Version 0.8)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -61,7 +61,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.7)\n"
+const banner = "This is GOWEAVE (Version 0.8)\n"
 
 @
 @c
@@ -1302,20 +1302,14 @@ func section_check(p int32) {
 			an_output=false
 		}
 		if xmem[cur_xref].num<def_flag {
-			fmt.Print("\n! Never defined: <")
-			print_section_name(p)
-			fmt.Print(">")
-			mark_harmless()
+			warn_print("! Never defined: <%s>",sprint_section_name(p))
 @.Never defined: <section name>@>
 		}
 		for cur_xref != 0 && xmem[cur_xref].num >=cite_flag {
 			cur_xref=xmem[cur_xref].xlink
 		}
 		if cur_xref==0 && !an_output {
-			fmt.Print("\n! Never used: <")
-			print_section_name(p)
-			fmt.Print(">")
-			mark_harmless()
+			warn_print("! Never used: <%s>", sprint_section_name(p))
 @.Never used: <section name>@>
 		}
 		section_check(name_dir[p].rlink)
@@ -1480,11 +1474,8 @@ line by putting a |'%'| just before the last character.
 
 @<Print warning message...@>=
 {
-	fmt.Printf("\n! Line had to be broken (output l. %d):\n",out_line)
+	warn_print("! Line had to be broken (output l. %d):\n%s\n", out_line, string(out_buf[1:out_ptr]))
 @.Line had to be broken@>
-	fmt.Fprint(os.Stdout, string(out_buf[1:out_ptr]))
-	fmt.Println()
-	mark_harmless()
 	flush_buffer(out_ptr-1,true,true)
 	return
 }
@@ -4922,19 +4913,17 @@ where appropriate.
 
 @ @<If semi-tracing, show the irreducible scraps@>=
 if len(scrap_info)>0 && (tracing & 1) == 1 {
-	fmt.Printf("\nIrreducible scrap sequence in section %d:",section_count)
-@.Irreducible scrap sequence...@>
-	mark_harmless()
+	s:=""
 	for i,_:=range scrap_info {
-		fmt.Printf(" ")
-		print_cat(scrap_info[i].cat)
+		s+=fmt.Sprintf(" %s", cat_name[scrap_info[i].cat])
 	}
+	warn_print("Irreducible scrap sequence in section %d:%s", section_count, s)
+@.Irreducible scrap sequence...@>
 }
 
 @ @<If tracing,...@>=
 if (tracing & 2) == 2 {
-	fmt.Printf("\nTracing after l. %d:\n",line[include_depth])
-	mark_harmless()
+	warn_print("Tracing after %s:%d:\n", file_name[include_depth], line[include_depth])
 @.Tracing after...@>
 }
 
@@ -5772,7 +5761,7 @@ input buffer and the translation process uses the end of the active
 }
 
 @ @<Output the text...@>=
-scratch:=sprint_section_name(cur_name) 
+scratch,_:=get_section_name(cur_name) 
 cur_section_name:=cur_name
 for i := 0; i < len(scratch); {
 	b=scratch[i]
@@ -5818,11 +5807,8 @@ for i := 0; i < len(scratch); {
 ii:= i
 i++
 if ii < len(scratch) && scratch[ii]!='@@' {
-	fmt.Print("\n! Illegal control code in section name: <")
+	err_print("! Illegal control code in section name: <%s>",sprint_section_name(cur_section_name))
 @.Illegal control code...@>
-	print_section_name(cur_section_name)
-	fmt.Print("> ")
-	mark_error()
 }
 
 @ The \GO/ text enclosed in \pb\ should not contain `\.{\v}' characters,
@@ -5835,11 +5821,8 @@ equals the delimiter that began the string being copied.
 var delim rune
 for {
 	if i>=len(scratch) {
-		fmt.Print("\n! Go text in section name didn't end: <")
+		err_print("! Go text in section name didn't end: <%s>", sprint_section_name(cur_section_name))
 @.Go text...didn't end@>
-		print_section_name(cur_section_name)
-		fmt.Print("> ")
-		mark_error()
 		break
 	}
 	b=scratch[i]
