@@ -88,7 +88,7 @@ const(
 
 //line gotangle.w:55
 
-banner= "This is GOTANGLE (Version 0.8)\n"
+banner= "This is GOTANGLE (Version 0.81)\n"
 
 
 

@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.8 - July 2013
+% This file is part of GOWEB Version 0.81 - September 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -29,11 +29,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.8)}
+\def\title{GOWEAVE (Version 0.81)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.8)}
+	\centerline{(Version 0.81)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -61,7 +61,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.8)\n"
+const banner = "This is GOWEAVE (Version 0.81)\n"
 
 @
 @c
@@ -2437,6 +2437,7 @@ code needs to be provided with a proper environment.
 				@<Cases for |ExprCaseClause|@>
 				@<Cases for |TypeCaseClause|@>
 				@<Cases for |CommClause|@>
+				@<Cases for |ElementList|@>
 		}
 		return ss,empty,false
 	} (scrap_info[pp:])
@@ -4200,6 +4201,11 @@ if s,f1,ok:=sequence(ss,CommCase,colon); ok {
 		call(f1)
 		reduce(ss,2+len(f2),CommClause,tok_mem...)
 	},true
+} else if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func() {
+		f()
+		reduce(ss,1,CommClause,0,force)
+	},true
 }
 
 @ @<Cases for |CommCase|@>=
@@ -4277,6 +4283,7 @@ default:
 @/@@
 @/@@@+c
 select {
+	@@<Case@@>
 	case c <- 0:  // note: no statement, no fallthrough, no folding of cases
 	case c <- 1:
 }
