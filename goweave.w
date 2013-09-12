@@ -1,4 +1,4 @@
-% This file is part of GOWEB Version 0.81 - September 2013
+% This file is part of GOWEB Version 0.82 - September 2013
 % Author Alexander Sychev
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
@@ -29,11 +29,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.81)}
+\def\title{GOWEAVE (Version 0.82)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.81)}
+	\centerline{(Version 0.82)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -61,7 +61,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.81)\n"
+const banner = "This is GOWEAVE (Version 0.82)\n"
 
 @
 @c
@@ -362,7 +362,7 @@ id_lookup([]rune("goto"),goto_token)
 id_lookup([]rune("if"),if_token)
 id_lookup([]rune("import"),import_token)
 id_lookup([]rune("interface"),interface_token)
-id_lookup([]rune("map"),Type)
+id_lookup([]rune("map"),map_token)
 id_lookup([]rune("package"),package_token)
 id_lookup([]rune("range"),range_token)
 id_lookup([]rune("return"),return_token)
@@ -3175,13 +3175,13 @@ if s,f,ok:=sequence(ss,asterisk,Type); ok {
 
 @ @<Cases for |Type|@>=
 if s,f,ok:=any(ss,@t\1@>@/
-				ArrayType,
+				ArrayType,@/
 				StructType,@/
 				PointerType,
 				FunctionType,@/
 				InterfaceType,
 				SliceType,@/
-				MapType,
+				MapType,@/
 				ChannelType,@/
 				QualifiedIdent@t\2@>); ok {
 	return s,func() {
@@ -3594,10 +3594,16 @@ if s,f1,ok:=any(ss,identifier,Expression); ok {
 		} 
 	}
 } 
-if s,f1,ok:=any(ss,Expression,LiteralValue); ok {
+if s,f,ok:=any(ss,Expression,LiteralValue); ok {
 	return s,func() {
-		f1()
+		f()
 		reduce(ss,1,Element,0)
+	},true
+} 
+if s,f,ok:=one(ss,section_scrap); ok {
+	return s,func(){
+		f()
+		reduce(ss,1,Element,0)	
 	},true
 }
 
@@ -3644,30 +3650,30 @@ if s,f1,ok:=one(ss,lbrace); ok {
 }
 
 @ @<Cases for |Statement|@>=
-if s,f,ok:=any(ss,
-				ImportDecl,
-				ConstDecl,
-				VarDecl,
-				TypeDecl,
-				LabeledStmt); ok {
+if s,f,ok:=any(ss,@t\1@>@/
+				ImportDecl,@/
+				ConstDecl,@/
+				VarDecl,@/
+				TypeDecl,@/
+				LabeledStmt @t\2@>); ok {
 	return s,func() {
 		f()
 		reduce(ss,1,Statement,0)
 	},true
 } else if s,f1,ok:=any(ss,@t\1@>@/
-				GoStmt,
+				GoStmt,@/
 				ReturnStmt,@/
-				BreakStmt,
+				BreakStmt,@/
 				ContinueStmt,@/
-				GotoStmt,
+				GotoStmt,@/
 				fallthrough_token,@/
-				Block,
-				IfStmt,
+				Block,@/
+				IfStmt,@/
 				ExprSwitchStmt,@/
-				TypeSwitchStmt,
-				SelectStmt,
+				TypeSwitchStmt,@/
+				SelectStmt,@/
 				ForStmt,@/
-				DeferStmt,
+				DeferStmt,@/
 				SimpleStmt @t\2@>); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
@@ -3960,6 +3966,7 @@ if x := f(); x < y {
 if err := input_ln(change_file); err != nil { 
 	return 
 }
+
 
 @ @<Cases for |ExprSwitchStmt|@>=
 if s,f1,ok:=one(ss,switch_token); ok {
@@ -4554,6 +4561,10 @@ r, w := os.Pipe(fd)
 @/@@
 @/@@@+c
 _, y, _ := coord(p)
+@/@@
+@/@@@+c
+ints=make(map[string]int)
+
 
 @ @<Cases for |QualifiedIdent|@>=
 if s,f1,ok:=one(ss,identifier); ok {
