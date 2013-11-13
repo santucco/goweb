@@ -3904,46 +3904,6 @@ if s,f1,ok:=one(ss,if_token); ok {
 		reduce(ss,c,IfStmt,tok_mem...)
 	},true
 }
-break
-if s,f1,ok:=one(ss,if_token); ok {
-	tok_mem:=append([]interface{}{},0)
-	c:=1
-	var f2,f3 []reducing
-	f4,f5:=empty,empty
-	s,f2,ok=sequence(s,SimpleStmt,semi)
-	if ok {
-		tok_mem=append(tok_mem,break_space,c)
-		if len(scrap_info[c+1].trans)!=0 {
-			tok_mem=append(tok_mem,c+1)
-		} else {
-			tok_mem=append(tok_mem,';')
-		}
-		c+=2
-	} 
-	s,f3,ok=sequence(s,Expression,Block)
-	if ok {
-		tok_mem=append(tok_mem,break_space,c,break_space,c+1)
-		c+=2
-		s,f4,ok=one(s,else_token)
-		if ok {
-			if s,f5,ok=any(s,IfStmt,Block); ok {
-				tok_mem=append(tok_mem,break_space,c,break_space,c+1)
-				c+=2
-			} else {
-				break
-			}
-		}
-		return s,func() { 
-			f5()
-			f4()
-			call(f3)
-			call(f2)
-			f1()
-			reduce(ss,c,IfStmt,tok_mem...)
-		},true
-	} 
-}
-
 
 @ Tests for |if|
 @(goweave/if.w@>=
@@ -3966,7 +3926,11 @@ if x := f(); x < y {
 if err := input_ln(change_file); err != nil { 
 	return 
 }
-
+@/@@
+@/@@@+c
+if test!=1 {
+	@@<Section@@>
+}
 
 @ @<Cases for |ExprSwitchStmt|@>=
 if s,f1,ok:=one(ss,switch_token); ok {
