@@ -2324,18 +2324,18 @@ should be called one by one to make a reducing full sequence.
 A |bool| points out the sequence of |cats| is found.
 
 @c
-func sequence(ss []scrap, cats ...rune) ([]scrap,[]reducing,bool) {
+func sequence(ss []scrap, cats ...rune) ([]scrap,reducing,bool) {
 	var fs []reducing
 	s:=ss
 	for _,v:=range cats {
 		f:=empty
 		ok:=false
 		if s,f,ok=one(s,v); !ok {
-			return ss,nil,false
+			return ss,empty,false
 		}
 		fs=append(fs,f)
 	}
-	return s,fs,true
+	return s,func(){call(fs)},true
 }
 
 @ The function |any| checks if first of corresponding scraps from start of |s| 
@@ -2372,7 +2372,7 @@ An |int| slice is contains indexes of scraps in a scrap sequence after processin
 A |bool| points out sequences of |cats| is found.
 
 @c
-func optional(ss []scrap, g int, cats ...pair) ([]scrap,[]reducing,[]int,bool) {
+func optional(ss []scrap, g int, cats ...pair) ([]scrap,reducing,[]int,bool) {
 	var trans []int
 	var funcs []reducing
 	ok:=false
@@ -2403,7 +2403,7 @@ func optional(ss []scrap, g int, cats ...pair) ([]scrap,[]reducing,[]int,bool) {
 	if len(funcs)==0 {
 		ok=false
 	}
-	return ss,funcs,trans,ok
+	return ss,func(){call(funcs)},trans,ok
 }
 
 
@@ -2574,7 +2574,7 @@ This closure is returned with rest of scraps and a flag of success.
 @ @<Cases for |PackageClause|@>=
 if s,f,ok:=sequence(ss,package_token,identifier); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,PackageClause,0,break_space,1,big_force)
 	},true
 }
@@ -2600,13 +2600,13 @@ if s,f1,ok:=one(ss,const_token); ok {
 			tok_mem=append(tok_mem,force,indent,t,outdent)
 		}
 		if s,f4,ok:=one(s,rpar); ok {
-			tok_mem=append(tok_mem,2+len(f3),force)
+			tok_mem=append(tok_mem,2+len(t),force)
 			return s,func() {
 				f4()
-				call(f3)
+				f3()
 				f2()
 				f1()
-				reduce(ss,3+len(f3),ConstDecl,tok_mem...)
+				reduce(ss,3+len(t),ConstDecl,tok_mem...)
 			},true
 		}	
 	}
@@ -2656,13 +2656,13 @@ if s,f1,ok:=one(ss,type_token); ok {
 			tok_mem=append(tok_mem,force,indent,t,outdent)
 		}
 		if s,f4,ok:=one(s,rpar); ok {
-			tok_mem=append(tok_mem,2+len(f3),force)
+			tok_mem=append(tok_mem,2+len(t),force)
 			return s,func(){
 				f4()
-				call(f3)
+				f3()
 				f2()
 				f1()
-				reduce(ss,3+len(f3),TypeDecl,tok_mem...)
+				reduce(ss,3+len(t),TypeDecl,tok_mem...)
 			},true
 		}
 	} 
@@ -2708,13 +2708,13 @@ if s,f1,ok:=one(ss,var_token); ok {
 			tok_mem=append(tok_mem,force,indent,t,outdent)
 		}
 		if s,f4,ok:=one(s,rpar); ok {
-			tok_mem=append(tok_mem,2+len(f3),force)
+			tok_mem=append(tok_mem,2+len(t),force)
 			return s,func() {
 				f4()
-				call(f3)
+				f3()
 				f2()
 				f1()
-				reduce(ss,3+len(f3),VarDecl,tok_mem...)
+				reduce(ss,3+len(t),VarDecl,tok_mem...)
 			},true
 		}
 	} 
@@ -2762,13 +2762,13 @@ if s,f1,ok:=one(ss,import_token); ok {
 			tok_mem=append(tok_mem,force,indent,t,outdent)
 		}
 		if s,f4,ok:=one(s,rpar); ok {
-			tok_mem=append(tok_mem,2+len(f3),force)
+			tok_mem=append(tok_mem,2+len(t),force)
 			return s,func() {
 				f4()
-				call(f3)
+				f3()
 				f2()
 				f1()
-				reduce(ss,3+len(f3),ImportDecl,tok_mem...)
+				reduce(ss,3+len(t),ImportDecl,tok_mem...)
 			},true	
 		} 
 	}
@@ -2802,15 +2802,15 @@ import(
 if s,f1,ok:=sequence(ss,func_token,identifier,Signature); ok{
 	if s,f2,ok:=sequence(s,Block,semi); ok {
 		return s,func() {
-			call(f2)
-			call(f1)
+			f2()
+			f1()
 			make_underlined(ss[1].trans)
 			reduce(ss,5,FunctionDecl,0,break_space,1,2,3,4,big_force)
 		},true
 	} else if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
-			call(f1)
+			f1()
 			make_underlined(ss[1].trans)
 			reduce(ss,4,FunctionDecl,0,break_space,1,2,3,big_force)	
 		},true
@@ -2836,13 +2836,13 @@ if s,f1,ok:=sequence(ss,func_token,Receiver,identifier,Signature); ok {
 	if s,f2,ok:=one(s,Block);ok {
 		return s,func() {
 			f2()
-			call(f1)
+			f1()
 			make_underlined(ss[2].trans)
 			reduce(ss,5,MethodDecl,0,break_space,1,break_space,2,3,4)
 		},true
 	} else {
 		return s,func() {
-			call(f1)
+			f1()
 			make_underlined(ss[2].trans)
 			reduce(ss,4,MethodDecl,0,break_space,1,break_space,2,3)
 		},true
@@ -2869,14 +2869,14 @@ if s,f1,ok:=one(ss,lpar); ok {
 	if s,f2,ok:=one(s,identifier); ok {
 		if s,f3,ok:=sequence(s,asterisk,identifier,rpar); ok{
 			return s,func() {
-				call(f3)
+				f3()
 				f2()
 				f1()
 				reduce(ss,5,Receiver,0,1,2,3,4)
 			},true
 		} else if s,f,ok:=sequence(s,identifier,rpar); ok {
 			return s,func() {
-				call(f)
+				f()
 				reduce(ss,4,Receiver,0,1,2,3)
 			},true
 		} else if s,f,ok:=one(s,rpar);ok {
@@ -2887,7 +2887,7 @@ if s,f1,ok:=one(ss,lpar); ok {
 		}
 	} else if s,f,ok:=sequence(s,asterisk,identifier,rpar); ok {
 		return s,func() {
-			call(f)
+			f()
 			reduce(ss,4,Receiver,0,1,2,3)
 		},true
 	}
@@ -2899,13 +2899,13 @@ if s,f1,ok:=one(ss,IdentifierList); ok {
 		if s,f3,ok:=one(s,semi); ok {
 			return s,func() {
 				f3()
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,5,ConstSpec,0,break_space,1,break_space,2,break_space,3,4,force)
 			},true
 		} else if _,_,ok:=any(s,rpar,rbrace); ok {
 			return s,func() {
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,4,ConstSpec,0,break_space,1,break_space,2,break_space,3,force)
 			},true
@@ -2914,13 +2914,13 @@ if s,f1,ok:=one(ss,IdentifierList); ok {
 		if s,f3,ok:=one(s,semi); ok {
 			return s,func() {
 				f3()
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,4,ConstSpec,0,break_space,1,break_space,2,3,force)
 			},true
 		} else if _,_,ok:=any(s,rpar,rbrace); ok {
 			return s,func() {
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,3,ConstSpec,0,break_space,1,break_space,2,force)
 			},true
@@ -2944,14 +2944,14 @@ if s,f1,ok:=sequence(ss,identifier,Type); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
-			call(f1)
+			f1()
 			make_underlined(ss[0].trans)
 			make_reserved(ss[0].trans)
 			reduce(ss,3,TypeSpec,0,break_space,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
-			call(f1)
+			f1()
 			make_underlined(ss[0].trans)
 			make_reserved(ss[0].trans)
 			reduce(ss,2,TypeSpec,0,break_space,1,force)
@@ -2971,14 +2971,14 @@ if s,f1,ok:=one(ss,IdentifierList);ok {
 			if s,f4,ok:=one(s,semi); ok {
 				return s,func() {
 					f4()
-					call(f3)
+					f3()
 					f2()
 					f1()
 					reduce(ss,5,VarSpec,0,break_space,1,2,3,4,force)
 				},true
 			} else if _,_,ok:=any(s,rpar,rbrace); ok {
 				return s,func() {
-					call(f3)
+					f3()
 					f2()
 					f1()
 					reduce(ss,4,VarSpec,0,break_space,1,2,3,force)
@@ -3002,13 +3002,13 @@ if s,f1,ok:=one(ss,IdentifierList);ok {
 		if s,f3,ok:=one(s,semi);ok {
 			return s,func() {
 				f3()
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,4,VarSpec,0,1,2,3,force)
 			},true
 		} else if _,_,ok:=any(s,rpar,rbrace); ok {
 			return s,func() {
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,3,VarSpec,0,1,2,force)
 			},true
@@ -3057,13 +3057,13 @@ if s,f1,ok:=sequence(ss,identifier,str); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
-			call(f1)
+			f1()
 			make_reserved(ss[0].trans)
 			reduce(ss,3,ImportSpec,0,break_space,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
-			call(f1)
+			f1()
 			make_reserved(ss[0].trans)
 			reduce(ss,2,ImportSpec,0,break_space,1,force)
 		},true
@@ -3072,12 +3072,12 @@ if s,f1,ok:=sequence(ss,identifier,str); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func() {
 			f2()
-			call(f1)
+			f1()
 			reduce(ss,3,ImportSpec,0,break_space,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func() {
-			call(f1)
+			f1()
 			reduce(ss,2,ImportSpec,0,break_space,1,force)
 		},true
 	}
@@ -3118,14 +3118,14 @@ if s,f1,ok:=sequence(ss,IdentifierList,Type); ok {
 		return s,func() {
 			f3()
 			f2()
-			call(f1)
+			f1()
 			reduce(ss,c,FieldDecl,tok_mem...)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		tok_mem=append(tok_mem,force)
 		return s,func() {
 			f2()
-			call(f1)
+			f1()
 			reduce(ss,c,FieldDecl,tok_mem...)
 		},true
 	}
@@ -3163,7 +3163,7 @@ if s,f1,ok:=sequence(ss,IdentifierList,Type); ok {
 @ @<Cases for |AnonymousField|@>=
 if s,f,ok:=sequence(ss,asterisk,Type); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,AnonymousField,0,1)
 	},true
 } else if s,f,ok:=one(ss,Type); ok {
@@ -3193,7 +3193,7 @@ if s,f,ok:=any(ss,@t\1@>@/
 @ @<Cases for |ArrayType|@>=
 if s,f,ok:=sequence(ss,lbracket,Expression,rbracket,Type); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,4,ArrayType,0,1,2,3)
 	},true
 }
@@ -3206,12 +3206,12 @@ if s,f1,ok:=sequence(ss,struct_token,lbrace); ok {
 		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
 	if s,f3,ok:=one(s,rbrace); ok {
-		tok_mem=append(tok_mem,2+len(f2))
+		tok_mem=append(tok_mem,2+len(t))
 		return s,func() {
 			f3()
-			call(f2)
-			call(f1)
-			reduce(ss,3+len(f2),StructType,tok_mem...)
+			f2()
+			f1()
+			reduce(ss,3+len(t),StructType,tok_mem...)
 		},true
 	}
 }
@@ -3250,7 +3250,7 @@ struct {
 @ @<Cases for |PointerType|@>=
 if s,f,ok:=sequence(ss,asterisk,Type); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,PointerType,0,1)
 	},true
 }
@@ -3284,12 +3284,12 @@ if s,f1,ok:=one(ss,lpar); ok {
 		tok_mem=append(tok_mem,t)
 	}
  	if s,f3,ok:=one(s,rpar); ok {
-		tok_mem=append(tok_mem,1+len(f2))
+		tok_mem=append(tok_mem,1+len(t))
 		return s,func() {
 			f3()
-			call(f2)
+			f2()
 			f1()
-			reduce(ss,2+len(f2),Parameters,tok_mem...)
+			reduce(ss,2+len(t),Parameters,tok_mem...)
 		},true
 	}
 } else if s,f,ok:=one(ss,section_scrap); ok {
@@ -3307,26 +3307,26 @@ if s,f1,ok:=one(ss,ParameterDecl); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	return s,func() {
-		call(f2)
+		f2()
 		f1()
-		reduce(ss,1+len(f2),ParameterList,tok_mem...)
+		reduce(ss,1+len(t),ParameterList,tok_mem...)
 	},true
 }
 
 @ @<Cases for |ParameterDecl|@>=
 if s,f,ok:=sequence(ss,IdentifierList,dot_dot_dot,Type); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,ParameterDecl,0,"\\,",1,2)
 	},true
 } else if s,f,ok:=sequence(ss,IdentifierList,Type); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,ParameterDecl,0,break_space,1)
 	},true
 } else if s,f,ok:=sequence(ss,dot_dot_dot,Type); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,ParameterDecl,0,"\\,",1)
 	},true
 } else if s,f,ok:=one(ss,Type); ok {
@@ -3344,12 +3344,12 @@ if s,f1,ok:=sequence(ss,interface_token,lbrace); ok {
 		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
 	if s,f3,ok:=one(s,rbrace); ok {
-		tok_mem=append(tok_mem,2+len(f2))
+		tok_mem=append(tok_mem,2+len(t))
 		return s,func(){
 			f3()
-			call(f2)
-			call(f1)
-			reduce(ss,3+len(f2),InterfaceType,tok_mem...)
+			f2()
+			f1()
+			reduce(ss,3+len(t),InterfaceType,tok_mem...)
 		},true
 	}
 }
@@ -3359,12 +3359,12 @@ if s,f1,ok:=sequence(ss,identifier,Signature); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func(){
 			f2()
-			call(f1)
+			f1()
 			reduce(ss,3,MethodSpec,0,1,2,force)
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func(){
-			call(f1)
+			f1()
 			reduce(ss,2,MethodSpec,0,1,force)
 		},true
 	}
@@ -3372,12 +3372,12 @@ if s,f1,ok:=sequence(ss,identifier,Signature); ok {
 	if s,f2,ok:=one(s,semi); ok {
 		return s,func(){
 			f2()
-			call(f1)
+			f1()
 			reduce(ss,2,MethodSpec,0,1,force)	
 		},true
 	} else if _,_,ok:=any(s,rpar,rbrace); ok {
 		return s,func(){
-			call(f1)
+			f1()
 			reduce(ss,1,MethodSpec,0,force)	
 		},true
 	}
@@ -3391,7 +3391,7 @@ if s,f1,ok:=sequence(ss,identifier,Signature); ok {
 @ @<Cases for |SliceType|@>=
 if s,f,ok:=sequence(ss,lbracket,rbracket,Type); ok {
 	return s,func(){
-		call(f)
+		f()
 		reduce(ss,3,SliceType,0,1,2)
 	},true
 }
@@ -3399,7 +3399,7 @@ if s,f,ok:=sequence(ss,lbracket,rbracket,Type); ok {
 @ @<Cases for |MapType|@>=
 if s,f,ok:=sequence(ss,map_token,lbracket,Type,rbracket,Type); ok {
 	return s,func(){
-		call(f)
+		f()
 		reduce(ss,5,MapType,0,1,2,3,4)
 	},true
 }
@@ -3407,13 +3407,13 @@ if s,f,ok:=sequence(ss,map_token,lbracket,Type,rbracket,Type); ok {
 @ @<Cases for |ChannelType|@>=
 if s,f,ok:=sequence(ss,direct,chan_token,Type); ok {
 	return s,func(){
-		call(f)
+		f()
 		reduce(ss,3,ChannelType,0,1,break_space,2)
 	},true
 } else if s,f1,ok:=one(ss,chan_token); ok { 
 	if s,f2,ok:=sequence(s,direct,Type); ok {
 		return s,func(){
-			call(f2)
+			f2()
 			f1()
 			reduce(ss,3,ChannelType,0,1,2)
 		},true
@@ -3434,9 +3434,9 @@ if s,f1,ok:=one(ss,identifier); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	return s,func() {
-		call(f2)
+		f2()
 		f1()
-		reduce(ss,1+len(f2),IdentifierList,tok_mem...)
+		reduce(ss,1+len(t),IdentifierList,tok_mem...)
 	},true
 } 
 
@@ -3448,9 +3448,9 @@ if s,f1,ok:=one(ss,Expression); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	return s,func() {
-		call(f2)
+		f2()
 		f1()
-		reduce(ss,1+len(f2),ExpressionList,tok_mem...)
+		reduce(ss,1+len(t),ExpressionList,tok_mem...)
 	},true
 }
 
@@ -3462,9 +3462,9 @@ if s,f1,ok:=one(ss,UnaryExpr); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	return s,func() {
-		call(f2)
+		f2()
 		f1()
-		reduce(ss,1+len(f2),Expression,tok_mem...)
+		reduce(ss,1+len(t),Expression,tok_mem...)
 	},true	
 }
  
@@ -3476,7 +3476,7 @@ if s,f,ok:=one(ss,PrimaryExpr); ok {
 	},true
 } else if s,f,ok:=sequence(ss,unary_op,UnaryExpr); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,UnaryExpr,0,1)
 	},true
 }
@@ -3502,9 +3502,9 @@ if s,f1,ok:=any(ss,BuiltinCall,Conversion,Operand); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	return s,func() {
-		call(f2)
+		f2()
 		f1()
-		reduce(ss,1+len(f2),PrimaryExpr,tok_mem...)
+		reduce(ss,1+len(t),PrimaryExpr,tok_mem...)
 	},true
 
 }
@@ -3523,7 +3523,7 @@ if s,f,ok:=any(ss,
 	},true
 } else if s,f,ok:=sequence(ss,lpar,Expression,rpar); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,Operand,0,1,2)
 	},true
 }
@@ -3531,7 +3531,7 @@ if s,f,ok:=any(ss,
 @ @<Cases for |CompositeLit|@>=
 if s,f,ok:=sequence(ss,LiteralType,LiteralValue); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,CompositeLit,0,1)
 	},true
 }
@@ -3544,7 +3544,7 @@ if s,f,ok:=one(ss,Type); ok {
 	},true
 } else if s,f,ok:=sequence(ss,lbracket,dot_dot_dot,rbracket,Type); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,4,LiteralType,0,1,2,3)
 	},true
 }
@@ -3557,12 +3557,12 @@ if s,f1,ok:=one(ss,lbrace); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	if s,f3,ok:=one(s,rbrace); ok {
-		tok_mem=append(tok_mem,1+len(f2))
+		tok_mem=append(tok_mem,1+len(t))
 		return s,func() {
 			f3()
-			call(f2)
+			f2()
 			f1()
-			reduce(ss,2+len(f2),LiteralValue,tok_mem...)
+			reduce(ss,2+len(t),LiteralValue,tok_mem...)
 		},true
 	}
 }
@@ -3575,9 +3575,9 @@ if s,f1,ok:=one(ss,Element); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	return s,func() {
-		call(f2)
+		f2()
 		f1()
-		reduce(ss,1+len(f2),ElementList,tok_mem...)
+		reduce(ss,1+len(t),ElementList,tok_mem...)
 	},true
 }
 
@@ -3610,7 +3610,7 @@ if s,f,ok:=one(ss,section_scrap); ok {
 @ @<Cases for |FunctionLit|@>=
 if s,f,ok:=sequence(ss,FunctionType,Block); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,FunctionLit,0,1)
 	},true
 }
@@ -3618,7 +3618,7 @@ if s,f,ok:=sequence(ss,FunctionType,Block); ok {
 @ @<Cases for |FunctionType|@>=
 if s,f,ok:=sequence(ss,func_token,Signature); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,FunctionType,0,1)
 	},true
 }
@@ -3631,12 +3631,12 @@ if s,f1,ok:=one(ss,lbrace); ok {
 		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
 	if s,f3,ok:=one(s,rbrace); ok {
-		tok_mem=append(tok_mem,1+len(f2))
+		tok_mem=append(tok_mem,1+len(t))
 		return s,func() {
 			f3()
-			call(f2)
+			f2()
 			f1()
-			reduce(ss,2+len(f2),Block,tok_mem...)
+			reduce(ss,2+len(t),Block,tok_mem...)
 		},true
 	}
 }
@@ -3702,7 +3702,7 @@ if s,f,ok:=any(ss,@t\1@>@/
 @ @<Cases for |LabeledStmt|@>=
 if s,f,ok:=sequence(ss,identifier,colon,Statement); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,LabeledStmt,0,1,force,2)
 	},true
 }
@@ -3730,7 +3730,7 @@ if s,f,ok:=any(ss,
 @ @<Cases for |GoStmt|@>=
 if s,f,ok:=sequence(ss,go_token,Expression); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,GoStmt,0,break_space,1)
 	},true
 }
@@ -3748,7 +3748,7 @@ go func(ch chan<- bool) { for { sleep(10); ch <- true; }} (c)
 @ @<Cases for |ReturnStmt|@>=
 if s,f,ok:=sequence(ss,return_token,ExpressionList); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,ReturnStmt,0,break_space,1)
 	},true
 } else if s,f,ok:=one(ss,return_token); ok {
@@ -3811,7 +3811,7 @@ for i < n {
 @ @<Cases for |ContinueStmt|@>=
 if s,f,ok:=sequence(ss,continue_token,identifier); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,ContinueStmt,0,break_space,1)
 	},true
 } else if s,f,ok:=one(ss,continue_token); ok {
@@ -3844,7 +3844,7 @@ for i < n {
 @ @<Cases for |GotoStmt|@>=
 if s,f,ok:=sequence(ss,goto_token,identifier); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,GotoStmt,0,break_space,1)
 	},true
 }
@@ -3859,8 +3859,7 @@ goto Label
 if s,f1,ok:=one(ss,if_token); ok {
 	tok_mem:=append([]interface{}{},0)
 	c:=1
-	var f2 []reducing
-	f3,f4:=empty,empty
+	f2,f3,f4:=empty,empty,empty
 	if s,f2,ok=sequence(s,SimpleStmt,semi,Expression,Block); ok {
 		tok_mem=append(tok_mem,break_space,c)
 		if len(scrap_info[c+1].trans)!=0 {
@@ -3899,7 +3898,7 @@ if s,f1,ok:=one(ss,if_token); ok {
 	return s,func() { 
 		f4()
 		f3()
-		call(f2)
+		f2()
 		f1()
 		reduce(ss,c,IfStmt,tok_mem...)
 	},true
@@ -3936,8 +3935,7 @@ if test!=1 {
 if s,f1,ok:=one(ss,switch_token); ok {
 	tok_mem:=append([]interface{}{},0)
 	c:=1
-	var f2 []reducing
-	f3,f4:=empty,empty
+	f2,f3,f4:=empty,empty,empty
 	if s,f2,ok=sequence(s,SimpleStmt,semi); ok {
 		tok_mem=append(tok_mem,break_space,c,c+1)
 		if len(scrap_info[c+1].trans)!=0 {
@@ -3957,17 +3955,17 @@ if s,f1,ok:=one(ss,switch_token); ok {
 		s,f5,t,ok:=optional(s,c,pair{cat:ExprCaseClause,mand:false})
 		if ok {
 			tok_mem=append(tok_mem,force,indent,t,outdent)
-			c+=len(f5)
+			c+=len(t)
 		}
 		if s,f6,ok:=one(s,rbrace); ok {
 			tok_mem=append(tok_mem,c)
 			c++
 			return s,func() {
 				f6()
-				call(f5)
+				f5()
 				f4()
 				f3()
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,c,ExprSwitchStmt,tok_mem...)
 			},true
@@ -3984,9 +3982,9 @@ if s,f1,ok:=sequence(ss,case_token,ExpressionList,colon); ok {
 		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
 	return s,func() {
-		call(f2)
-		call(f1)
-		reduce(ss,3+len(f2),ExprCaseClause,tok_mem...)
+		f2()
+		f1()
+		reduce(ss,3+len(t),ExprCaseClause,tok_mem...)
 	},true
 } else if s,f1,ok:=sequence(ss,default_token,colon); ok {
 	tok_mem:=append([]interface{}{},0,1,force)
@@ -3995,9 +3993,9 @@ if s,f1,ok:=sequence(ss,case_token,ExpressionList,colon); ok {
 		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
 	return s,func() {
-		call(f2)
-		call(f1)
-		reduce(ss,2+len(f2),ExprCaseClause,tok_mem...)
+		f2()
+		f1()
+		reduce(ss,2+len(t),ExprCaseClause,tok_mem...)
 	},true
 } else if s,f,ok:=one(ss,section_scrap); ok {
 	return s,func() {
@@ -4010,7 +4008,7 @@ if s,f1,ok:=sequence(ss,case_token,ExpressionList,colon); ok {
 if s,f1,ok:=one(ss,switch_token); ok {
 	tok_mem:=append([]interface{}{},0)
 	c:=1
-	var f2 []reducing
+	f2:=empty
 	if s,f2,ok=sequence(s,SimpleStmt,semi); ok {
 		tok_mem=append(tok_mem,break_space,c,c+1)
 		if len(scrap_info[c+1].trans)!=0 {
@@ -4026,16 +4024,16 @@ if s,f1,ok:=one(ss,switch_token); ok {
 		s,f4,t,ok:=optional(s,c,pair{cat:TypeCaseClause,mand:true})
 		if ok {
 			tok_mem=append(tok_mem,force,indent,t,outdent)
-			c+=len(f4)
+			c+=len(t)
 		}
 		if s,f5,ok:=one(s,rbrace); ok {
 			tok_mem=append(tok_mem,c)
 			c++
 			return s,func() {
 				f5()
-				call(f4)
-				call(f3)
-				call(f2)
+				f4()
+				f3()
+				f2()
 				f1()
 				reduce(ss,c,TypeSwitchStmt,tok_mem...)
 			},true
@@ -4046,12 +4044,12 @@ if s,f1,ok:=one(ss,switch_token); ok {
 @ @<Cases for |TypeSwitchGuard|@>=
 if s,f,ok:=sequence(ss,identifier,col_eq,PrimaryExpr,dot,lpar,type_token,rpar); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,7,TypeSwitchGuard,0,1,2,3,4,5,6)
 	},true
 } else if s,f,ok:=sequence(ss,PrimaryExpr,dot,lpar,type_token,rpar); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,5,TypeSwitchGuard,0,1,2,3,4)
 	},true
 }
@@ -4064,9 +4062,9 @@ if s,f1,ok:=sequence(ss,TypeSwitchCase,colon); ok {
 		tok_mem=append(tok_mem,indent,t,outdent)
 	}
 	return s,func() {
-		call(f2)
-		call(f1)
-		reduce(ss,2+len(f2),TypeCaseClause,tok_mem...)
+		f2()
+		f1()
+		reduce(ss,2+len(t),TypeCaseClause,tok_mem...)
 	},true
 } else if s,f,ok:=one(ss,section_scrap); ok {
 	return s,func() {
@@ -4085,10 +4083,10 @@ if s,f1,ok:=sequence(ss,case_token); ok {
 			tok_mem=append(tok_mem,t)
 		}
 		return s,func() {
-			call(f3)
+			f3()
 			f2()
-			call(f1)
-			reduce(ss,2+len(f3),TypeSwitchCase,tok_mem...)
+			f1()
+			reduce(ss,2+len(t),TypeSwitchCase,tok_mem...)
 		},true
 	}
 } else if s,f,ok:=one(ss,default_token); ok {
@@ -4150,12 +4148,12 @@ if s,f1,ok:=sequence(ss,select_token,lbrace); ok {
 		tok_mem=append(tok_mem,force,indent,t,outdent)
 	}
 	if s,f3,ok:=one(s,rbrace); ok {
-		tok_mem=append(tok_mem,2+len(f2))
+		tok_mem=append(tok_mem,2+len(t))
 		return s,func() {
 			f3()
-			call(f2)
-			call(f1)
-			reduce(ss,3+len(f2),SelectStmt,tok_mem...)
+			f2()
+			f1()
+			reduce(ss,3+len(t),SelectStmt,tok_mem...)
 		},true
 	}
 }
@@ -4168,9 +4166,9 @@ if s,f1,ok:=sequence(ss,CommCase,colon); ok {
 		tok_mem=append(tok_mem,indent,t,outdent)
 	}
 	return s,func() {
-		call(f2)
-		call(f1)
-		reduce(ss,2+len(f2),CommClause,tok_mem...)
+		f2()
+		f1()
+		reduce(ss,2+len(t),CommClause,tok_mem...)
 	},true
 } else if s,f,ok:=one(ss,section_scrap); ok {
 	return s,func() {
@@ -4222,7 +4220,7 @@ if s,f1,ok:=one(ss,ExpressionList); ok{
 @ @<Cases for |SendStmt|@>=
 if s,f,ok:=sequence(ss,Expression,direct,Expression); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,SendStmt,0,1,2)
 	},true
 }
@@ -4266,19 +4264,19 @@ select {}
 if s,f1,ok:=one(ss,for_token); ok {
 	if s,f2,ok:=sequence(s,Expression,Block); ok {
 		return s,func() {
-			call(f2)
+			f2()
 			f1()
 			reduce(ss,3,ForStmt,0,break_space,1,break_space,2)
 		},true
 	} else if s,f2,ok:=sequence(s,ForClause,Block); ok {
 		return s,func() {
-			call(f2)
+			f2()
 			f1()
 			reduce(ss,3,ForStmt,0,break_space,1,break_space,2)
 		},true
 	} else if s,f2,ok:=sequence(s,RangeClause,Block); ok {
 		return s,func() {
-			call(f2)
+			f2()
 			f1()
 			reduce(ss,3,ForStmt,0,break_space,1,break_space,2)
 		},true
@@ -4341,7 +4339,7 @@ if s,f1,ok:=one(ss,ExpressionList); ok {
 	if s,f2,ok:=any(s,eq,col_eq); ok {
 		if s,f3,ok:=sequence(s,range_token,Expression); ok {
 			return s,func() {
-				call(f3)
+				f3()
 				f2()
 				f1()
 				reduce(ss,4,RangeClause,0,1,2,break_space,3)
@@ -4388,7 +4386,7 @@ for _,err:=f.Read(b[:]); err==nil; _,err=f.Read(b[:]) {}
 @ @<Cases for |DeferStmt|@>=
 if s,f,ok:=sequence(ss,defer_token,Expression); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,DeferStmt,0,break_space,1)
 	},true
 }
@@ -4428,7 +4426,7 @@ j--
 @ @<Cases for |Assignment|@>=
 if s,f,ok:=sequence(ss,ExpressionList,assign_op,ExpressionList); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,Assignment,0,1,2)
 	},true
 }
@@ -4490,7 +4488,7 @@ x = []int{3, 5, 7}
 @ @<Cases for |assign_op|@>=
 if s,f,ok:=sequence(ss,binary_op,eq); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,assign_op,math_rel,'{',0,'}','{',1,'}','}')
 	},true
 } else if s,f,ok:=one(ss,eq); ok {
@@ -4503,7 +4501,7 @@ if s,f,ok:=sequence(ss,binary_op,eq); ok {
 @ @<Cases for |ShortVarDecl|@>=
 if s,f,ok:=sequence(ss,IdentifierList,col_eq,ExpressionList); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,ShortVarDecl,0,1,2)
 	},true
 }
@@ -4534,7 +4532,7 @@ ints=make(map[string]int)
 if s,f1,ok:=one(ss,identifier); ok {
 	if s,f2,ok:=sequence(s,dot,identifier); ok {
 		return s,func() {
-			call(f2)
+			f2()
 			f1()
 			reduce(ss,3,QualifiedIdent,0,1,2)
 			//make\_reserved(ss[0],ss[0].cat)
@@ -4550,7 +4548,7 @@ if s,f1,ok:=one(ss,identifier); ok {
 @ @<Cases for |MethodExpr|@>=
 if s,f,ok:=sequence(ss,ReceiverType,dot,identifier); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,MethodExpr,0,1,2)
 	},true
 }
@@ -4563,7 +4561,7 @@ if s,f,ok:=one(ss,Type); ok {
 	},true
 } else if s,f,ok:=sequence(ss,lpar,asterisk,Type,rpar); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,4,ReceiverType,0,1,2,3)
 	},true
 }
@@ -4571,7 +4569,7 @@ if s,f,ok:=one(ss,Type); ok {
 @ @<Cases for |Conversion|@>=
 if s,f,ok:=sequence(ss,Type,lpar,Expression,rpar); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,4,Conversion,0,1,2,3)
 	},true
 }
@@ -4584,12 +4582,12 @@ if s,f1,ok:=sequence(ss,identifier,lpar); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	if s,f3,ok:=one(s,rpar); ok {
-		tok_mem=append(tok_mem,2+len(f2))
+		tok_mem=append(tok_mem,2+len(t))
 		return s,func() {
 			f3()
-			call(f2)
-			call(f1)
-			reduce(ss,3+len(f2),BuiltinCall,tok_mem...)
+			f2()
+			f1()
+			reduce(ss,3+len(t),BuiltinCall,tok_mem...)
 		},true
 	}
 }
@@ -4602,9 +4600,9 @@ if s,f1,ok:=one(ss,Type); ok {
 		tok_mem=append(tok_mem,t)
 	}
 	return s,func() {
-		call(f2)
+		f2()
 		f1()
-		reduce(ss,1+len(f2),BuiltinArgs,tok_mem...)	
+		reduce(ss,1+len(t),BuiltinArgs,tok_mem...)	
 	},true
 } else if s,f,ok:=one(s,ExpressionList); ok {
 	return s,func() {
@@ -4616,7 +4614,7 @@ if s,f1,ok:=one(ss,Type); ok {
 @ @<Cases for |Selector|@>= 
 if s,f,ok:=sequence(ss,dot,identifier); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,2,Selector,0,1)
 	},true
 }
@@ -4624,7 +4622,7 @@ if s,f,ok:=sequence(ss,dot,identifier); ok {
 @ @<Cases for |Index|@>=
 if s,f,ok:=sequence(ss,lbracket,Expression,rbracket); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,3,Index,0,1,2)
 	},true
 }
@@ -4646,9 +4644,9 @@ if s,f1,ok:=one(ss,lbracket); ok {
 			tok_mem=append(tok_mem,2+len(t1)+len(t2))
 			return s,func() {
 				f5()
-				call(f4)
+				f4()
 				f3()
-				call(f2)
+				f2()
 				f1()
 				reduce(ss,3+len(t1)+len(t2),Slice,tok_mem...)
 			},true
@@ -4659,7 +4657,7 @@ if s,f1,ok:=one(ss,lbracket); ok {
 @ @<Cases for |TypeAssertion|@>=
 if s,f,ok:=sequence(ss,dot,lpar,Type,rpar); ok {
 	return s,func() {
-		call(f)
+		f()
 		reduce(ss,4,TypeAssertion,0,1,2,3)
 	},true
 }
