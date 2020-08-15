@@ -38,7 +38,7 @@
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
-Copyright \copyright\ 2013 Alexander Sychev
+Copyright \copyright\ 2013, 2020 Alexander Sychev
 \bigskip\noindent
 Permission is granted to make and distribute verbatim copies of this
 document provided that the copyright notice and this permission notice
