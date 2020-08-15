@@ -3,7 +3,7 @@
 /*2:*/
 
 
-//line gotangle.w:59
+//line gotangle.w:60
 
 package main
 
@@ -76,7 +76,7 @@ import(
 /*:34*/
 
 
-//line gotangle.w:63
+//line gotangle.w:64
 
 )
 
@@ -86,9 +86,9 @@ const(
 /*1:*/
 
 
-//line gotangle.w:55
+//line gotangle.w:56
 
-banner= "This is GOTANGLE (Version 0.82)\n"
+banner= "This is GOTANGLE (version 0.8.2)\n"
 
 
 
@@ -99,7 +99,7 @@ banner= "This is GOTANGLE (Version 0.82)\n"
 /*4:*/
 
 
-//line gotangle.w:90
+//line gotangle.w:91
 
 max_texts= 2500/* number of replacement texts, must be less than 10240 */
 
@@ -112,7 +112,7 @@ max_texts= 2500/* number of replacement texts, must be less than 10240 */
 /*100:*/
 
 
-//line gotangle.w:191
+//line gotangle.w:192
 
 strs= 02/* takes the place of extended ASCII \.{\char2} */
 join= 0177/* takes the place of ASCII delete */
@@ -126,7 +126,7 @@ join= 0177/* takes the place of ASCII delete */
 /*106:*/
 
 
-//line gotangle.w:284
+//line gotangle.w:285
 
 section_number= 0211/* code returned by get_output for section numbers */
 identifier= 0212/* code returned by get_output for identifiers */
@@ -140,7 +140,7 @@ identifier= 0212/* code returned by get_output for identifiers */
 /*111:*/
 
 
-//line gotangle.w:378
+//line gotangle.w:379
 
 normal= 0/* non-unusual state */
 num_or_id= 1/* state associated with numbers and identifiers */
@@ -157,7 +157,7 @@ verbatim= 4/* state in the middle of a string */
 /*125:*/
 
 
-//line gotangle.w:651
+//line gotangle.w:652
 
 ignore rune= 0/* control code of no interest to \.{GOTANGLE} */
 ord rune= 0302/* control code for `\.{@'}' */
@@ -177,7 +177,7 @@ new_section rune= 0312/* control code for `\.{@\ }' and `\.{@*}' */
 /*129:*/
 
 
-//line gotangle.w:743
+//line gotangle.w:744
 
 comment= 0213
 
@@ -190,7 +190,7 @@ comment= 0213
 /*131:*/
 
 
-//line gotangle.w:786
+//line gotangle.w:787
 
 constant= 03
 
@@ -203,7 +203,7 @@ constant= 03
 /*144:*/
 
 
-//line gotangle.w:1123
+//line gotangle.w:1124
 
 macro= 0
 
@@ -216,7 +216,7 @@ macro= 0
 /*147:*/
 
 
-//line gotangle.w:1166
+//line gotangle.w:1167
 
 line_number= 0214
 
@@ -225,7 +225,7 @@ line_number= 0214
 /*:147*/
 
 
-//line gotangle.w:67
+//line gotangle.w:68
 
 )
 
@@ -235,7 +235,7 @@ line_number= 0214
 /*92:*/
 
 
-//line gotangle.w:105
+//line gotangle.w:106
 
 type text struct{
 token[]rune/* pointer into tok_mem */
@@ -251,7 +251,7 @@ text_link int32/* relates replacement texts */
 /*101:*/
 
 
-//line gotangle.w:213
+//line gotangle.w:214
 
 type output_state struct{
 byte_field[]rune/* present location within replacement text */
@@ -265,14 +265,14 @@ section_field int32/* section number or zero if not a section */
 /*:101*/
 
 
-//line gotangle.w:71
+//line gotangle.w:72
 
 
 
 /*93:*/
 
 
-//line gotangle.w:111
+//line gotangle.w:112
 
 var text_info[]text
 var tok_mem[]rune
@@ -286,7 +286,7 @@ var tok_mem[]rune
 /*98:*/
 
 
-//line gotangle.w:164
+//line gotangle.w:165
 
 var last_unnamed int32/* most recent replacement text of unnamed section */
 
@@ -299,7 +299,7 @@ var last_unnamed int32/* most recent replacement text of unnamed section */
 /*102:*/
 
 
-//line gotangle.w:221
+//line gotangle.w:222
 
 var cur_state output_state/* cur_state.byte_field, cur_state.name_field,
 cur_state.repl_field, and cur_state.section_field */
@@ -314,7 +314,7 @@ var stack[]output_state/* info for non-current levels */
 /*107:*/
 
 
-//line gotangle.w:288
+//line gotangle.w:289
 
 var cur_val rune/* additional information corresponding to output token */
 
@@ -327,7 +327,7 @@ var cur_val rune/* additional information corresponding to output token */
 /*112:*/
 
 
-//line gotangle.w:385
+//line gotangle.w:386
 
 var out_state rune/* current status of partial output */
 
@@ -340,7 +340,7 @@ var out_state rune/* current status of partial output */
 /*115:*/
 
 
-//line gotangle.w:411
+//line gotangle.w:412
 
 var output_files[]int32
 var cur_section_name_char rune/* is it '<' or '(' */
@@ -355,7 +355,7 @@ var output_file_name string/* name of the file */
 /*126:*/
 
 
-//line gotangle.w:661
+//line gotangle.w:662
 
 var ccode[256]rune/* meaning of a char following \.{@} */
 
@@ -368,7 +368,7 @@ var ccode[256]rune/* meaning of a char following \.{@} */
 /*132:*/
 
 
-//line gotangle.w:789
+//line gotangle.w:790
 
 var cur_section_name int32/* name of section just scanned */
 var no_where bool/* suppress print_where? */
@@ -382,7 +382,7 @@ var no_where bool/* suppress print_where? */
 /*145:*/
 
 
-//line gotangle.w:1126
+//line gotangle.w:1127
 
 var cur_text int32/* replacement text formed by scan_repl */
 var next_control rune
@@ -392,7 +392,7 @@ var next_control rune
 /*:145*/
 
 
-//line gotangle.w:72
+//line gotangle.w:73
 
 
 
@@ -404,7 +404,7 @@ var next_control rune
 /*3:*/
 
 
-//line gotangle.w:78
+//line gotangle.w:79
 
 func main(){
 common_init()
@@ -413,7 +413,7 @@ common_init()
 /*99:*/
 
 
-//line gotangle.w:167
+//line gotangle.w:168
 
 last_unnamed= 0
 text_info= append(text_info,text{})
@@ -428,7 +428,7 @@ text_info[0].text_link= 0
 /*127:*/
 
 
-//line gotangle.w:664
+//line gotangle.w:665
 {
 for c:=0;c<len(ccode);c++{
 ccode[c]= ignore
@@ -472,7 +472,7 @@ ccode['\'']= ord
 /*:127*/
 
 
-//line gotangle.w:81
+//line gotangle.w:82
 
 if show_banner(){
 fmt.Print(banner)/* print a ``banner line'' */
@@ -700,7 +700,7 @@ rlink int32/* right link in binary search tree for section names */
 /*94:*/
 
 
-//line gotangle.w:118
+//line gotangle.w:119
 
 equiv int32/* info corresponding to names */
 
@@ -887,7 +887,7 @@ scan_args()
 /*165:*/
 
 
-//line gotangle.w:1531
+//line gotangle.w:1532
 
 var err error
 if go_file,err= os.OpenFile(go_file_name,os.O_WRONLY|os.O_CREATE|os.O_TRUNC,0666);err!=nil{
@@ -1546,7 +1546,7 @@ name_dir[p].name= append(name_dir[p].name,id...)
 /*97:*/
 
 
-//line gotangle.w:145
+//line gotangle.w:146
 
 
 
@@ -2342,7 +2342,7 @@ found_out= true
 /*166:*/
 
 
-//line gotangle.w:1538
+//line gotangle.w:1539
 
 {
 fatal("! Usage: gotangle [options] webfile[.w] [{changefile[.ch]|-} [outfile[.go]]]\n","")
@@ -2365,7 +2365,7 @@ if!found_web{
 /*166:*/
 
 
-//line gotangle.w:1538
+//line gotangle.w:1539
 
 {
 fatal("! Usage: gotangle [options] webfile[.w] [{changefile[.ch]|-} [outfile[.go]]]\n","")
@@ -2416,7 +2416,7 @@ return false
 /*95:*/
 
 
-//line gotangle.w:124
+//line gotangle.w:125
 
 func names_match(
 p int32,/* points to the proposed match */
@@ -2437,7 +2437,7 @@ return compare_runes(id,name_dir[p].name)==0
 /*96:*/
 
 
-//line gotangle.w:137
+//line gotangle.w:138
 
 func init_node(node int32){
 name_dir[node].equiv= -1
@@ -2452,7 +2452,7 @@ name_dir[node].equiv= -1
 /*104:*/
 
 
-//line gotangle.w:243
+//line gotangle.w:244
 
 /* suspends the current level */
 func push_level(p int32){
@@ -2472,7 +2472,7 @@ cur_state.section_field= 0
 /*105:*/
 
 
-//line gotangle.w:257
+//line gotangle.w:258
 
 /* do this when cur_state.byte_field reaches end */
 func pop_level(){
@@ -2497,7 +2497,7 @@ stack= stack[:len(stack)-1]
 /*108:*/
 
 
-//line gotangle.w:292
+//line gotangle.w:293
 
 /* sends next token to out_char */
 func get_output(){
@@ -2533,7 +2533,7 @@ case section_name:
 /*109:*/
 
 
-//line gotangle.w:339
+//line gotangle.w:340
 
 {
 if name_dir[c].equiv!=-1{
@@ -2550,7 +2550,7 @@ goto restart
 /*:109*/
 
 
-//line gotangle.w:322
+//line gotangle.w:323
 
 case line_number:
 cur_val= c
@@ -2574,7 +2574,7 @@ out_char(section_number)
 /*113:*/
 
 
-//line gotangle.w:392
+//line gotangle.w:393
 
 /* writes one line to output file */
 func flush_buffer(){
@@ -2598,7 +2598,7 @@ line[include_depth]++
 /*117:*/
 
 
-//line gotangle.w:433
+//line gotangle.w:434
 
 func phase_two(){
 line[include_depth]= 1
@@ -2607,7 +2607,7 @@ line[include_depth]= 1
 /*103:*/
 
 
-//line gotangle.w:232
+//line gotangle.w:233
 
 cur_state.name_field= 0
 cur_state.repl_field= text_info[0].text_link
@@ -2620,7 +2620,7 @@ stack= append(stack,output_state{})
 /*:103*/
 
 
-//line gotangle.w:436
+//line gotangle.w:437
 
 if text_info[0].text_link==0&&len(output_files)==0{
 warn_print("! No program text was specified.")
@@ -2650,7 +2650,7 @@ writeloop:
 /*118:*/
 
 
-//line gotangle.w:471
+//line gotangle.w:472
 
 for an_output_file:=len(output_files);an_output_file> 0;{
 an_output_file--
@@ -2681,7 +2681,7 @@ flush_buffer()
 /*:118*/
 
 
-//line gotangle.w:460
+//line gotangle.w:461
 
 if show_happiness(){
 fmt.Print("\nDone.")
@@ -2698,7 +2698,7 @@ fmt.Print("\nDone.")
 /*119:*/
 
 
-//line gotangle.w:501
+//line gotangle.w:502
 
 func out_char(cur_char rune){
 switch cur_char{
@@ -2712,7 +2712,7 @@ out_state= normal
 /*121:*/
 
 
-//line gotangle.w:599
+//line gotangle.w:600
 
 case identifier:
 if out_state==num_or_id{
@@ -2726,14 +2726,14 @@ out_state= num_or_id
 /*:121*/
 
 
-//line gotangle.w:509
+//line gotangle.w:510
 
 
 
 /*122:*/
 
 
-//line gotangle.w:607
+//line gotangle.w:608
 
 case section_number:
 if cur_val> 0{
@@ -2747,14 +2747,14 @@ fmt.Fprintf(go_file,"\n\n/*:%d*/\n\n",-cur_val)
 /*:122*/
 
 
-//line gotangle.w:510
+//line gotangle.w:511
 
 
 
 /*123:*/
 
 
-//line gotangle.w:615
+//line gotangle.w:616
 
 case line_number:
 fmt.Fprint(go_file,"\n//line ")
@@ -2775,14 +2775,14 @@ fmt.Fprintf(go_file,":%d\n",line)
 /*:123*/
 
 
-//line gotangle.w:511
+//line gotangle.w:512
 
 
 
 /*120:*/
 
 
-//line gotangle.w:554
+//line gotangle.w:555
 
 case plus_plus:
 fmt.Fprint(go_file,"++")
@@ -2833,7 +2833,7 @@ out_state= normal
 /*:120*/
 
 
-//line gotangle.w:512
+//line gotangle.w:513
 
 case'=','>':
 fmt.Fprintf(go_file,"%c ",cur_char)
@@ -2885,7 +2885,7 @@ out_state= normal
 /*128:*/
 
 
-//line gotangle.w:705
+//line gotangle.w:706
 
 /* skip to next control code */
 func skip_ahead()rune{
@@ -2920,7 +2920,7 @@ return 0
 /*130:*/
 
 
-//line gotangle.w:747
+//line gotangle.w:748
 
 func copy_comment(is_long_comment bool)rune{
 section_text= section_text[0:0]
@@ -2967,7 +2967,7 @@ return comment
 /*133:*/
 
 
-//line gotangle.w:796
+//line gotangle.w:797
 
 /* produces the next input token */
 func get_next()rune{
@@ -2982,7 +2982,7 @@ print_where= false
 /*148:*/
 
 
-//line gotangle.w:1169
+//line gotangle.w:1170
 
 tok_mem= append(tok_mem,unicode.UpperLower+line_number)
 
@@ -3006,7 +3006,7 @@ tok_mem= append(tok_mem,a)
 /*:148*/
 
 
-//line gotangle.w:805
+//line gotangle.w:806
 
 }else{
 return'\n'
@@ -3027,7 +3027,7 @@ if unicode.IsDigit(c)||c=='.'{
 /*135:*/
 
 
-//line gotangle.w:853
+//line gotangle.w:854
 
 {
 id_first:=loc-1
@@ -3077,7 +3077,7 @@ return constant
 /*:135*/
 
 
-//line gotangle.w:820
+//line gotangle.w:821
 
 }else if c=='\''||c=='"'||c=='`'{
 
@@ -3085,7 +3085,7 @@ return constant
 /*136:*/
 
 
-//line gotangle.w:901
+//line gotangle.w:902
 
 {
 delim:=c/* what started the string */
@@ -3128,7 +3128,7 @@ return strs
 /*:136*/
 
 
-//line gotangle.w:822
+//line gotangle.w:823
 
 }else if unicode.IsLetter(c)||c=='_'{
 
@@ -3136,7 +3136,7 @@ return strs
 /*134:*/
 
 
-//line gotangle.w:838
+//line gotangle.w:839
 
 {
 loc--
@@ -3157,7 +3157,7 @@ return identifier
 /*:134*/
 
 
-//line gotangle.w:824
+//line gotangle.w:825
 
 }else if c=='@'{
 
@@ -3165,7 +3165,7 @@ return identifier
 /*137:*/
 
 
-//line gotangle.w:941
+//line gotangle.w:942
 
 {
 c= ccode[nc]
@@ -3188,7 +3188,7 @@ cur_section_name_char= buffer[loc-1]
 /*139:*/
 
 
-//line gotangle.w:1001
+//line gotangle.w:1002
 
 {
 section_text= section_text[0:0]
@@ -3197,7 +3197,7 @@ section_text= section_text[0:0]
 /*141:*/
 
 
-//line gotangle.w:1023
+//line gotangle.w:1024
 
 for true{
 if loc>=len(buffer){
@@ -3217,7 +3217,7 @@ c= buffer[loc]
 /*142:*/
 
 
-//line gotangle.w:1048
+//line gotangle.w:1049
 
 if c=='@'{
 if loc+1>=len(buffer){
@@ -3253,7 +3253,7 @@ loc++/* now c==buffer[loc] again */
 /*:142*/
 
 
-//line gotangle.w:1037
+//line gotangle.w:1038
 
 loc++
 if unicode.IsSpace(c){
@@ -3270,7 +3270,7 @@ section_text= append(section_text,c)
 /*:141*/
 
 
-//line gotangle.w:1004
+//line gotangle.w:1005
 
 if len(section_text)> 3&&
 compare_runes(section_text[len(section_text)-3:],[]rune("..."))==0{
@@ -3285,7 +3285,7 @@ if cur_section_name_char=='('{
 /*116:*/
 
 
-//line gotangle.w:417
+//line gotangle.w:418
 
 {
 an_output_file:=0
@@ -3304,7 +3304,7 @@ output_files= append(output_files,cur_section_name)
 /*:116*/
 
 
-//line gotangle.w:1014
+//line gotangle.w:1015
 
 }
 return section_name
@@ -3315,7 +3315,7 @@ return section_name
 /*:139*/
 
 
-//line gotangle.w:958
+//line gotangle.w:959
 
 case strs:
 
@@ -3323,7 +3323,7 @@ case strs:
 /*143:*/
 
 
-//line gotangle.w:1082
+//line gotangle.w:1083
 {
 id_first:=loc
 loc++
@@ -3354,7 +3354,7 @@ return strs
 /*:143*/
 
 
-//line gotangle.w:960
+//line gotangle.w:961
 
 case ord:
 
@@ -3362,7 +3362,7 @@ case ord:
 /*138:*/
 
 
-//line gotangle.w:974
+//line gotangle.w:975
 
 if buffer[loc]=='\\'{
 loc++
@@ -3395,7 +3395,7 @@ return ord
 /*:138*/
 
 
-//line gotangle.w:962
+//line gotangle.w:963
 
 default:
 return c
@@ -3407,7 +3407,7 @@ return c
 /*:137*/
 
 
-//line gotangle.w:826
+//line gotangle.w:827
 
 }else if unicode.IsSpace(c){
 continue/* ignore spaces and tabs*/
@@ -3542,7 +3542,7 @@ return col_eq
 }
 }
 }
-//line gotangle.w:97
+//line gotangle.w:98
 
 
 
@@ -3550,7 +3550,7 @@ return col_eq
 /*:91*/
 
 
-//line gotangle.w:831
+//line gotangle.w:832
 
 return c
 }
@@ -3567,7 +3567,7 @@ return 0
 /*146:*/
 
 
-//line gotangle.w:1131
+//line gotangle.w:1132
 
 /* creates a replacement text */
 func scan_repl(t rune){
@@ -3578,7 +3578,7 @@ if t==section_name{
 /*148:*/
 
 
-//line gotangle.w:1169
+//line gotangle.w:1170
 
 tok_mem= append(tok_mem,unicode.UpperLower+line_number)
 
@@ -3602,7 +3602,7 @@ tok_mem= append(tok_mem,a)
 /*:148*/
 
 
-//line gotangle.w:1136
+//line gotangle.w:1137
 
 }
 for true{
@@ -3613,7 +3613,7 @@ switch a{
 /*149:*/
 
 
-//line gotangle.w:1187
+//line gotangle.w:1188
 
 case identifier:
 a= id_lookup(id,0)
@@ -3628,7 +3628,7 @@ goto done
 /*150:*/
 
 
-//line gotangle.w:1219
+//line gotangle.w:1220
 {
 try_loc:=loc
 for try_loc<len(buffer)&&buffer[try_loc]==' '{
@@ -3653,7 +3653,7 @@ err_print("! Missing `@ ' before a named section")
 /*:150*/
 
 
-//line gotangle.w:1196
+//line gotangle.w:1197
 
 tok_mem= append(tok_mem,unicode.UpperLower+section_name)
 a= cur_section_name
@@ -3663,7 +3663,7 @@ tok_mem= append(tok_mem,a)
 /*148:*/
 
 
-//line gotangle.w:1169
+//line gotangle.w:1170
 
 tok_mem= append(tok_mem,unicode.UpperLower+line_number)
 
@@ -3687,7 +3687,7 @@ tok_mem= append(tok_mem,a)
 /*:148*/
 
 
-//line gotangle.w:1200
+//line gotangle.w:1201
 
 }
 case constant,strs:
@@ -3696,7 +3696,7 @@ case constant,strs:
 /*151:*/
 
 
-//line gotangle.w:1238
+//line gotangle.w:1239
 
 tok_mem= append(tok_mem,a)/* string or constant */
 for i:=0;i<len(id);{/* simplify \.{@@} pairs */
@@ -3718,7 +3718,7 @@ tok_mem= append(tok_mem,a)
 /*:151*/
 
 
-//line gotangle.w:1203
+//line gotangle.w:1204
 
 case comment:
 
@@ -3726,7 +3726,7 @@ case comment:
 /*152:*/
 
 
-//line gotangle.w:1255
+//line gotangle.w:1256
 
 tok_mem= append(tok_mem,a)/* comment */
 for i:=0;i<len(id);{
@@ -3745,7 +3745,7 @@ tok_mem= append(tok_mem,a)/* comment */
 /*:152*/
 
 
-//line gotangle.w:1205
+//line gotangle.w:1206
 
 case ord:
 
@@ -3753,7 +3753,7 @@ case ord:
 /*153:*/
 
 
-//line gotangle.w:1268
+//line gotangle.w:1269
 
 {
 c:=id[0]
@@ -3831,7 +3831,7 @@ tok_mem= append(tok_mem,constant)
 /*:153*/
 
 
-//line gotangle.w:1207
+//line gotangle.w:1208
 
 case definition,format_code,begin_code:
 if t!=section_name{
@@ -3849,7 +3849,7 @@ goto done
 /*:149*/
 
 
-//line gotangle.w:1144
+//line gotangle.w:1145
 
 case')':
 tok_mem= append(tok_mem,a)
@@ -3877,7 +3877,7 @@ tok_mem= nil
 /*155:*/
 
 
-//line gotangle.w:1351
+//line gotangle.w:1352
 
 func scan_section(){
 var p int32= 0/* section name for the current section */
@@ -3896,7 +3896,7 @@ for true{
 /*156:*/
 
 
-//line gotangle.w:1392
+//line gotangle.w:1393
 
 for next_control<definition{
 /* definition is the lowest of the ``significant'' codes */
@@ -3911,7 +3911,7 @@ next_control= get_next()
 /*:156*/
 
 
-//line gotangle.w:1365
+//line gotangle.w:1366
 
 if next_control==definition{/* \.{@d} */
 
@@ -3919,7 +3919,7 @@ if next_control==definition{/* \.{@d} */
 /*157:*/
 
 
-//line gotangle.w:1401
+//line gotangle.w:1402
 
 {
 /*allow newline before definition */
@@ -3948,7 +3948,7 @@ text_info[cur_text].text_link= 0/* text_link==0 characterizes a macro */
 /*:157*/
 
 
-//line gotangle.w:1367
+//line gotangle.w:1368
 
 continue
 }
@@ -3963,7 +3963,7 @@ p= cur_section_name
 /*158:*/
 
 
-//line gotangle.w:1432
+//line gotangle.w:1433
 
 /* allow optional \.{+=} */
 for next_control= get_next();next_control=='+';next_control= get_next(){}
@@ -3976,7 +3976,7 @@ continue
 /*:158*/
 
 
-//line gotangle.w:1376
+//line gotangle.w:1377
 
 break
 }
@@ -3989,14 +3989,14 @@ print_where= false
 /*159:*/
 
 
-//line gotangle.w:1439
+//line gotangle.w:1440
 
 
 
 /*160:*/
 
 
-//line gotangle.w:1444
+//line gotangle.w:1445
 
 tok_mem= append(tok_mem,unicode.UpperLower+section_number)
 tok_mem= append(tok_mem,section_count)
@@ -4006,7 +4006,7 @@ tok_mem= append(tok_mem,section_count)
 /*:160*/
 
 
-//line gotangle.w:1440
+//line gotangle.w:1441
 
 scan_repl(section_name)/* now cur_text points to the replacement text */
 
@@ -4014,7 +4014,7 @@ scan_repl(section_name)/* now cur_text points to the replacement text */
 /*161:*/
 
 
-//line gotangle.w:1448
+//line gotangle.w:1449
 
 if p==-1{/* unnamed section, or bad section name */
 text_info[last_unnamed].text_link= cur_text
@@ -4037,7 +4037,7 @@ text_info[cur_text].text_link= max_texts
 /*:161*/
 
 
-//line gotangle.w:1442
+//line gotangle.w:1443
 
 
 
@@ -4045,7 +4045,7 @@ text_info[cur_text].text_link= max_texts
 /*:159*/
 
 
-//line gotangle.w:1383
+//line gotangle.w:1384
 
 }
 
@@ -4058,7 +4058,7 @@ text_info[cur_text].text_link= max_texts
 /*162:*/
 
 
-//line gotangle.w:1466
+//line gotangle.w:1467
 
 func phase_one(){
 phase= 1
@@ -4081,7 +4081,7 @@ phase= 2
 /*163:*/
 
 
-//line gotangle.w:1482
+//line gotangle.w:1483
 
 func skip_limbo(){
 for true{
@@ -4130,7 +4130,7 @@ err_print("! Double @ should be used in limbo")
 /*164:*/
 
 
-//line gotangle.w:1522
+//line gotangle.w:1523
 
 func print_stats(){
 fmt.Print("\nMemory usage statistics:\n")

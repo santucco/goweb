@@ -1,9 +1,9 @@
-% This file is part of GOWEB Version 0.82 - September 2013
-% Author Alexander Sychev
+% This file is part of GOWEB
+%
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Copyright (C) 2013 Alexander Sychev
+% Copyright (C) 2013, 2020 Alexander Sychev
 
 
 % Permission is granted to make and distribute verbatim copies of this
@@ -16,21 +16,22 @@
 % under the terms of a permission notice identical to this one.
 
 % Here is TeX material that gets inserted after \input gowebmac
+\def\ver{0.8.2}
 \def\hang{\hangindent 3em\indent\ignorespaces}
 \def\pb{$\.|\ldots\.|$} % C brackets (|...|)
 \def\v{\char'174} % vertical (|) in typewriter font
 \mathchardef\RA="3221 % right arrow
 \mathchardef\BA="3224 % double arrow
 
-\def\title{GOTANGLE (Version 0.82)}
+\def\title{GOTANGLE (version \ver)}
 \def\topofcontents{\null\vfill
   \centerline{\titlefont The {\ttitlefont GOTANGLE} processor}
   \vskip 15pt
-  \centerline{(Version 0.82)}
+  \centerline{(Version \ver)}
   \vfill}
 \def\botofcontents{\vfill
 \noindent
-Copyright \copyright\ 2013 Alexander Sychev
+Copyright \copyright\ 2013, 2020 Alexander Sychev
 \bigskip\noindent
 Permission is granted to make and distribute verbatim copies of this
 document provided that the copyright notice and this permission notice
@@ -53,7 +54,7 @@ The ``banner line'' defined here should be changed whenever \.{GOTANGLE}
 is modified.
 
 @<Constants@>=
-banner = "This is GOTANGLE (Version 0.82)\n"
+banner = "This is GOTANGLE (version 0.8.2)\n"
 
 @
 @c

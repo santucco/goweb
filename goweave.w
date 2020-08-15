@@ -1,9 +1,9 @@
-% This file is part of GOWEB Version 0.82 - September 2013
-% Author Alexander Sychev
+% This file is part of GOWEB
+%
 % GOWEB is based on program CWEB Version 3.64 - February 2002,
 % Copyright (C) 1987, 1990, 1993, 2000 Silvio Levy and Donald E. Knuth
 % It is distributed WITHOUT ANY WARRANTY, express or implied.
-% Copyright (C) 2013 Alexander Sychev
+% Copyright (C) 2013, 2020 Alexander Sychev
 
 
 % Permission is granted to make and distribute verbatim copies of this
@@ -17,6 +17,7 @@
 
 
 % Here is TeX material that gets inserted after \input gowebmac
+\def\ver{0.8.2}
 \def\hang{\hangindent 3em\indent\ignorespaces}
 \def\pb{$\.|\ldots\.|$} % code brackets (|...|)
 \def\v{\char'174} % vertical (|) in typewriter font
@@ -29,11 +30,11 @@
 \def\skipxTeX{\\{skip\_\TEX/}}
 \def\copyxTeX{\\{copy\_\TEX/}}
 
-\def\title{GOWEAVE (Version 0.82)}
+\def\title{GOWEAVE (version \ver)}
 \def\topofcontents{\null\vfill
 	\centerline{\titlefont The {\ttitlefont GOWEAVE} processor}
 	\vskip 15pt
-	\centerline{(Version 0.82)}
+	\centerline{(version \ver)}
 	\vfill}
 \def\botofcontents{\vfill
 \noindent
@@ -61,7 +62,7 @@ The ``banner line'' defined here should be changed whenever \.{GOWEAVE}
 is modified.
 
 @<Constants@>=
-const banner = "This is GOWEAVE (Version 0.82)\n"
+const banner = "This is GOWEAVE (version 0.8.2)\n"
 
 @
 @c
